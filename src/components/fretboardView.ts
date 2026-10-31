@@ -1,18 +1,26 @@
 import { useSyncExternalStore } from 'react'
 import type { FretboardOptions } from './Fretboard'
 
-// v2: left-handed became the default; older saved settings (v1) started right-handed.
-const KEY = 'fretboard-view-v2'
+// v2: left-handed became the default. v3: bass strings on top (as you see your guitar)
+// became the default; other choices saved under v2 are kept.
+const KEY = 'fretboard-view-v3'
+const OLD_KEY = 'fretboard-view-v2'
 
-/** Left-handed is the default: the person this app is built for plays left-handed. */
-export const DEFAULT_VIEW: FretboardOptions = { labelMode: 'finger', stringOrder: 'tab', leftHanded: true, showGhosts: true }
+/**
+ * Defaults for the person this app is built for: left-handed, with the bass strings
+ * on top, the way you see the neck when you look down at your guitar.
+ */
+export const DEFAULT_VIEW: FretboardOptions = { labelMode: 'finger', stringOrder: 'player', leftHanded: true, showGhosts: true }
 
 let current: FretboardOptions = read()
 const listeners = new Set<() => void>()
 
 function read(): FretboardOptions {
   try {
-    return { ...DEFAULT_VIEW, ...JSON.parse(localStorage.getItem(KEY) ?? '{}') }
+    const saved = localStorage.getItem(KEY)
+    if (saved) return { ...DEFAULT_VIEW, ...JSON.parse(saved) }
+    const old = JSON.parse(localStorage.getItem(OLD_KEY) ?? '{}')
+    return { ...DEFAULT_VIEW, ...old, stringOrder: DEFAULT_VIEW.stringOrder }
   } catch {
     return DEFAULT_VIEW
   }

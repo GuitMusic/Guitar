@@ -477,8 +477,8 @@ export function Practice({ song }: Props) {
           <label className="field">
             Strings
             <select value={view.stringOrder} onChange={(e) => setView({ ...view, stringOrder: e.target.value as FretboardOptions['stringOrder'] })}>
-              <option value="tab">High e on top (like tab)</option>
               <option value="player">Low E on top (looking down at your guitar)</option>
+              <option value="tab">High e on top (like tab)</option>
             </select>
           </label>
           <label className="check">
