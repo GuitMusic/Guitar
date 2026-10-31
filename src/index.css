@@ -921,3 +921,176 @@ input.wide {
   border: 1px solid var(--border);
   margin-left: 8px;
 }
+
+/* Listen while I play */
+
+.check-panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 10px 14px;
+  margin: 10px 0;
+}
+
+.check-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
+  margin: 4px 0;
+}
+
+.check-row.trainer {
+  border-top: 1px solid var(--border);
+  padding-top: 8px;
+  margin-top: 8px;
+}
+
+.check-title {
+  font-weight: 600;
+}
+
+.check-score {
+  font-weight: 600;
+  min-width: 170px;
+}
+
+.segmented {
+  display: inline-flex;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.segmented button {
+  border: none;
+  border-radius: 0;
+  padding: 5px 14px;
+  background: transparent;
+}
+
+.segmented button.active {
+  background: var(--text);
+  color: var(--bg);
+}
+
+.field-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.9rem;
+  color: var(--text-2);
+}
+
+.wait-box {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: var(--surface-2);
+  margin: 6px 0;
+  font-size: 1.1rem;
+}
+
+.wait-box strong.played {
+  color: var(--m);
+}
+
+.recent {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.recent-note {
+  font-size: 0.8rem;
+  padding: 2px 7px;
+  border-radius: 999px;
+  color: #fff;
+}
+
+.recent-note.hit {
+  background: var(--m);
+}
+.recent-note.late {
+  background: var(--a);
+}
+.recent-note.miss {
+  background: var(--p);
+}
+
+.bar-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  margin: 6px 0 2px;
+}
+
+.bar-cell {
+  min-width: 30px;
+  padding: 3px 0;
+  font-size: 0.75rem;
+  border-radius: 4px;
+  background: var(--surface-2);
+  color: var(--text-2);
+}
+
+.bar-cell.good {
+  background: var(--m);
+  color: #fff;
+  border-color: var(--m);
+}
+.bar-cell.ok {
+  background: var(--a);
+  color: #fff;
+  border-color: var(--a);
+}
+.bar-cell.bad {
+  background: var(--p);
+  color: #fff;
+  border-color: var(--p);
+}
+
+.fb-mark {
+  fill: none;
+  stroke-width: 4;
+}
+
+.fb-mark-hit {
+  stroke: #3ddc84;
+}
+.fb-mark-late {
+  stroke: #ffb347;
+}
+.fb-mark-miss {
+  stroke: #ff5a4f;
+}
+.fb-mark-waiting {
+  stroke: #ffffff;
+  stroke-dasharray: 5 4;
+  animation: fb-pulse 1s ease-in-out infinite alternate;
+}
+
+.fb-mark-fade {
+  animation: fb-fade 900ms ease-out forwards;
+}
+
+@keyframes fb-fade {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes fb-pulse {
+  from {
+    opacity: 0.4;
+  }
+  to {
+    opacity: 1;
+  }
+}

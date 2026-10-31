@@ -8,6 +8,10 @@ import type { OpenSong } from '../library/songs'
 import { beatToFretNotes, nextSoundingBeat } from '../player/alphaTabAdapter'
 import { Fretboard, type FretboardOptions } from './Fretboard'
 import { FingerEditor } from './FingerEditor'
+import { CheckPanel } from './CheckPanel'
+import { accuracy, nextTrainerSpeed } from '../check/noteCheck'
+import { usePracticeCheck, type CheckMode } from '../check/usePracticeCheck'
+import type { FretMark } from './Fretboard'
 import { setView, useFretboardView } from './fretboardView'
 
 type Beat = alphaTab.model.Beat
@@ -51,6 +55,9 @@ export function Practice({ song }: Props) {
   const scoreEl = useRef<HTMLDivElement>(null)
   const scrollEl = useRef<HTMLDivElement>(null)
   const apiRef = useRef<alphaTab.AlphaTabApi | null>(null)
+  const [api, setApi] = useState<alphaTab.AlphaTabApi | null>(null)
+  const lastTick = useRef(0)
+  const onLoopPass = useRef<() => void>(() => {})
 
   const [score, setScore] = useState<Score | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -66,6 +73,14 @@ export function Practice({ song }: Props) {
   const [countIn, setCountIn] = useState(false)
   const [loop, setLoop] = useState<{ on: boolean; start: number; end: number }>({ on: false, start: 1, end: 4 })
   const [editing, setEditing] = useState<{ note: FretNote; anchor: { x: number; y: number } } | null>(null)
+  const [checkMode, setCheckMode] = useState<CheckMode>('off')
+  const [muteSong, setMuteSong] = useState(true)
+  const [trainer, setTrainer] = useState<{ on: boolean; target: number; passes: number; message: string | null }>({
+    on: false,
+    target: 1,
+    passes: 0,
+    message: null,
+  })
 
   // Per-song settings (speed, saved loops, fingering edits)
   useEffect(() => {
@@ -101,6 +116,7 @@ export function Practice({ song }: Props) {
       },
     } as unknown as alphaTab.Settings)
     apiRef.current = api
+    setApi(api)
 
     api.scoreLoaded.on((s) => {
       setScore(s)
@@ -111,9 +127,13 @@ export function Practice({ song }: Props) {
     api.soundFontLoad.on((e) => setLoadingSound(Math.round((e.loaded / Math.max(1, e.total)) * 100)))
     api.playerReady.on(() => setReady(true))
     api.playerStateChanged.on((e) => setPlaying(e.state === alphaTab.synth.PlayerState.Playing))
-    api.playerPositionChanged.on((e) =>
-      setTime((t) => (Math.abs(t.current - e.currentTime) > 200 || t.end !== e.endTime ? { current: e.currentTime, end: e.endTime } : t)),
-    )
+    api.playerPositionChanged.on((e) => {
+      setTime((t) => (Math.abs(t.current - e.currentTime) > 200 || t.end !== e.endTime ? { current: e.currentTime, end: e.endTime } : t))
+      // Playback jumping back while looping = one pass of the loop finished
+      const range = api.playbackRange
+      if (api.isLooping && range && e.currentTick + 960 < lastTick.current && e.currentTick <= range.startTick + 960) onLoopPass.current()
+      lastTick.current = e.currentTick
+    })
     api.activeBeatsChanged.on((e) => setActiveBeats(e.activeBeats))
     api.beatMouseDown.on((beat) => {
       if (api.playerState !== alphaTab.synth.PlayerState.Playing) setActiveBeats([beat])
@@ -129,6 +149,7 @@ export function Practice({ song }: Props) {
     return () => {
       api.destroy()
       apiRef.current = null
+      setApi(null)
       setScore(null)
       setReady(false)
       setPlaying(false)
@@ -223,6 +244,48 @@ export function Practice({ song }: Props) {
   const tuning = staff?.tuning ?? [64, 59, 55, 50, 45, 40]
   const capo = staff?.capo ?? 0
 
+  const check = usePracticeCheck({ api, track, mode: checkMode, muteSong })
+
+  // Speed trainer: after each loop pass, speed up if the pass was clean
+  useEffect(() => {
+    onLoopPass.current = () => {
+      if (!trainer.on) return
+      const results = check.takePass()
+      const acc = results ? accuracy(results) : null
+      const next = nextTrainerSpeed(speed, acc, { step: 0.05, target: trainer.target, cleanAt: 0.9 })
+      const passNo = trainer.passes + 1
+      const verdict =
+        acc === null
+          ? `Pass ${passNo} done`
+          : `Pass ${passNo}: ${Math.round(acc * 100)}% of notes right`
+      const message =
+        next > speed
+          ? `${verdict}, speeding up to ${Math.round(next * 100)}%`
+          : speed >= trainer.target
+            ? `${verdict}. You're at the target speed.`
+            : `${verdict}, staying at ${Math.round(speed * 100)}% (90% needed to speed up)`
+      setTrainer((t) => ({ ...t, passes: passNo, message }))
+      if (next !== speed) updateSettings((s) => ({ ...s, speed: next }))
+    }
+  }, [trainer, speed, check, updateSettings])
+
+  const startTrainer = () => {
+    setLoop((l) => ({ ...l, on: true }))
+    updateSettings((s) => ({ ...s, speed: 0.6 }))
+    check.takePass()
+    setTrainer((t) => ({ ...t, on: true, passes: 0, message: 'Starting at 60%. Play the loop; each clean pass adds 5%.' }))
+  }
+
+  // Coloured rings on the fretboard for notes just judged, or played while waiting
+  const marks: FretMark[] = check.waiting
+    ? check.waiting.notes.map((n) => ({
+        key: `w-${n.string}-${n.fret}`,
+        string: n.string,
+        fret: n.fret,
+        result: check.waiting!.played.includes(n.midi) ? 'hit' : 'waiting',
+      }))
+    : check.judged.slice(-12).map((j) => ({ key: `${j.key}-${j.at}`, string: j.string, fret: j.fret, result: j.result, fade: true }))
+
   const saveLoop = () => {
     const name = window.prompt('Name this section', `Bars ${loop.start} to ${loop.end}`)
     if (!name) return
@@ -268,6 +331,7 @@ export function Practice({ song }: Props) {
           capo={capo}
           options={view}
           onNoteClick={(note, anchor) => setEditing({ note, anchor })}
+          marks={marks}
         />
         <div className="rotate-hint">Turn your phone sideways for a bigger fretboard.</div>
         <div className="legend">
@@ -353,6 +417,29 @@ export function Practice({ song }: Props) {
           </label>
         </div>
       </div>
+
+      <CheckPanel
+        mode={checkMode}
+        onModeChange={(m) => {
+          setCheckMode(m)
+          if (m !== 'off') setMetronome(true)
+        }}
+        muteSong={muteSong}
+        onMuteSongChange={setMuteSong}
+        listening={check.listening}
+        error={check.error}
+        judged={check.judged}
+        waiting={check.waiting}
+        onSkip={check.skipWait}
+        onClear={check.clearResults}
+        barCount={barCount}
+        onBarClick={(bar) => setLoop({ on: true, start: bar, end: bar })}
+        trainer={trainer}
+        onStartTrainer={startTrainer}
+        onStopTrainer={() => setTrainer((t) => ({ ...t, on: false, message: null }))}
+        onTargetChange={(target) => setTrainer((t) => ({ ...t, target }))}
+        speed={speed}
+      />
 
       {settings && settings.loops.length > 0 && (
         <div className="sections">

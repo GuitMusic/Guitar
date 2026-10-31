@@ -13,6 +13,15 @@ export interface FretboardOptions {
   showGhosts: boolean
 }
 
+export interface FretMark {
+  key: string
+  string: number
+  fret: number
+  result: 'hit' | 'late' | 'miss' | 'waiting'
+  /** Fade out after showing briefly. */
+  fade?: boolean
+}
+
 interface Props {
   notes: FretNote[]
   ghosts: FretNote[]
@@ -26,6 +35,8 @@ interface Props {
   /** Fixed number of frets to draw instead of fitting the notes. */
   maxFret?: number
   showPickZone?: boolean
+  /** Rings that show whether notes were played right. */
+  marks?: FretMark[]
 }
 
 const W = 1000
@@ -43,7 +54,7 @@ function makeFretX(frets: number) {
 
 const SINGLE_INLAYS = [3, 5, 7, 9, 15, 17, 19, 21]
 
-export function Fretboard({ notes, ghosts, tuning, capo, options, onNoteClick, highlightStrings = [], maxFret, showPickZone = true }: Props) {
+export function Fretboard({ notes, ghosts, tuning, capo, options, onNoteClick, highlightStrings = [], maxFret, showPickZone = true, marks = [] }: Props) {
   const stringCount = tuning.length
   const maxNoteFret = Math.max(0, ...notes.map((n) => n.fret), ...ghosts.map((n) => n.fret))
   const frets = maxFret ?? (maxNoteFret > 15 ? Math.min(24, maxNoteFret + 2) : capo > 7 ? 17 : 15)
@@ -141,6 +152,19 @@ export function Fretboard({ notes, ghosts, tuning, capo, options, onNoteClick, h
         ghosts.map((n) => (
           <circle key={`g-${n.key}`} className="fb-ghost" cx={X(noteX(n))} cy={Y(n.string)} r="13" />
         ))}
+
+      {marks.map((m) => {
+        const fake = { tabFret: m.fret - capo, fret: m.fret } as FretNote
+        return (
+          <circle
+            key={m.key}
+            className={`fb-mark fb-mark-${m.result}${m.fade ? ' fb-mark-fade' : ''}`}
+            cx={X(noteX(fake))}
+            cy={Y(m.string)}
+            r="20"
+          />
+        )
+      })}
 
       {notes.map((n) => {
         const x = X(noteX(n))
