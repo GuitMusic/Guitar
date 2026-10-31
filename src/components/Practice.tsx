@@ -13,9 +13,27 @@ import { accuracy, nextTrainerSpeed } from '../check/noteCheck'
 import { usePracticeCheck, type CheckMode } from '../check/usePracticeCheck'
 import { logPractice } from '../progress/practiceLog'
 import type { FretMark } from './Fretboard'
-import { setView, useFretboardView } from './fretboardView'
+import { getView, setView, useFretboardView } from './fretboardView'
 
 type Beat = alphaTab.model.Beat
+
+const PROGRAM = { steel: 25, nylon: 24 } as const
+
+/**
+ * The sound bank holds only steel and nylon guitars, so every pitched track plays
+ * one of them, whatever instrument the file asked for. Returns true if anything changed.
+ */
+function setGuitarSound(score: alphaTab.model.Score, sound: 'steel' | 'nylon' = 'steel'): boolean {
+  let changed = false
+  for (const t of score.tracks) {
+    if (t.staves.some((st) => st.isPercussion)) continue
+    if (t.playbackInfo.program !== PROGRAM[sound]) {
+      t.playbackInfo.program = PROGRAM[sound]
+      changed = true
+    }
+  }
+  return changed
+}
 type Score = alphaTab.model.Score
 
 const BASE = import.meta.env.BASE_URL
@@ -111,7 +129,7 @@ export function Practice({ song }: Props) {
       notation: { rhythmMode: alphaTab.TabRhythmMode.Automatic },
       player: {
         playerMode: alphaTab.PlayerMode.EnabledSynthesizer,
-        soundFont: `${BASE}soundfont/sonivox.sf2`,
+        soundFont: `${BASE}sounds/guitar.sf2`,
         scrollElement: scrollEl.current,
         scrollOffsetY: -40,
       },
@@ -120,6 +138,7 @@ export function Practice({ song }: Props) {
     setApi(api)
 
     api.scoreLoaded.on((s) => {
+      setGuitarSound(s, getView().sound)
       setScore(s)
       setError(null)
       setLoop((l) => ({ ...l, start: 1, end: Math.min(4, s.masterBars.length) }))
@@ -170,6 +189,13 @@ export function Practice({ song }: Props) {
     api.updateSettings()
     api.renderTracks([track])
   }, [track, staveProfile])
+
+  // Switching steel and nylon: change every track's instrument and rebuild the playback
+  useEffect(() => {
+    const api = apiRef.current
+    if (!api?.score || !setGuitarSound(api.score, view.sound)) return
+    api.loadMidiForScore()
+  }, [view.sound])
 
   // Apply saved speed
   useEffect(() => {
@@ -546,6 +572,13 @@ export function Practice({ song }: Props) {
             <select value={view.zoom ?? 'song'} onChange={(e) => setView({ zoom: e.target.value as 'song' | 'neck' })}>
               <option value="song">Zoom to the frets this song uses</option>
               <option value="neck">Show the first 15 frets</option>
+            </select>
+          </label>
+          <label className="field">
+            Guitar sound
+            <select value={view.sound ?? 'steel'} onChange={(e) => setView({ sound: e.target.value as 'steel' | 'nylon' })}>
+              <option value="steel">Steel-string acoustic</option>
+              <option value="nylon">Nylon-string classical</option>
             </select>
           </label>
           <label className="check">

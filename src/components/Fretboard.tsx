@@ -13,6 +13,8 @@ export interface FretboardOptions {
   showGhosts: boolean
   /** 'song': only the frets the song uses, so they are bigger. 'neck': the first 15 frets. */
   zoom?: 'song' | 'neck'
+  /** Which guitar sample the player uses. */
+  sound?: 'steel' | 'nylon'
 }
 
 export interface FretMark {

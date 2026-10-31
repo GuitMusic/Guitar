@@ -10,7 +10,7 @@ const OLD_KEY = 'fretboard-view-v2'
  * Defaults for the person this app is built for: left-handed, with the bass strings
  * on top, the way you see the neck when you look down at your guitar.
  */
-export const DEFAULT_VIEW: FretboardOptions = { labelMode: 'finger', stringOrder: 'player', leftHanded: true, showGhosts: true, zoom: 'song' }
+export const DEFAULT_VIEW: FretboardOptions = { labelMode: 'finger', stringOrder: 'player', leftHanded: true, showGhosts: true, zoom: 'song', sound: 'steel' }
 
 let current: FretboardOptions = read()
 const listeners = new Set<() => void>()
