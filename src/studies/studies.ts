@@ -11,6 +11,8 @@ export interface Study {
   tex: string
   /** 'study' = exercise written for the app, 'song' = public-domain tune arranged for the app */
   kind: 'study' | 'song'
+  /** 1 = beginner, 2 = easy, 3 = intermediate */
+  level: 1 | 2 | 3
 }
 
 const header = (title: string, tempo: number, extra = '', subtitle = 'Original exercise') =>
@@ -19,6 +21,7 @@ const header = (title: string, tempo: number, extra = '', subtitle = 'Original e
 export const STUDIES: Study[] = [
   {
     id: 'study-thumb-and-three',
+    level: 1,
     kind: 'study',
     title: 'Study 1: Thumb and Three',
     description: 'A p-i-m-a arpeggio over C, Am, F and G. Keep the thumb on the bass and let every note ring.',
@@ -32,6 +35,7 @@ export const STUDIES: Study[] = [
   },
   {
     id: 'study-alternating-thumb',
+    level: 2,
     kind: 'study',
     title: 'Study 2: Alternating Thumb',
     description:
@@ -47,6 +51,7 @@ export const STUDIES: Study[] = [
   },
   {
     id: 'study-capo-waltz',
+    level: 1,
     kind: 'study',
     title: 'Study 3: Capo Waltz',
     description:
@@ -67,6 +72,7 @@ const PD = 'Traditional, arranged for this app'
 export const SONGS: Study[] = [
   {
     id: 'song-greensleeves',
+    level: 2,
     kind: 'song',
     title: 'Greensleeves',
     description: 'English folk tune from the 1500s. Melody on the treble strings with a bass note at the start of each bar.',
@@ -91,6 +97,7 @@ export const SONGS: Study[] = [
   },
   {
     id: 'song-rising-sun',
+    level: 2,
     kind: 'song',
     title: 'House of the Rising Sun',
     description: 'American folk song. A six-note arpeggio in 6/8 over Am, C, D, F and E: thumb on the bass, then i-m-a-m-i.',
@@ -115,6 +122,7 @@ export const SONGS: Study[] = [
   },
   {
     id: 'song-spanish-romance',
+    level: 3,
     kind: 'song',
     title: 'Spanish Romance (opening)',
     description:
@@ -131,6 +139,7 @@ export const SONGS: Study[] = [
   },
   {
     id: 'song-ode-to-joy',
+    level: 1,
     kind: 'song',
     title: 'Ode to Joy',
     description: "Beethoven's melody with a bass note on each bar. A gentle first song for thumb and fingers together.",

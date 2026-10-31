@@ -244,6 +244,13 @@ export function Practice({ song }: Props) {
   const speed = settings?.speed ?? 1
   const tuning = staff?.tuning ?? [64, 59, 55, 50, 45, 40]
   const capo = staff?.capo ?? 0
+  // Highest fret the song reaches, so the fretboard can zoom to just those frets
+  const songMaxFret = useMemo(() => {
+    let max = 0
+    for (const bar of staff?.bars ?? []) for (const voice of bar.voices) for (const beat of voice.beats) for (const n of beatToFretNotes(beat)) max = Math.max(max, n.fret)
+    return max
+  }, [staff])
+  const fretsShown = view.zoom === 'neck' || !staff ? undefined : Math.min(15, Math.max(7, songMaxFret + 2))
 
   const check = usePracticeCheck({ api, track, mode: checkMode, muteSong })
 
@@ -296,6 +303,25 @@ export function Practice({ song }: Props) {
       flush()
     }
   }, [playing, song.id])
+
+  // Keyboard: Space play/pause, Up/Down speed, L loop. Only while this page is on screen.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (!scrollEl.current?.offsetParent || e.metaKey || e.ctrlKey || e.altKey) return
+      const t = e.target as HTMLElement
+      if (t.closest('input, select, textarea, [contenteditable="true"]')) return
+      const step = (d: number) =>
+        updateSettings((s) => ({ ...s, speed: Math.round(Math.min(1.5, Math.max(0.25, s.speed + d)) * 100) / 100 }))
+      if (e.code === 'Space') apiRef.current?.playPause()
+      else if (e.key === 'ArrowUp') step(0.05)
+      else if (e.key === 'ArrowDown') step(-0.05)
+      else if (e.key === 'l' || e.key === 'L') setLoop((l) => ({ ...l, on: !l.on }))
+      else return
+      e.preventDefault()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [updateSettings])
 
   const startTrainer = () => {
     setLoop((l) => ({ ...l, on: true }))
@@ -360,6 +386,7 @@ export function Practice({ song }: Props) {
           options={view}
           onNoteClick={(note, anchor) => setEditing({ note, anchor })}
           marks={marks}
+          maxFret={fretsShown}
         />
         <div className="rotate-hint">Turn your phone sideways for a bigger fretboard.</div>
         <div className="legend">
@@ -369,7 +396,9 @@ export function Practice({ song }: Props) {
           <span className="legend-item"><i className="dot fb-finger-4" />4 little</span>
           <span className="legend-item"><i className="dot dashed" />suggested by the app</span>
           <span className="legend-item"><i className="dot ghost" />coming next</span>
-          <span className="legend-hint">Click a note to change its fingering.</span>
+          <span className="legend-hint">
+            <span className="tap-word">Tap</span><span className="click-word">Click</span> a note to change its fingering. <span className="keys">Keys: Space play, ↑↓ speed, L loop</span>
+          </span>
         </div>
       </div>
 
@@ -512,6 +541,13 @@ export function Practice({ song }: Props) {
           <label className="check">
             <input type="checkbox" checked={view.leftHanded} onChange={(e) => setView({ ...view, leftHanded: e.target.checked })} /> Left-handed
           </label>
+          <label className="field">
+            Fretboard
+            <select value={view.zoom ?? 'song'} onChange={(e) => setView({ zoom: e.target.value as 'song' | 'neck' })}>
+              <option value="song">Zoom to the frets this song uses</option>
+              <option value="neck">Show the first 15 frets</option>
+            </select>
+          </label>
           <label className="check">
             <input type="checkbox" checked={view.showGhosts} onChange={(e) => setView({ ...view, showGhosts: e.target.checked })} /> Show next notes
           </label>
@@ -530,6 +566,19 @@ export function Practice({ song }: Props) {
       <div className="score-scroll" ref={scrollEl}>
         <div ref={scoreEl} />
       </div>
+
+      <button
+        className="fab-play primary"
+        disabled={!ready}
+        onClick={() => apiRef.current?.playPause()}
+        aria-label={playing ? 'Pause' : 'Play'}
+      >
+        {playing ? (
+          <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1" fill="currentColor" /><rect x="14" y="5" width="4" height="14" rx="1" fill="currentColor" /></svg>
+        ) : (
+          <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path d="M8 5v14l11-7z" fill="currentColor" /></svg>
+        )}
+      </button>
 
       {editing && (
         <FingerEditor

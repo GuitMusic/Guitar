@@ -3,7 +3,7 @@ import { useRef, useState } from 'react'
 import { ACCEPTED_FILES, songFromAsciiTab, songFromFile } from '../import/importFile'
 import { db } from '../library/db'
 import { BUILT_IN_SONGS, toOpenSong, type OpenSong } from '../library/songs'
-import { needsRevisit, summarize } from '../progress/practiceLog'
+import { needsRevisit, summarize, type SongProgress } from '../progress/practiceLog'
 import { findSong } from '../progress/Progress'
 
 interface Props {
@@ -17,10 +17,23 @@ D|---------------|---------------|
 A|-3-------------|---------------|
 E|---------------|-3-------------|`
 
+const LEVELS = { 1: 'Beginner', 2: 'Easy', 3: 'Intermediate' } as const
+
+function progressLine(p: SongProgress): string {
+  const minutes = Math.max(1, Math.round(p.totalSeconds / 60))
+  const when = p.daysSince === 0 ? 'today' : p.daysSince === 1 ? 'yesterday' : `${p.daysSince} days ago`
+  const parts = [`${minutes} min`, `up to ${Math.round(p.topSpeed * 100)}% speed`]
+  if (p.bestAccuracy !== undefined) parts.push(`best ${Math.round(p.bestAccuracy * 100)}%`)
+  return `Played ${when} · ${parts.join(' · ')}`
+}
+
 export function Library({ onOpen }: Props) {
   const songs = useLiveQuery(() => db.songs.orderBy('addedAt').reverse().toArray(), [])
   const practice = useLiveQuery(() => db.practice.toArray(), [])
-  const due = practice ? needsRevisit(summarize(practice)).slice(0, 3) : []
+  const progress = practice ? summarize(practice) : []
+  const due = needsRevisit(progress).slice(0, 3)
+  const bySong = new Map(progress.map((p) => [p.songId, p]))
+  const last = progress[0]
   const fileInput = useRef<HTMLInputElement>(null)
   const [message, setMessage] = useState<{ kind: 'error' | 'ok'; text: string } | null>(null)
   const [pasteOpen, setPasteOpen] = useState(false)
@@ -82,6 +95,21 @@ export function Library({ onOpen }: Props) {
         void importFiles(e.dataTransfer.files)
       }}
     >
+      {last && (
+        <button
+          className="continue-card"
+          onClick={async () => {
+            const s = await findSong(last.songId)
+            if (s) onOpen(s)
+          }}
+        >
+          <span className="continue-label">Pick up where you left off</span>
+          <strong>{last.title}</strong>
+          <span className="hint">{progressLine(last)}</span>
+          <span className="continue-go" aria-hidden="true">Continue ›</span>
+        </button>
+      )}
+
       {due.length > 0 && (
         <div className="revisit">
           <strong>Time to revisit:</strong>
@@ -167,6 +195,7 @@ export function Library({ onOpen }: Props) {
                 <button className="song-card" onClick={() => open(toOpenSong(s))}>
                   <strong>{s.title}</strong>
                   <span className="hint">{s.format === 'tex' ? 'Text tab' : (s.fileName ?? 'Score file')}</span>
+                  {bySong.get(s.id) && <span className="card-foot">{progressLine(bySong.get(s.id)!)}</span>}
                 </button>
                 <button
                   className="icon"
@@ -184,7 +213,7 @@ export function Library({ onOpen }: Props) {
             ))}
           </ul>
         ) : (
-          <p className="empty">No songs yet. Import a tab file, or start with one of the studies below.</p>
+          <p className="empty">Nothing imported yet. Try a free song below while you find a tab file.</p>
         )}
       </section>
 
@@ -200,6 +229,10 @@ export function Library({ onOpen }: Props) {
                 <button className="song-card" onClick={() => open(s)}>
                   <strong>{s.title}</strong>
                   <span className="hint">{s.description}</span>
+                  <span className="card-foot">
+                    {s.level && <span className={`level level-${s.level}`}>{LEVELS[s.level]}</span>}
+                    {bySong.get(s.id) && <span>{progressLine(bySong.get(s.id)!)}</span>}
+                  </span>
                 </button>
               </li>
             ))}

@@ -9,6 +9,7 @@ export interface OpenSong {
   builtIn: boolean
   description?: string
   kind?: 'study' | 'song'
+  level?: 1 | 2 | 3
 }
 
 export const BUILT_IN_SONGS: OpenSong[] = [...SONGS, ...STUDIES].map((s) => ({
@@ -19,6 +20,7 @@ export const BUILT_IN_SONGS: OpenSong[] = [...SONGS, ...STUDIES].map((s) => ({
   builtIn: true,
   description: s.description,
   kind: s.kind,
+  level: s.level,
 }))
 
 export function toOpenSong(record: SongRecord): OpenSong {

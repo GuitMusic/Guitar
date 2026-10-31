@@ -226,10 +226,21 @@ h2 {
   color: var(--accent);
 }
 
-nav {
+nav.main-nav {
   display: flex;
   gap: 4px;
   flex-wrap: wrap;
+  margin-left: auto;
+}
+
+.nav-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.nav-icon {
+  display: none;
 }
 
 .nav-item {
@@ -771,9 +782,6 @@ input.wide {
   .legend-hint {
     margin-left: 0;
   }
-  .fretboard-wrap {
-    top: 92px;
-  }
 }
 
 /* Note finder */
@@ -1200,5 +1208,218 @@ input.wide {
   }
   .score-scroll {
     max-height: 70vh;
+  }
+}
+
+/* ---- UX pass: library cards ---- */
+
+.continue-card {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-areas: 'label go' 'title go' 'meta go';
+  text-align: left;
+  gap: 2px 16px;
+  padding: 14px 18px;
+  margin-bottom: 14px;
+  border: 1px solid var(--accent);
+  border-radius: 14px;
+  background: var(--surface);
+}
+.continue-card .continue-label {
+  grid-area: label;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--accent);
+  font-weight: 600;
+}
+.continue-card strong {
+  grid-area: title;
+  font-size: 1.2rem;
+}
+.continue-card .hint {
+  grid-area: meta;
+  margin: 0;
+}
+.continue-go {
+  grid-area: go;
+  align-self: center;
+  background: var(--accent);
+  color: var(--accent-text);
+  font-weight: 600;
+  border-radius: 999px;
+  padding: 8px 16px;
+  white-space: nowrap;
+}
+
+.song-card {
+  height: 100%;
+}
+.card-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+  margin-top: auto;
+  padding-top: 8px;
+  font-size: 0.8rem;
+  color: var(--text-2);
+}
+.level {
+  border-radius: 999px;
+  padding: 2px 9px;
+  font-weight: 600;
+  font-size: 0.75rem;
+  background: var(--surface-2);
+}
+.level-1 {
+  color: var(--m);
+}
+.level-2 {
+  color: var(--i);
+}
+.level-3 {
+  color: var(--a);
+}
+.song-list li:hover {
+  border-color: var(--text-2);
+}
+.empty {
+  padding: 12px;
+  font-size: 0.9rem;
+}
+
+/* ---- Keyboard hint and floating play button ---- */
+
+.keys {
+  margin-left: 8px;
+  opacity: 0.8;
+}
+.fab-play {
+  display: none;
+}
+
+@media (pointer: coarse) {
+  .keys {
+    display: none;
+  }
+}
+
+/* ---- Phones: tab bar at the bottom, one-line header ---- */
+
+@media (max-width: 700px) {
+  .topbar {
+    padding: 8px 14px;
+    flex-wrap: nowrap;
+  }
+  .brand {
+    font-size: 0.95rem;
+  }
+  .hand-toggle {
+    margin-left: auto;
+    font-size: 0.85rem;
+    padding: 4px 10px;
+  }
+  nav.main-nav {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 20;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 0;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    padding: 4px 2px calc(4px + env(safe-area-inset-bottom));
+  }
+  nav.main-nav .nav-item {
+    flex-direction: column;
+    gap: 2px;
+    padding: 4px 0;
+    font-size: 0.68rem;
+    line-height: 1.1;
+    border-radius: 10px;
+    min-height: 52px;
+    justify-content: center;
+    text-align: center;
+  }
+  nav.main-nav .nav-item.active {
+    color: var(--accent);
+    background: transparent;
+  }
+  .nav-icon {
+    display: block;
+  }
+  main {
+    padding-bottom: 96px;
+  }
+  .fretboard-wrap {
+    top: 50px;
+  }
+  .fab-play {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: fixed;
+    right: 16px;
+    bottom: calc(76px + env(safe-area-inset-bottom));
+    z-index: 21;
+    width: 60px;
+    height: 60px;
+    min-width: 0;
+    padding: 0;
+    border-radius: 50%;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+  }
+  .continue-card {
+    grid-template-areas: 'label' 'title' 'meta' 'go';
+    grid-template-columns: 1fr;
+  }
+  .continue-go {
+    justify-self: start;
+    margin-top: 8px;
+  }
+}
+
+/* Phone held sideways: the tab bar would eat the fretboard, so it scrolls away with the page */
+@media (max-height: 500px) and (orientation: landscape) {
+  nav.main-nav {
+    position: static;
+    display: flex;
+    border: none;
+    padding: 0;
+    background: transparent;
+  }
+  nav.main-nav .nav-item {
+    flex-direction: row;
+    min-height: 0;
+    font-size: 0.85rem;
+  }
+  .nav-icon {
+    display: none;
+  }
+  .fab-play {
+    bottom: 16px;
+  }
+}
+
+.tap-word {
+  display: none;
+}
+@media (pointer: coarse) {
+  .tap-word {
+    display: inline;
+  }
+  .click-word {
+    display: none;
+  }
+}
+@media (max-width: 700px) {
+  .legend {
+    font-size: 0.75rem;
+    gap: 2px 10px;
   }
 }

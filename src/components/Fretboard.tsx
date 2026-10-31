@@ -11,6 +11,8 @@ export interface FretboardOptions {
   stringOrder: StringOrder
   leftHanded: boolean
   showGhosts: boolean
+  /** 'song': only the frets the song uses, so they are bigger. 'neck': the first 15 frets. */
+  zoom?: 'song' | 'neck'
 }
 
 export interface FretMark {
