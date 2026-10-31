@@ -8,7 +8,7 @@ import type { OpenSong } from '../library/songs'
 import { beatToFretNotes, nextSoundingBeat } from '../player/alphaTabAdapter'
 import { Fretboard, type FretboardOptions } from './Fretboard'
 import { FingerEditor } from './FingerEditor'
-import { loadView, saveView } from './fretboardView'
+import { setView, useFretboardView } from './fretboardView'
 
 type Beat = alphaTab.model.Beat
 type Score = alphaTab.model.Score
@@ -60,7 +60,7 @@ export function Practice({ song }: Props) {
   const [time, setTime] = useState({ current: 0, end: 0 })
   const [activeBeats, setActiveBeats] = useState<Beat[]>([])
   const [settings, setSettings] = useState<SongSettings | null>(null)
-  const [view, setView] = useState<FretboardOptions>(loadView)
+  const view = useFretboardView()
   const [staveProfile, setStaveProfile] = useState<'tab' | 'both'>('both')
   const [metronome, setMetronome] = useState(false)
   const [countIn, setCountIn] = useState(false)
@@ -85,7 +85,6 @@ export function Practice({ song }: Props) {
     })
   }, [])
 
-  useEffect(() => saveView(view), [view])
 
   // Create the alphaTab score view and player
   useEffect(() => {

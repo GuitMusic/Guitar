@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { listenForPitch, micErrorMessage, playTone, type PitchListener } from '../audio/pitch'
 import { Fretboard } from '../components/Fretboard'
-import { loadView, saveView } from '../components/fretboardView'
+import { setView, useFretboardView } from '../components/fretboardView'
 import { noteName, pitchClassName, TUNINGS } from '../music/notes'
 import type { FretNote } from '../music/types'
 import { checkAnswer, nextQuestion, questionText, spots, StableNote, type Question, type QuizMode, type QuizSettings } from './quiz'
@@ -70,8 +70,7 @@ export function NoteQuiz() {
   const [timeLeft, setTimeLeft] = useState(0)
   const [error, setError] = useState<string | null>(null)
   const [answerMs, setAnswerMs] = useState<number | null>(null)
-  const [view, setView] = useState(loadView)
-  useEffect(() => saveView(view), [view])
+  const view = useFretboardView()
 
   const listener = useRef<PitchListener | null>(null)
   const stable = useRef(new StableNote(6))
@@ -83,6 +82,7 @@ export function NoteQuiz() {
     wrong: [],
   })
   const timers = useRef<number[]>([])
+  const askRef = useRef<() => void>(() => {})
 
   const tuning = TUNINGS.find((t) => t.id === prefs.tuningId) ?? TUNINGS[0]
   const range = RANGES[prefs.range] ?? RANGES[0]
@@ -130,7 +130,7 @@ export function NoteQuiz() {
       return { asked: s.asked + 1, correct: s.correct + (firstTry ? 1 : 0), streak, best: Math.max(s.best, streak), misses }
     })
     setLivePhase(correct ? 'right' : 'timeout')
-    timers.current.push(window.setTimeout(() => ask(), correct ? 1600 : 3200))
+    timers.current.push(window.setTimeout(() => askRef.current(), correct ? 1600 : 3200))
   }, [])
 
   const ask = useCallback(() => {
@@ -164,6 +164,10 @@ export function NoteQuiz() {
       }, delay),
     )
   }, [finish])
+
+  useEffect(() => {
+    askRef.current = ask
+  }, [ask])
 
   const start = async () => {
     setError(null)

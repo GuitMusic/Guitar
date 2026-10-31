@@ -916,3 +916,8 @@ input.wide {
     display: none;
   }
 }
+
+.hand-toggle {
+  border: 1px solid var(--border);
+  margin-left: 8px;
+}
