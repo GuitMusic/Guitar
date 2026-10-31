@@ -890,3 +890,29 @@ input.wide {
   color: var(--text-2);
   font-size: 0.85rem;
 }
+
+.rotate-hint {
+  display: none;
+}
+
+@media (max-width: 700px) and (orientation: portrait) {
+  .rotate-hint {
+    display: block;
+    text-align: center;
+    font-size: 0.85rem;
+    color: var(--text-2);
+    padding: 4px 0;
+  }
+}
+
+@media (max-height: 500px) and (orientation: landscape) {
+  .topbar {
+    position: static;
+  }
+  .fretboard-wrap {
+    top: 0;
+  }
+  .legend {
+    display: none;
+  }
+}

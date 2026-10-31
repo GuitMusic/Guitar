@@ -270,6 +270,7 @@ export function Practice({ song }: Props) {
           options={view}
           onNoteClick={(note, anchor) => setEditing({ note, anchor })}
         />
+        <div className="rotate-hint">Turn your phone sideways for a bigger fretboard.</div>
         <div className="legend">
           <span className="legend-item"><i className="dot fb-finger-1" />1 index</span>
           <span className="legend-item"><i className="dot fb-finger-2" />2 middle</span>
