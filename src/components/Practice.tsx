@@ -12,18 +12,19 @@ import { CheckPanel } from './CheckPanel'
 import { accuracy, nextTrainerSpeed } from '../check/noteCheck'
 import { usePracticeCheck, type CheckMode } from '../check/usePracticeCheck'
 import { logPractice } from '../progress/practiceLog'
-import type { FretMark } from './Fretboard'
+import type { FretMark, GuitarSound } from './Fretboard'
 import { getView, setView, useFretboardView } from './fretboardView'
 
 type Beat = alphaTab.model.Beat
 
-const PROGRAM = { steel: 25, nylon: 24 } as const
+// Program numbers inside public/sounds/guitar.sf3
+const PROGRAM: Record<GuitarSound, number> = { steel: 25, nylon: 24, 'steel-dry': 27, 'nylon-dry': 28 }
 
 /**
- * The sound bank holds only steel and nylon guitars, so every pitched track plays
+ * The sound bank holds only guitars, so every pitched track plays
  * one of them, whatever instrument the file asked for. Returns true if anything changed.
  */
-function setGuitarSound(score: alphaTab.model.Score, sound: 'steel' | 'nylon' = 'steel'): boolean {
+function setGuitarSound(score: alphaTab.model.Score, sound: GuitarSound = 'steel'): boolean {
   let changed = false
   for (const t of score.tracks) {
     if (t.staves.some((st) => st.isPercussion)) continue
@@ -31,6 +32,16 @@ function setGuitarSound(score: alphaTab.model.Score, sound: 'steel' | 'nylon' = 
       t.playbackInfo.program = PROGRAM[sound]
       changed = true
     }
+    // Instrument changes inside the song would switch back to a sound the bank does not have
+    for (const st of t.staves)
+      for (const bar of st.bars)
+        for (const v of bar.voices)
+          for (const b of v.beats)
+            for (const a of b.automations)
+              if (a.type === alphaTab.model.AutomationType.Instrument && a.value !== PROGRAM[sound]) {
+                a.value = PROGRAM[sound]
+                changed = true
+              }
   }
   return changed
 }
@@ -129,7 +140,7 @@ export function Practice({ song }: Props) {
       notation: { rhythmMode: alphaTab.TabRhythmMode.Automatic },
       player: {
         playerMode: alphaTab.PlayerMode.EnabledSynthesizer,
-        soundFont: `${BASE}sounds/guitar.sf2`,
+        soundFont: `${BASE}sounds/guitar.sf3`,
         scrollElement: scrollEl.current,
         scrollOffsetY: -40,
       },
@@ -193,9 +204,11 @@ export function Practice({ song }: Props) {
   // Switching steel and nylon: change every track's instrument and rebuild the playback
   useEffect(() => {
     const api = apiRef.current
-    if (!api?.score || !setGuitarSound(api.score, view.sound)) return
-    api.loadMidiForScore()
-  }, [view.sound])
+    if (!api) return
+    // The close and dry samples are recorded about 7 dB quieter
+    api.masterVolume = view.sound?.endsWith('-dry') ? 2.2 : 1
+    if (api.score && setGuitarSound(api.score, view.sound)) api.loadMidiForScore()
+  }, [view.sound, api])
 
   // Apply saved speed
   useEffect(() => {
@@ -576,9 +589,11 @@ export function Practice({ song }: Props) {
           </label>
           <label className="field">
             Guitar sound
-            <select value={view.sound ?? 'steel'} onChange={(e) => setView({ sound: e.target.value as 'steel' | 'nylon' })}>
+            <select value={view.sound ?? 'steel'} onChange={(e) => setView({ sound: e.target.value as GuitarSound })}>
               <option value="steel">Steel-string acoustic</option>
               <option value="nylon">Nylon-string classical</option>
+              <option value="steel-dry">Steel-string, close and dry</option>
+              <option value="nylon-dry">Nylon-string, close and dry</option>
             </select>
           </label>
           <label className="check">

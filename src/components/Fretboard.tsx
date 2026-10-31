@@ -6,6 +6,9 @@ import type { FretNote } from '../music/types'
 export type LabelMode = 'finger' | 'note'
 export type StringOrder = 'tab' | 'player'
 
+/** steel and nylon: one recording per note with a little room sound. -dry: closer, drier samples. */
+export type GuitarSound = 'steel' | 'nylon' | 'steel-dry' | 'nylon-dry'
+
 export interface FretboardOptions {
   labelMode: LabelMode
   stringOrder: StringOrder
@@ -14,7 +17,7 @@ export interface FretboardOptions {
   /** 'song': only the frets the song uses, so they are bigger. 'neck': the first 15 frets. */
   zoom?: 'song' | 'neck'
   /** Which guitar sample the player uses. */
-  sound?: 'steel' | 'nylon'
+  sound?: GuitarSound
 }
 
 export interface FretMark {
