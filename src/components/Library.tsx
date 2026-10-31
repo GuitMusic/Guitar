@@ -3,6 +3,8 @@ import { useRef, useState } from 'react'
 import { ACCEPTED_FILES, songFromAsciiTab, songFromFile } from '../import/importFile'
 import { db } from '../library/db'
 import { BUILT_IN_SONGS, toOpenSong, type OpenSong } from '../library/songs'
+import { needsRevisit, summarize } from '../progress/practiceLog'
+import { findSong } from '../progress/Progress'
 
 interface Props {
   onOpen: (song: OpenSong) => void
@@ -17,6 +19,8 @@ E|---------------|-3-------------|`
 
 export function Library({ onOpen }: Props) {
   const songs = useLiveQuery(() => db.songs.orderBy('addedAt').reverse().toArray(), [])
+  const practice = useLiveQuery(() => db.practice.toArray(), [])
+  const due = practice ? needsRevisit(summarize(practice)).slice(0, 3) : []
   const fileInput = useRef<HTMLInputElement>(null)
   const [message, setMessage] = useState<{ kind: 'error' | 'ok'; text: string } | null>(null)
   const [pasteOpen, setPasteOpen] = useState(false)
@@ -78,6 +82,24 @@ export function Library({ onOpen }: Props) {
         void importFiles(e.dataTransfer.files)
       }}
     >
+      {due.length > 0 && (
+        <div className="revisit">
+          <strong>Time to revisit:</strong>
+          {due.map((d) => (
+            <button
+              key={d.songId}
+              className="chip"
+              onClick={async () => {
+                const s = await findSong(d.songId)
+                if (s) onOpen(s)
+              }}
+            >
+              {d.title} <small>{d.daysSince} days</small>
+            </button>
+          ))}
+        </div>
+      )}
+
       <section>
         <div className="section-head">
           <h1>Your songs</h1>
@@ -166,19 +188,24 @@ export function Library({ onOpen }: Props) {
         )}
       </section>
 
-      <section>
-        <h2>Fingerstyle studies</h2>
-        <ul className="song-list">
-          {BUILT_IN_SONGS.map((s) => (
-            <li key={s.id}>
-              <button className="song-card" onClick={() => open(s)}>
-                <strong>{s.title}</strong>
-                <span className="hint">{s.description}</span>
-              </button>
-            </li>
-          ))}
-        </ul>
-      </section>
+      {(['song', 'study'] as const).map((kind) => (
+        <section key={kind}>
+          <h2>{kind === 'song' ? 'Free songs' : 'Fingerstyle studies'}</h2>
+          {kind === 'song' && (
+            <p className="hint">Public-domain tunes arranged for this app. Songs still under copyright, like Landslide, need a tab file you own.</p>
+          )}
+          <ul className="song-list">
+            {BUILT_IN_SONGS.filter((s) => s.kind === kind).map((s) => (
+              <li key={s.id}>
+                <button className="song-card" onClick={() => open(s)}>
+                  <strong>{s.title}</strong>
+                  <span className="hint">{s.description}</span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))}
     </div>
   )
 }

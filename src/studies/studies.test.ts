@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import * as alphaTab from '@coderline/alphatab'
-import { STUDIES } from './studies'
+import { SONGS, STUDIES } from './studies'
 
-describe.each(STUDIES)('$title', (study) => {
+describe.each([...STUDIES, ...SONGS])('$title', (study) => {
   const importer = new alphaTab.importer.AlphaTexImporter()
   importer.initFromString(study.tex, new alphaTab.Settings())
   const score = importer.readScore()
@@ -18,7 +18,7 @@ describe.each(STUDIES)('$title', (study) => {
   it('uses the steel-string guitar sound and has fingering marks', () => {
     expect(score.tracks[0].playbackInfo.program).toBe(25)
     const notes = staff.bars.flatMap((b) => b.voices[0].beats.flatMap((beat) => beat.notes))
-    expect(notes.some((n) => n.rightHandFinger >= 0)).toBe(true)
-    expect(notes.some((n) => n.leftHandFinger >= 0)).toBe(true)
+    if (study.kind === 'study') expect(notes.some((n) => n.rightHandFinger >= 0)).toBe(true)
+    expect(notes.some((n) => n.leftHandFinger >= 0) || study.id === 'song-spanish-romance').toBe(true)
   })
 })

@@ -11,6 +11,7 @@ import { FingerEditor } from './FingerEditor'
 import { CheckPanel } from './CheckPanel'
 import { accuracy, nextTrainerSpeed } from '../check/noteCheck'
 import { usePracticeCheck, type CheckMode } from '../check/usePracticeCheck'
+import { logPractice } from '../progress/practiceLog'
 import type { FretMark } from './Fretboard'
 import { setView, useFretboardView } from './fretboardView'
 
@@ -268,6 +269,33 @@ export function Practice({ song }: Props) {
       if (next !== speed) updateSettings((s) => ({ ...s, speed: next }))
     }
   }, [trainer, speed, check, updateSettings])
+
+  // Practice log: count the time the song is playing (saved every 15 s and on pause)
+  const logInfo = useRef({ title: song.title, speed, accuracy: undefined as number | undefined })
+  useEffect(() => {
+    const all = check.judged.map((j) => j.result)
+    logInfo.current = {
+      title: score?.title || song.title,
+      speed,
+      accuracy: checkMode === 'play-along' && all.length >= 8 ? accuracy(all) : undefined,
+    }
+  }, [score, song.title, speed, check.judged, checkMode])
+  useEffect(() => {
+    if (!playing) return
+    let last = performance.now()
+    const flush = () => {
+      const now = performance.now()
+      const seconds = Math.round((now - last) / 1000)
+      if (seconds <= 0) return
+      last = now
+      void logPractice({ songId: song.id, ...logInfo.current, seconds })
+    }
+    const interval = window.setInterval(flush, 15000)
+    return () => {
+      window.clearInterval(interval)
+      flush()
+    }
+  }, [playing, song.id])
 
   const startTrainer = () => {
     setLoop((l) => ({ ...l, on: true }))

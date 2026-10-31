@@ -31,15 +31,36 @@ export interface SongSettings {
   fingering: FingeringOverrides
 }
 
+/** Practice time for one song on one day. */
+export interface PracticeDay {
+  /** songId:YYYY-MM-DD */
+  id: string
+  songId: string
+  title: string
+  /** Local date, YYYY-MM-DD */
+  date: string
+  seconds: number
+  /** Highest playback speed used that day (1 = 100%). */
+  topSpeed: number
+  /** Best "Check me" score that day, 0..1, if it was used. */
+  bestAccuracy?: number
+}
+
 class LibraryDb extends Dexie {
   songs!: EntityTable<SongRecord, 'id'>
   settings!: EntityTable<SongSettings, 'songId'>
+  practice!: EntityTable<PracticeDay, 'id'>
 
   constructor() {
     super('fingerstyle-trainer')
     this.version(1).stores({
       songs: 'id, title, addedAt, lastOpenedAt',
       settings: 'songId',
+    })
+    this.version(2).stores({
+      songs: 'id, title, addedAt, lastOpenedAt',
+      settings: 'songId',
+      practice: 'id, songId, date',
     })
   }
 }

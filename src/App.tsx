@@ -6,8 +6,9 @@ import { setView, useFretboardView } from './components/fretboardView'
 import { Metronome } from './tools/Metronome'
 import { Tuner } from './tools/Tuner'
 import { NoteQuiz } from './quiz/NoteQuiz'
+import { Progress } from './progress/Progress'
 
-type Page = 'library' | 'practice' | 'quiz' | 'tuner' | 'metronome'
+type Page = 'library' | 'practice' | 'quiz' | 'progress' | 'tuner' | 'metronome'
 
 export default function App() {
   const [page, setPage] = useState<Page>('library')
@@ -34,6 +35,7 @@ export default function App() {
           {nav('library', 'Library')}
           {nav('practice', 'Practice', !song)}
           {nav('quiz', 'Note finder')}
+          {nav('progress', 'Progress')}
           {nav('tuner', 'Tuner')}
           {nav('metronome', 'Metronome')}
           <button
@@ -57,6 +59,14 @@ export default function App() {
         )}
         {song && <div hidden={page !== 'practice'}><Practice key={song.id} song={song} /></div>}
         {page === 'quiz' && <NoteQuiz />}
+        {page === 'progress' && (
+          <Progress
+            onOpen={(s) => {
+              setSong(s)
+              setPage('practice')
+            }}
+          />
+        )}
         {page === 'tuner' && <Tuner />}
         {page === 'metronome' && <Metronome />}
       </main>

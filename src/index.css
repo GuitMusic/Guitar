@@ -1094,3 +1094,111 @@ input.wide {
     opacity: 1;
   }
 }
+
+/* Progress */
+
+.progress {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.day-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  height: 160px;
+  padding: 8px 0;
+}
+
+.day-col {
+  flex: 1;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 4px;
+}
+
+.day-bar {
+  width: 100%;
+  max-width: 34px;
+  min-height: 2px;
+  background: var(--accent);
+  border-radius: 4px 4px 0 0;
+}
+
+.day-val,
+.day-label {
+  font-size: 0.75rem;
+  color: var(--text-2);
+}
+
+.progress-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+.progress-table th,
+.progress-table td {
+  text-align: left;
+  padding: 8px 6px;
+  border-bottom: 1px solid var(--border);
+}
+
+.progress-table th {
+  color: var(--text-2);
+  font-weight: 500;
+  font-size: 0.85rem;
+}
+
+.revisit {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: var(--surface);
+  border: 1px solid var(--accent);
+  margin-bottom: 16px;
+}
+
+/* Touch screens: bigger targets */
+@media (pointer: coarse) {
+  button,
+  select {
+    min-height: 40px;
+  }
+  button.chip {
+    min-height: 36px;
+  }
+  .transport button.primary {
+    min-width: 110px;
+    font-size: 1.05rem;
+  }
+}
+
+/* Phone held sideways: give the fretboard the room */
+@media (max-height: 500px) and (orientation: landscape) {
+  main {
+    padding: 6px 12px 40px;
+  }
+  .song-head h1 {
+    font-size: 1.1rem;
+  }
+  .song-meta {
+    font-size: 0.8rem;
+  }
+  .song-head {
+    margin-bottom: 2px;
+  }
+  .transport {
+    padding: 6px 10px;
+    gap: 6px 14px;
+  }
+  .score-scroll {
+    max-height: 70vh;
+  }
+}

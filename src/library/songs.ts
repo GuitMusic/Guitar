@@ -1,4 +1,4 @@
-import { STUDIES } from '../studies/studies'
+import { SONGS, STUDIES } from '../studies/studies'
 import type { SongFormat, SongRecord } from './db'
 
 export interface OpenSong {
@@ -8,15 +8,17 @@ export interface OpenSong {
   data: ArrayBuffer | string
   builtIn: boolean
   description?: string
+  kind?: 'study' | 'song'
 }
 
-export const BUILT_IN_SONGS: OpenSong[] = STUDIES.map((s) => ({
+export const BUILT_IN_SONGS: OpenSong[] = [...SONGS, ...STUDIES].map((s) => ({
   id: s.id,
   title: s.title,
   format: 'tex',
   data: s.tex,
   builtIn: true,
   description: s.description,
+  kind: s.kind,
 }))
 
 export function toOpenSong(record: SongRecord): OpenSong {
