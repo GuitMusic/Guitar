@@ -8,21 +8,12 @@ import type { OpenSong } from '../library/songs'
 import { beatToFretNotes, nextSoundingBeat } from '../player/alphaTabAdapter'
 import { Fretboard, type FretboardOptions } from './Fretboard'
 import { FingerEditor } from './FingerEditor'
+import { loadView, saveView } from './fretboardView'
 
 type Beat = alphaTab.model.Beat
 type Score = alphaTab.model.Score
 
 const BASE = import.meta.env.BASE_URL
-
-const DEFAULT_VIEW: FretboardOptions = { labelMode: 'finger', stringOrder: 'tab', leftHanded: false, showGhosts: true }
-
-function loadView(): FretboardOptions {
-  try {
-    return { ...DEFAULT_VIEW, ...JSON.parse(localStorage.getItem('fretboard-view') ?? '{}') }
-  } catch {
-    return DEFAULT_VIEW
-  }
-}
 
 function formatTime(ms: number): string {
   const s = Math.max(0, Math.floor(ms / 1000))
@@ -94,13 +85,7 @@ export function Practice({ song }: Props) {
     })
   }, [])
 
-  useEffect(() => {
-    try {
-      localStorage.setItem('fretboard-view', JSON.stringify(view))
-    } catch {
-      /* storage may be unavailable */
-    }
-  }, [view])
+  useEffect(() => saveView(view), [view])
 
   // Create the alphaTab score view and player
   useEffect(() => {

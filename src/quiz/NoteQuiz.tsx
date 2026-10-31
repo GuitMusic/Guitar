@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { listenForPitch, micErrorMessage, playTone, type PitchListener } from '../audio/pitch'
 import { Fretboard } from '../components/Fretboard'
+import { loadView, saveView } from '../components/fretboardView'
 import { noteName, pitchClassName, TUNINGS } from '../music/notes'
 import type { FretNote } from '../music/types'
 import { checkAnswer, nextQuestion, questionText, spots, StableNote, type Question, type QuizMode, type QuizSettings } from './quiz'
@@ -69,6 +70,8 @@ export function NoteQuiz() {
   const [timeLeft, setTimeLeft] = useState(0)
   const [error, setError] = useState<string | null>(null)
   const [answerMs, setAnswerMs] = useState<number | null>(null)
+  const [view, setView] = useState(loadView)
+  useEffect(() => saveView(view), [view])
 
   const listener = useRef<PitchListener | null>(null)
   const stable = useRef(new StableNote(6))
@@ -294,6 +297,9 @@ export function NoteQuiz() {
             <label className="check">
               <input type="checkbox" checked={prefs.naturalsOnly} onChange={(e) => setPrefs({ ...prefs, naturalsOnly: e.target.checked })} /> Natural notes only
             </label>
+            <label className="check">
+              <input type="checkbox" checked={view.leftHanded} onChange={(e) => setView({ ...view, leftHanded: e.target.checked })} /> Left-handed
+            </label>
           </div>
           <div className="row">
             <button className="primary" onClick={start} disabled={available === 0}>
@@ -342,7 +348,7 @@ export function NoteQuiz() {
         capo={0}
         maxFret={12}
         showPickZone={false}
-        options={{ labelMode: 'note', stringOrder: 'tab', leftHanded: false, showGhosts: false }}
+        options={{ ...view, labelMode: 'note', showGhosts: false }}
       />
 
       <div className="quiz-stats">
