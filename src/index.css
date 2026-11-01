@@ -14,10 +14,10 @@
   --string-active: #ffd27a;
   --inlay: #e8dcc6;
   --pickzone: #2b1c11;
-  --f1: #2f7fd1;
-  --f2: #2e9d5b;
-  --f3: #d9822b;
-  --f4: #9b4fd1;
+  --f1: #3b8ee6;
+  --f2: #2fae66;
+  --f3: #ec9440;
+  --f4: #a964e0;
   --f0: #7a7a7a;
   --open: #f4efe6;
   --p: #c0392b;
@@ -354,46 +354,76 @@ main {
   user-select: none;
 }
 
-.fb-wood {
-  fill: var(--wood);
-  stroke: var(--wood-edge);
+.fb-binding {
+  fill: #140d08;
 }
 
 .fb-inlay {
-  fill: var(--inlay);
-  opacity: 0.55;
-}
-
-.fb-nut {
-  stroke: #f2ead8;
-  stroke-width: 8;
-}
-
-.fb-fret {
-  stroke: var(--fret);
-  stroke-width: 3;
+  fill: #efe7d6;
+  opacity: 0.5;
 }
 
 .fb-fretnum,
-.fb-pickzone-label {
+.fb-pickzone-label,
+.fb-hand text,
+.fb-capo text {
   fill: var(--text-2);
-  font-size: 14px;
+  font-size: 13px;
+  font-weight: 500;
 }
 
-.fb-string {
-  stroke: var(--string);
-  transition: stroke 80ms;
+.fb-fretnum {
+  opacity: 0.6;
 }
 
-.fb-string-active {
-  stroke: var(--string-active);
-  filter: drop-shadow(0 0 3px var(--string-active));
+.fb-fretnum-dot {
+  opacity: 0.9;
 }
 
-.fb-stringname {
-  fill: var(--text-2);
+.fb-fretnum-hand {
+  fill: var(--accent);
+  opacity: 1;
   font-size: 15px;
-  font-weight: 600;
+  font-weight: 700;
+}
+
+.fb-fretnum-bar {
+  fill: var(--accent);
+  opacity: 0.85;
+}
+
+.fb-string-plain {
+  fill: #e3e5e9;
+}
+
+.fb-string-shadow {
+  fill: #000;
+  opacity: 0.35;
+}
+
+.fb-string-glow {
+  fill: var(--string-active);
+  opacity: 0.55;
+}
+
+.fb-stringname rect {
+  fill: var(--surface-2);
+  stroke: var(--border);
+}
+
+.fb-stringname text {
+  fill: var(--text-2);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.fb-string-active .fb-stringname rect {
+  fill: var(--accent);
+  stroke: var(--accent);
+}
+
+.fb-string-active .fb-stringname text {
+  fill: var(--accent-text);
 }
 
 .fb-capo rect {
@@ -401,14 +431,9 @@ main {
   stroke: #000;
 }
 
-.fb-capo text {
-  fill: var(--text-2);
-  font-size: 12px;
-}
-
 .fb-pickzone rect {
   fill: var(--pickzone);
-  stroke: var(--wood-edge);
+  stroke: #140d08;
 }
 
 .fb-note,
@@ -416,16 +441,28 @@ main {
   cursor: pointer;
 }
 
-.fb-note circle {
+.fb-note .fb-note-body {
   stroke: #fff;
   stroke-width: 2;
+}
+
+.fb-note .fb-note-halo {
+  opacity: 0.55;
+  stroke: none;
+}
+
+.fb-note .fb-note-shine {
+  fill: #fff;
+  opacity: 0.16;
+  stroke: none;
+  pointer-events: none;
 }
 
 .fb-note text,
 .fb-pick text {
   fill: #fff;
-  font-size: 15px;
-  font-weight: 700;
+  font-size: 16px;
+  font-weight: 800;
   pointer-events: none;
 }
 
@@ -455,15 +492,21 @@ main {
 }
 
 .fb-note-open circle {
-  fill: var(--open);
-  stroke: var(--text);
+  fill: #1a120b;
+}
+
+.fb-note-open .fb-note-body {
+  stroke: var(--string-active);
+  stroke-width: 2.5;
 }
 
 .fb-note-open text {
-  fill: var(--text);
+  fill: var(--string-active);
+  font-size: 14px;
 }
 
-.fb-suggested circle {
+.fb-suggested .fb-note-body,
+.fb-pick.fb-suggested circle {
   stroke-dasharray: 4 3;
   stroke-width: 2.5;
 }
@@ -475,9 +518,9 @@ main {
 .fb-ghost {
   fill: none;
   stroke: #fff;
-  stroke-opacity: 0.6;
-  stroke-width: 2;
-  stroke-dasharray: 3 3;
+  stroke-opacity: 0.75;
+  stroke-width: 2.5;
+  stroke-dasharray: 5 4;
 }
 
 .fb-pick circle {
@@ -869,10 +912,6 @@ input.wide {
   }
 }
 
-.fb-string-target {
-  stroke: var(--string-active);
-  filter: drop-shadow(0 0 4px var(--string-active));
-}
 
 .quiz-stats {
   display: grid;
@@ -1425,27 +1464,27 @@ input.wide {
 }
 
 /* Hand shape for the bar */
-.fb-hand rect {
-  fill: rgba(255, 210, 122, 0.12);
-  stroke: rgba(255, 210, 122, 0.55);
-  stroke-width: 1.5;
-  stroke-dasharray: 5 4;
+.fb-hand-dim {
+  fill: #000;
+  opacity: 0.38;
 }
 .fb-hand text {
-  fill: var(--text-2);
-  font-size: 13px;
   font-weight: 600;
 }
 .fb-shape {
   cursor: pointer;
 }
 .fb-shape circle {
-  fill-opacity: 0.35;
-  stroke: #fff;
-  stroke-opacity: 0.7;
-  stroke-width: 1.5;
-  stroke-dasharray: 3 2;
+  fill-opacity: 0.3;
+  stroke-width: 2;
+  stroke-opacity: 0.85;
 }
+.fb-shape.fb-finger-1 circle { stroke: var(--f1); }
+.fb-shape.fb-finger-2 circle { stroke: var(--f2); }
+.fb-shape.fb-finger-3 circle { stroke: var(--f3); }
+.fb-shape.fb-finger-4 circle { stroke: var(--f4); }
+.fb-shape.fb-finger-0 circle,
+.fb-shape.fb-finger-x circle { stroke: #fff; }
 .fb-shape text {
   fill: #fff;
   fill-opacity: 0.85;
@@ -1453,7 +1492,6 @@ input.wide {
   font-weight: 700;
 }
 .dot.shape {
-  background: var(--f2);
-  opacity: 0.4;
-  border: 1px dashed var(--text-2);
+  background: color-mix(in srgb, var(--f2) 30%, transparent);
+  border: 2px solid var(--f2);
 }
