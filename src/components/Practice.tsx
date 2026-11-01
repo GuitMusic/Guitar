@@ -7,6 +7,7 @@ import { loadSettings, newId, saveSettings, type SongSettings } from '../library
 import type { OpenSong } from '../library/songs'
 import { beatToFretNotes, nextSoundingBeat } from '../player/alphaTabAdapter'
 import { Fretboard, type FretboardOptions } from './Fretboard'
+import { playTone } from '../audio/pitch'
 import { FingerEditor } from './FingerEditor'
 import { CheckPanel } from './CheckPanel'
 import { accuracy, nextTrainerSpeed } from '../check/noteCheck'
@@ -452,6 +453,7 @@ export function Practice({ song }: Props) {
           capo={capo}
           options={view}
           onNoteClick={(note, anchor) => setEditing({ note, anchor })}
+          onFretClick={(_string, _fret, midi) => playTone(midi)}
           marks={marks}
           maxFret={fretsShown}
           shape={view.showShape === false ? [] : shape}
@@ -467,7 +469,7 @@ export function Practice({ song }: Props) {
           <span className="legend-item"><i className="dot ghost" />coming next</span>
           <span className="legend-item"><i className="dot shape" />rest of the bar's hand shape</span>
           <span className="legend-hint">
-            <span className="tap-word">Tap</span><span className="click-word">Click</span> a note to change its fingering. <span className="keys">Keys: Space play, ↑↓ speed, L loop</span>
+            <span className="tap-word">Tap</span><span className="click-word">Click</span> a note to change its fingering, or an empty fret to hear it. <span className="keys">Keys: Space play, ↑↓ speed, L loop</span>
           </span>
         </div>
       </div>

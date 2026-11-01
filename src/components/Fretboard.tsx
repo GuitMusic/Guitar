@@ -1,4 +1,4 @@
-import { useId, useMemo } from 'react'
+import { useEffect, useId, useMemo, useState } from 'react'
 import { fretFingerLabel } from '../music/fingering'
 import { noteName, pitchClassName } from '../music/notes'
 import type { FretNote } from '../music/types'
@@ -39,6 +39,8 @@ interface Props {
   capo: number
   options: FretboardOptions
   onNoteClick?: (note: FretNote, anchor: { x: number; y: number }) => void
+  /** Tapping an empty spot on the neck: the string, the fret on the neck and the pitch. */
+  onFretClick?: (string: number, fret: number, midi: number) => void
   /** Strings to highlight, e.g. the string a quiz question asks about. */
   highlightStrings?: number[]
   /** Fixed number of frets to draw instead of fitting the notes. */
@@ -73,7 +75,7 @@ function makeFretX(frets: number) {
 
 const SINGLE_INLAYS = [3, 5, 7, 9, 15, 17, 19, 21]
 
-export function Fretboard({ notes, ghosts, tuning, capo, options, onNoteClick, highlightStrings = [], maxFret, showPickZone = true, marks = [], shape = [], handPosition = null }: Props) {
+export function Fretboard({ notes, ghosts, tuning, capo, options, onNoteClick, onFretClick, highlightStrings = [], maxFret, showPickZone = true, marks = [], shape = [], handPosition = null }: Props) {
   // Unique ids for the SVG gradients, in case two fretboards share a page
   const uid = useId().replace(/[^a-zA-Z0-9]/g, '')
   const ref = (name: string) => `url(#${name}-${uid})`
@@ -104,6 +106,29 @@ export function Fretboard({ notes, ghosts, tuning, capo, options, onNoteClick, h
   const showHand =
     handPosition !== null && handPosition > 0 && handPosition <= frets && (notes.some((n) => n.tabFret > 0) || shape.length > 0)
   const handLast = showHand ? Math.min(frets, handPosition! + 3) : 0
+
+  // The last spot tapped on the neck, shown briefly with its note name
+  const [tapped, setTapped] = useState<{ id: number; string: number; fret: number; midi: number } | null>(null)
+  const tapFret = (string: number, fret: number) => {
+    const midi = tuning[string - 1] + fret
+    setTapped((prev) => ({ id: (prev?.id ?? 0) + 1, string, fret, midi }))
+    onFretClick?.(string, fret, midi)
+  }
+  useEffect(() => {
+    if (!tapped) return
+    const t = window.setTimeout(() => setTapped(null), 1200)
+    return () => window.clearTimeout(t)
+  }, [tapped])
+  /** A gentle sine wave from x1 to x2 along the string, for the ringing animation. */
+  const wave = (x1: number, x2: number, y: number) => {
+    const half = 12
+    const dir = x2 > x1 ? 1 : -1
+    let d = `M${x1} ${y}`
+    for (let i = 0, x = x1; dir * (x2 - x) > 0; i++, x += dir * half) {
+      d += ` Q${x + (dir * half) / 2} ${y + (i % 2 ? -4 : 4)} ${x + dir * half} ${y}`
+    }
+    return d
+  }
 
   const click = (n: FretNote) => (e: React.MouseEvent) => {
     onNoteClick?.(n, { x: e.clientX, y: e.clientY })
@@ -272,6 +297,52 @@ export function Fretboard({ notes, ghosts, tuning, capo, options, onNoteClick, h
         </text>
       </g>}
 
+      {onFretClick && (
+        <g className="fb-taps">
+          {tuning.map((_, i) =>
+            Array.from({ length: frets + 1 }, (_, f) => {
+              const x1 = f === 0 ? OPEN_X - 18 : fretX(f - 1)
+              const x2 = f === 0 ? NUT_X : fretX(f)
+              return (
+                <rect
+                  key={`${i}-${f}`}
+                  className="fb-tap"
+                  x={boxX(x1, x2)}
+                  y={Y(i + 1) - STRING_GAP / 2}
+                  width={x2 - x1}
+                  height={STRING_GAP}
+                  onClick={() => tapFret(i + 1, f)}
+                >
+                  <title>{`${noteName(tuning[i] + f)}: tap to hear`}</title>
+                </rect>
+              )
+            }),
+          )}
+        </g>
+      )}
+
+      {tapped && (
+        <g key={tapped.id} className="fb-tapped">
+          <circle cx={X(tapped.fret === 0 ? OPEN_X : (fretX(tapped.fret - 1) + fretX(tapped.fret)) / 2)} cy={Y(tapped.string)} r={NOTE_R} />
+          <text x={X(tapped.fret === 0 ? OPEN_X : (fretX(tapped.fret - 1) + fretX(tapped.fret)) / 2)} y={Y(tapped.string) + 5} textAnchor="middle">
+            {pitchClassName(tapped.midi)}
+          </text>
+        </g>
+      )}
+
+      {notes
+        .filter((n) => !n.isTieContinuation && !n.isHeld && !n.isDead)
+        .map((n) => {
+          const x2 = NECK_END + 8
+          return (
+            <path
+              key={`v-${n.key}`}
+              className="fb-vibrate"
+              d={wave(X(n.tabFret === 0 ? NUT_X : noteX(n)), X(x2), Y(n.string))}
+            />
+          )
+        })}
+
       {shape.map((n) => (
         <g key={`s-${n.key}`} className={`fb-shape fb-finger-${n.lh ?? 'x'}`} onClick={click(n)} role="button" aria-label={`${noteName(n.midi)} later in this bar, edit fingering`}>
           <circle cx={X(noteX(n))} cy={Y(n.string)} r="14" />
@@ -323,6 +394,7 @@ export function Fretboard({ notes, ghosts, tuning, capo, options, onNoteClick, h
         return (
           <g key={n.key} className={cls} onClick={click(n)} role="button" aria-label={`${noteName(n.midi)}, edit fingering`}>
             {!held && !open && <circle className="fb-note-halo" cx={x} cy={y} r={r + 9} filter={ref('glow')} />}
+            {!held && <circle className="fb-note-ripple" cx={x} cy={y} r={r} />}
             <circle className="fb-note-body" cx={x} cy={y} r={r} filter={ref('shadow')} />
             {!open && <circle className="fb-note-shine" cx={x} cy={y - 6} r={r * 0.6} />}
             <text x={x} y={y + 6} textAnchor="middle">
