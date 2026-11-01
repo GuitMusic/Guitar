@@ -27,6 +27,32 @@ function progressLine(p: SongProgress): string {
   return `Played ${when} · ${parts.join(' · ')}`
 }
 
+/** A thin strip of fretboard at the top of each card, in the same look as the practice neck. */
+function CardNeck() {
+  return (
+    <svg className="card-neck" viewBox="0 0 300 34" preserveAspectRatio="none" aria-hidden="true">
+      <rect width="300" height="34" className="card-neck-wood" />
+      {[40, 100, 152, 198, 238, 274].map((x) => (
+        <rect key={x} x={x} y="0" width="2" height="34" className="card-neck-fret" />
+      ))}
+      <rect x="0" y="0" width="5" height="34" className="card-neck-nut" />
+      {[4, 9.5, 15, 20.5, 26, 31].map((y, i) => (
+        <rect key={y} x="0" y={y - (i > 2 ? 0.9 : 0.5)} width="300" height={i > 2 ? 1.8 : 1} className={i > 2 ? 'card-neck-wound' : 'card-neck-plain'} />
+      ))}
+    </svg>
+  )
+}
+
+/** How close the song is to full speed, as a small bar. */
+function SpeedMeter({ p }: { p: SongProgress }) {
+  const pct = Math.min(100, Math.round(p.topSpeed * 100))
+  return (
+    <span className="speed-meter" title={`Played up to ${pct}% speed`}>
+      <i style={{ width: `${pct}%` }} />
+    </span>
+  )
+}
+
 export function Library({ onOpen }: Props) {
   const songs = useLiveQuery(() => db.songs.orderBy('addedAt').reverse().toArray(), [])
   const practice = useLiveQuery(() => db.practice.toArray(), [])
@@ -193,9 +219,15 @@ export function Library({ onOpen }: Props) {
             {songs.map((s) => (
               <li key={s.id}>
                 <button className="song-card" onClick={() => open(toOpenSong(s))}>
+                  <CardNeck />
                   <strong>{s.title}</strong>
                   <span className="hint">{s.format === 'tex' ? 'Text tab' : (s.fileName ?? 'Score file')}</span>
-                  {bySong.get(s.id) && <span className="card-foot">{progressLine(bySong.get(s.id)!)}</span>}
+                  {bySong.get(s.id) && (
+                    <span className="card-foot">
+                      <SpeedMeter p={bySong.get(s.id)!} />
+                      {progressLine(bySong.get(s.id)!)}
+                    </span>
+                  )}
                 </button>
                 <button
                   className="icon"
@@ -227,11 +259,17 @@ export function Library({ onOpen }: Props) {
             {BUILT_IN_SONGS.filter((s) => s.kind === kind).map((s) => (
               <li key={s.id}>
                 <button className="song-card" onClick={() => open(s)}>
+                  <CardNeck />
                   <strong>{s.title}</strong>
                   <span className="hint">{s.description}</span>
                   <span className="card-foot">
                     {s.level && <span className={`level level-${s.level}`}>{LEVELS[s.level]}</span>}
-                    {bySong.get(s.id) && <span>{progressLine(bySong.get(s.id)!)}</span>}
+                    {bySong.get(s.id) && (
+                      <>
+                        <SpeedMeter p={bySong.get(s.id)!} />
+                        <span>{progressLine(bySong.get(s.id)!)}</span>
+                      </>
+                    )}
                   </span>
                 </button>
               </li>

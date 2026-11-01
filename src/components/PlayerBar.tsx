@@ -48,6 +48,16 @@ const ICONS = {
       strokeLinecap="round"
     />
   ),
+  settings: (
+    <path
+      d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  ),
   chevron: <path d="M7 10l5 5 5-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />,
 }
 
@@ -92,7 +102,7 @@ export function TogglePill({
 }
 
 /** An arrow button that opens a small panel; closes on outside click or Escape. */
-export function Menu({ label, children, trigger }: { label: string; children: ReactNode; trigger?: ReactNode }) {
+export function Menu({ label, children, trigger, down = false }: { label: string; children: ReactNode; trigger?: ReactNode; down?: boolean }) {
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
   useEffect(() => {
@@ -114,7 +124,7 @@ export function Menu({ label, children, trigger }: { label: string; children: Re
         {trigger ?? <Icon name="chevron" size={16} />}
       </button>
       {open && (
-        <div className="pb-menu-panel" role="dialog" aria-label={label}>
+        <div className={`pb-menu-panel${down ? ' down' : ''}`} role="dialog" aria-label={label}>
           {children}
         </div>
       )}
