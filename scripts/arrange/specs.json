@@ -1,0 +1,118 @@
+{
+ "k545": {
+  "src": "mozart/k545",
+  "measures": [
+   1,
+   8
+  ],
+  "bassPart": 1,
+  "shift": -12
+ },
+ "donna": {
+  "src": "verdi/laDonnaEMobile",
+  "measures": [
+   2,
+   17
+  ],
+  "bassPart": 1,
+  "bass_beats": 1.5
+ },
+ "linden": {
+  "src": "schubert/Lindenbaum",
+  "measures": [
+   8,
+   24
+  ],
+  "bassPart": 2,
+  "bass_beats": 1
+ },
+ "wachet": {
+  "src": "bach/bwv140.7",
+  "measures": [
+   0,
+   12
+  ],
+  "bassPart": 3
+ },
+ "jeanie": {
+  "src": "leadSheet/fosterBrownHair",
+  "measures": [
+   0,
+   16
+  ],
+  "bass": "chords",
+  "seg": 2
+ },
+ "aloha": {
+  "src": "liliuokalani/aloha_oe",
+  "measures": [
+   13,
+   23
+  ],
+  "mel": 0,
+  "bassPart": 3
+ },
+ "concerto": {
+  "abc": "corpus:oneills1850/0626-0700.abc",
+  "title_in_src": "O'Carolan's Concerto",
+  "measures": [
+   0,
+   16
+  ],
+  "bass": "harm",
+  "seg": 2
+ },
+ "irwin": {
+  "abc": "corpus:oneills1850/0626-0700.abc",
+  "title_in_src": "Planxty Irwin",
+  "measures": [
+   0,
+   16
+  ],
+  "bass": "harm",
+  "seg": 3,
+  "alt": true
+ },
+ "fanny": {
+  "abc": "corpus:oneills1850/0626-0700.abc",
+  "title_in_src": "Planxty Fanny Powers",
+  "measures": [
+   0,
+   16
+  ],
+  "bass": "harm",
+  "seg": 3,
+  "alt": true
+ },
+ "farewell": {
+  "abc": "corpus:oneills1850/0626-0700.abc",
+  "title_in_src": "O'Carolan's Farewell to Music",
+  "measures": [
+   0,
+   16
+  ],
+  "bass": "harm",
+  "seg": 3,
+  "alt": true
+ },
+ "maggie": {
+  "abc": "corpus:oneills1850/1376-1475.abc",
+  "title_in_src": "Drowsy Maggie",
+  "measures": [
+   0,
+   16
+  ],
+  "bass": "harm",
+  "seg": 2,
+  "chordset": [
+   [
+    "E",
+    "m"
+   ],
+   [
+    "D",
+    "M"
+   ]
+  ]
+ }
+}
