@@ -246,7 +246,16 @@ export function Practice({ song }: Props) {
   // What to show on the fretboard
   const overrides = settings?.fingering
   const { notes, ghosts, shape, position } = useMemo(() => {
-    const beats = activeBeats.filter((b) => !track || b.voice.bar.staff.track === track)
+    let beats = activeBeats.filter((b) => !track || b.voice.bar.staff.track === track)
+    // Before Play (or after Stop) show the first note and hand shape of the bar playback starts from
+    if (beats.length === 0 && staff) {
+      const startBar = staff.bars[Math.max(0, Math.min((loop.on ? loop.start : 1) - 1, staff.bars.length - 1))]
+      const first = startBar?.voices
+        .flatMap((v) => v.beats)
+        .filter((b) => b.notes.length > 0)
+        .sort((a, b) => a.playbackStart - b.playbackStart)[0]
+      if (first) beats = [first]
+    }
     const raw = beats.flatMap(beatToFretNotes)
     const stringCount = staff?.tuning.length ?? 6
     // Where the hand was on the previous beat, so the suggestion doesn't jump around
@@ -286,7 +295,7 @@ export function Practice({ song }: Props) {
       shape: shapeNotes,
       position: result.position,
     }
-  }, [activeBeats, track, staff, overrides])
+  }, [activeBeats, track, staff, overrides, loop.on, loop.start])
 
   const setOverride = (note: FretNote, override: FingeringOverride | null) => {
     updateSettings((s) => {

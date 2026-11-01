@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useId, useMemo } from 'react'
 import { fretFingerLabel } from '../music/fingering'
 import { noteName, pitchClassName } from '../music/notes'
 import type { FretNote } from '../music/types'
@@ -53,11 +53,17 @@ interface Props {
 }
 
 const W = 1000
-const NUT_X = 64
-const PICK_W = 128
-const NECK_END = W - PICK_W - 16
-const TOP = 40
-const STRING_GAP = 34
+/** Room left of the nut for string-name chips and open-string bubbles. */
+const NUT_X = 92
+const NUT_W = 9
+const PICK_W = 96
+const NECK_END = W - PICK_W - 18
+/** Fret numbers sit in a strip above the neck. */
+const TOP = 62
+const STRING_GAP = 38
+const NOTE_R = 17
+const CHIP_X = 20
+const OPEN_X = NUT_X - 34
 
 /** Distance from the nut using real guitar fret spacing, scaled to fit the visible frets. */
 function makeFretX(frets: number) {
@@ -68,23 +74,36 @@ function makeFretX(frets: number) {
 const SINGLE_INLAYS = [3, 5, 7, 9, 15, 17, 19, 21]
 
 export function Fretboard({ notes, ghosts, tuning, capo, options, onNoteClick, highlightStrings = [], maxFret, showPickZone = true, marks = [], shape = [], handPosition = null }: Props) {
+  // Unique ids for the SVG gradients, in case two fretboards share a page
+  const uid = useId().replace(/[^a-zA-Z0-9]/g, '')
+  const ref = (name: string) => `url(#${name}-${uid})`
   const stringCount = tuning.length
   const maxNoteFret = Math.max(0, ...notes.map((n) => n.fret), ...ghosts.map((n) => n.fret))
   const frets = maxFret ?? (maxNoteFret > 15 ? Math.min(24, maxNoteFret + 2) : capo > 7 ? 17 : 15)
   const fretX = useMemo(() => makeFretX(frets), [frets])
-  const H = TOP + (stringCount - 1) * STRING_GAP + 52
   const bottom = TOP + (stringCount - 1) * STRING_GAP
+  const H = bottom + 58
+  const neckTop = TOP - 20
+  const neckH = bottom - TOP + 40
+  const neckRight = NECK_END
 
   const X = (x: number) => (options.leftHanded ? W - x : x)
+  /** Left edge of a box drawn from x1 to x2 in unmirrored coordinates. */
+  const boxX = (x1: number, x2: number) => Math.min(X(x1), X(x2))
   const Y = (string: number) =>
     TOP + (options.stringOrder === 'tab' ? string - 1 : stringCount - string) * STRING_GAP
   const anchor = (end: 'start' | 'end') =>
     options.leftHanded ? (end === 'start' ? 'end' : 'start') : end
   const noteX = (n: FretNote) =>
-    n.fret === 0 ? NUT_X - 22 : n.tabFret === 0 && capo > 0 ? fretX(capo) - 26 : (fretX(n.fret - 1) + fretX(n.fret)) / 2
+    n.fret === 0 ? OPEN_X : n.tabFret === 0 && capo > 0 ? fretX(capo) - 26 : (fretX(n.fret - 1) + fretX(n.fret)) / 2
 
   const sounding = new Set(notes.filter((n) => !n.isTieContinuation && !n.isHeld).map((n) => n.string))
-  const pickX = NECK_END + 16 + PICK_W / 2
+  const pickX = NECK_END + 18 + PICK_W / 2
+
+  // Frets covered by the hand, so the rest of the neck can be dimmed
+  const showHand =
+    handPosition !== null && handPosition > 0 && handPosition <= frets && (notes.some((n) => n.tabFret > 0) || shape.length > 0)
+  const handLast = showHand ? Math.min(frets, handPosition! + 3) : 0
 
   const click = (n: FretNote) => (e: React.MouseEvent) => {
     onNoteClick?.(n, { x: e.clientX, y: e.clientY })
@@ -101,83 +120,161 @@ export function Fretboard({ notes, ghosts, tuning, capo, options, onNoteClick, h
           : 'Fretboard'
       }
     >
-      <rect className="fb-wood" x={X(options.leftHanded ? NECK_END : NUT_X)} y={TOP - 14} width={NECK_END - NUT_X} height={bottom - TOP + 28} rx="4" />
+      <defs>
+        <linearGradient id={`wood-${uid}`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#3d2519" />
+          <stop offset="0.5" stopColor="#4b2f20" />
+          <stop offset="1" stopColor="#2c1a11" />
+        </linearGradient>
+        <filter id={`grain-${uid}`} x="0" y="0" width="100%" height="100%">
+          <feTurbulence type="fractalNoise" baseFrequency="0.004 0.2" numOctaves="3" seed="7" />
+          <feColorMatrix values="0 0 0 0 0.08  0 0 0 0 0.04  0 0 0 0 0.02  0 0 0 0.6 0" />
+          <feComposite in2="SourceGraphic" operator="in" />
+        </filter>
+        <linearGradient id={`fret-${uid}`} x1="0" x2="1" y1="0" y2="0">
+          <stop offset="0" stopColor="#8a8680" />
+          <stop offset="0.45" stopColor="#f3f1ec" />
+          <stop offset="1" stopColor="#73706a" />
+        </linearGradient>
+        <linearGradient id={`nut-${uid}`} x1="0" x2="1" y1="0" y2="0">
+          <stop offset="0" stopColor="#d6cebd" />
+          <stop offset="0.5" stopColor="#fcf8ee" />
+          <stop offset="1" stopColor="#c5bba7" />
+        </linearGradient>
+        <pattern id={`wound-${uid}`} width="3" height="8" patternUnits="userSpaceOnUse">
+          <rect width="3" height="8" fill="#c39b62" />
+          <rect width="1.1" height="8" fill="#7a5a32" />
+        </pattern>
+        <radialGradient id={`spot-${uid}`} cx="0.5" cy="0.5" r="0.6">
+          <stop offset="0" stopColor="#ffd9a8" stopOpacity="0.18" />
+          <stop offset="1" stopColor="#ffd9a8" stopOpacity="0" />
+        </radialGradient>
+        <filter id={`shadow-${uid}`} x="-50%" y="-50%" width="200%" height="200%">
+          <feDropShadow dx="0" dy="1.5" stdDeviation="1.5" floodOpacity="0.45" />
+        </filter>
+        <filter id={`glow-${uid}`} x="-100%" y="-100%" width="300%" height="300%">
+          <feGaussianBlur stdDeviation="5" />
+        </filter>
+      </defs>
+
+      {/* Fret numbers on every fret, the hand's frets in the accent colour */}
+      <g className="fb-fretnums">
+        {Array.from({ length: frets }, (_, i) => i + 1).map((f) => {
+          const inHand = showHand && f >= handPosition! && f <= handLast
+          return (
+            <text
+              key={f}
+              className={`fb-fretnum${inHand ? ' fb-fretnum-hand' : ''}${SINGLE_INLAYS.includes(f) || f % 12 === 0 ? ' fb-fretnum-dot' : ''}`}
+              x={X((fretX(f - 1) + fretX(f)) / 2)}
+              y={TOP - 32}
+              textAnchor="middle"
+            >
+              {f}
+            </text>
+          )
+        })}
+        {showHand && (
+          <rect
+            className="fb-fretnum-bar"
+            x={boxX(fretX(handPosition! - 1) + 4, fretX(handLast) - 4)}
+            y={TOP - 27}
+            width={Math.abs(fretX(handLast) - fretX(handPosition! - 1)) - 8}
+            height="3"
+            rx="1.5"
+          />
+        )}
+      </g>
+
+      {/* The neck: binding, rosewood with grain, a little shadow under it */}
+      <rect className="fb-binding" x={boxX(NUT_X, neckRight) - 3} y={neckTop - 3} width={neckRight - NUT_X + 6} height={neckH + 6} rx="5" />
+      <g className="fb-wood">
+        <rect x={boxX(NUT_X, neckRight)} y={neckTop} width={neckRight - NUT_X} height={neckH} fill={ref('wood')} />
+        <rect x={boxX(NUT_X, neckRight)} y={neckTop} width={neckRight - NUT_X} height={neckH} fill="#000" filter={ref('grain')} />
+      </g>
 
       {SINGLE_INLAYS.filter((f) => f <= frets).map((f) => (
-        <circle key={f} className="fb-inlay" cx={X((fretX(f - 1) + fretX(f)) / 2)} cy={(TOP + bottom) / 2} r="7" />
+        <circle key={f} className="fb-inlay" cx={X((fretX(f - 1) + fretX(f)) / 2)} cy={(TOP + bottom) / 2} r="7.5" />
       ))}
       {frets >= 12 && (
         <g className="fb-inlay">
-          <circle cx={X((fretX(11) + fretX(12)) / 2)} cy={TOP + STRING_GAP * 1.5} r="7" />
-          <circle cx={X((fretX(11) + fretX(12)) / 2)} cy={bottom - STRING_GAP * 1.5} r="7" />
+          <circle cx={X((fretX(11) + fretX(12)) / 2)} cy={TOP + STRING_GAP * 1.5} r="7.5" />
+          <circle cx={X((fretX(11) + fretX(12)) / 2)} cy={bottom - STRING_GAP * 1.5} r="7.5" />
         </g>
       )}
 
-      <line className="fb-nut" x1={X(NUT_X)} x2={X(NUT_X)} y1={TOP - 14} y2={bottom + 14} />
-      {Array.from({ length: frets }, (_, i) => i + 1).map((f) => (
-        <g key={f}>
-          <line className="fb-fret" x1={X(fretX(f))} x2={X(fretX(f))} y1={TOP - 14} y2={bottom + 14} />
-          {[1, 3, 5, 7, 9, 12, 15, 17, 19, 21, 24].includes(f) && (
-            <text className="fb-fretnum" x={X((fretX(f - 1) + fretX(f)) / 2)} y={bottom + 36} textAnchor="middle">
-              {f}
+      {/* Hand position as a spotlight: the frets outside the hand are dimmed */}
+      {showHand && (() => {
+        const x1 = fretX(handPosition! - 1)
+        const x2 = fretX(handLast)
+        return (
+          <g className="fb-hand">
+            {handPosition! > 1 && <rect className="fb-hand-dim" x={boxX(NUT_X, x1)} y={neckTop} width={x1 - NUT_X} height={neckH} />}
+            {handLast < frets && <rect className="fb-hand-dim" x={boxX(x2, neckRight)} y={neckTop} width={neckRight - x2} height={neckH} />}
+            <ellipse cx={X((x1 + x2) / 2)} cy={(TOP + bottom) / 2} rx={Math.max(120, (x2 - x1) * 0.8)} ry={neckH * 0.75} fill={ref('spot')} />
+            <text x={X((x1 + x2) / 2)} y={bottom + 44} textAnchor="middle">
+              Hand at fret {handPosition}
             </text>
-          )}
-        </g>
+          </g>
+        )
+      })()}
+
+      {Array.from({ length: frets }, (_, i) => i + 1).map((f) => (
+        <rect key={f} className="fb-fret" x={X(fretX(f)) - 2} y={neckTop} width="4" height={neckH} fill={ref('fret')} filter={ref('shadow')} />
       ))}
+      <rect className="fb-nut" x={X(NUT_X) - (options.leftHanded ? 0 : NUT_W)} y={neckTop - 2} width={NUT_W} height={neckH + 4} rx="2" fill={ref('nut')} />
 
       {tuning.map((midi, i) => {
         const s = i + 1
         const active = sounding.has(s)
+        const target = highlightStrings.includes(s)
+        const wound = s > stringCount / 2
+        const w = 1.3 + (s - 1) * 0.5
+        const x1 = OPEN_X - 18
+        const x2 = showPickZone ? NECK_END + 18 + PICK_W : NECK_END
+        const y = Y(s)
         return (
-          <g key={s}>
-            <line
-              className={`fb-string${active ? ' fb-string-active' : ''}${highlightStrings.includes(s) ? ' fb-string-target' : ''}`}
-              x1={X(NUT_X)}
-              x2={X(showPickZone ? NECK_END + 16 + PICK_W : NECK_END)}
-              y1={Y(s)}
-              y2={Y(s)}
-              strokeWidth={1 + (s - 1) * 0.45}
+          <g key={s} className={`fb-string-g${active ? ' fb-string-active' : ''}${target ? ' fb-string-target' : ''}`}>
+            {(active || target) && (
+              <rect className="fb-string-glow" x={boxX(x1, x2)} y={y - 5} width={x2 - x1} height="10" rx="5" filter={ref('glow')} />
+            )}
+            <rect className="fb-string-shadow" x={boxX(x1, x2)} y={y - w / 2 + 1.5} width={x2 - x1} height={w} />
+            <rect
+              className={`fb-string ${wound ? 'fb-string-wound' : 'fb-string-plain'}`}
+              x={boxX(x1, x2)}
+              y={y - w / 2}
+              width={x2 - x1}
+              height={w}
+              fill={wound ? ref('wound') : undefined}
             />
-            <text className="fb-stringname" x={X(14)} y={Y(s) + 5} textAnchor={anchor('start')}>
-              {pitchClassName(midi + capo)}
-            </text>
+            <g className="fb-stringname">
+              <rect x={X(CHIP_X) - 13} y={y - 11} width="26" height="22" rx="11" />
+              <text x={X(CHIP_X)} y={y + 5} textAnchor="middle">
+                {pitchClassName(midi + capo)}
+              </text>
+            </g>
           </g>
         )
       })}
 
       {capo > 0 && (
         <g className="fb-capo">
-          <rect x={X(fretX(capo) - 10) - (options.leftHanded ? 12 : 0)} y={TOP - 18} width="12" height={bottom - TOP + 36} rx="5" />
-          <text x={X(fretX(capo) - 4)} y={TOP - 24} textAnchor="middle">
+          <rect x={X(fretX(capo) - 10) - (options.leftHanded ? 12 : 0)} y={neckTop - 6} width="12" height={neckH + 12} rx="5" />
+          <text x={X(fretX(capo) - 4)} y={bottom + 44} textAnchor="middle">
             capo {capo}
           </text>
         </g>
       )}
 
       {showPickZone && <g className="fb-pickzone">
-        <rect x={X(NECK_END + 16) - (options.leftHanded ? PICK_W : 0)} y={TOP - 14} width={PICK_W} height={bottom - TOP + 28} rx="10" />
-        <text className="fb-pickzone-label" x={X(pickX)} y={bottom + 36} textAnchor="middle">
+        <rect x={boxX(NECK_END + 18, NECK_END + 18 + PICK_W)} y={neckTop - 4} width={PICK_W} height={neckH + 8} rx="14" />
+        <text className="fb-pickzone-label" x={X(pickX)} y={bottom + 44} textAnchor="middle">
           picking hand
         </text>
       </g>}
 
-      {handPosition !== null && handPosition > 0 && handPosition <= frets && (notes.some((n) => n.tabFret > 0) || shape.length > 0) && (() => {
-        const last = Math.min(frets, handPosition + 3)
-        const x1 = X(fretX(handPosition - 1))
-        const x2 = X(fretX(last))
-        return (
-          <g className="fb-hand">
-            <rect x={Math.min(x1, x2)} y={TOP - 16} width={Math.abs(x2 - x1)} height={bottom - TOP + 32} rx="6" />
-            <text x={(x1 + x2) / 2} y={TOP - 22} textAnchor="middle">
-              index finger at fret {handPosition}
-            </text>
-          </g>
-        )
-      })()}
-
       {shape.map((n) => (
         <g key={`s-${n.key}`} className={`fb-shape fb-finger-${n.lh ?? 'x'}`} onClick={click(n)} role="button" aria-label={`${noteName(n.midi)} later in this bar, edit fingering`}>
-          <circle cx={X(noteX(n))} cy={Y(n.string)} r="12" />
+          <circle cx={X(noteX(n))} cy={Y(n.string)} r="14" />
           <text x={X(noteX(n))} y={Y(n.string) + 5} textAnchor="middle">
             {options.labelMode === 'note' ? pitchClassName(n.midi) : n.lh !== null ? fretFingerLabel(n.lh) : ''}
           </text>
@@ -186,7 +283,7 @@ export function Fretboard({ notes, ghosts, tuning, capo, options, onNoteClick, h
 
       {options.showGhosts &&
         ghosts.map((n) => (
-          <circle key={`g-${n.key}`} className="fb-ghost" cx={X(noteX(n))} cy={Y(n.string)} r="13" />
+          <circle key={`g-${n.key}`} className="fb-ghost" cx={X(noteX(n))} cy={Y(n.string)} r={NOTE_R + 3} />
         ))}
 
       {marks.map((m) => {
@@ -197,7 +294,7 @@ export function Fretboard({ notes, ghosts, tuning, capo, options, onNoteClick, h
             className={`fb-mark fb-mark-${m.result}${m.fade ? ' fb-mark-fade' : ''}`}
             cx={X(noteX(fake))}
             cy={Y(m.string)}
-            r="20"
+            r="23"
           />
         )
       })}
@@ -206,6 +303,7 @@ export function Fretboard({ notes, ghosts, tuning, capo, options, onNoteClick, h
         const x = X(noteX(n))
         const y = Y(n.string)
         const open = n.tabFret === 0
+        const held = n.isTieContinuation || n.isHeld
         const label = n.isDead
           ? '×'
           : options.labelMode === 'note'
@@ -219,12 +317,15 @@ export function Fretboard({ notes, ghosts, tuning, capo, options, onNoteClick, h
           'fb-note',
           open ? 'fb-note-open' : `fb-finger-${n.lh ?? 'x'}`,
           n.lhInferred ? 'fb-suggested' : '',
-          n.isTieContinuation || n.isHeld ? 'fb-held' : '',
+          held ? 'fb-held' : '',
         ].join(' ')
+        const r = open ? NOTE_R - 3 : NOTE_R
         return (
           <g key={n.key} className={cls} onClick={click(n)} role="button" aria-label={`${noteName(n.midi)}, edit fingering`}>
-            <circle cx={x} cy={y} r="14" />
-            <text x={x} y={y + 5} textAnchor="middle">
+            {!held && !open && <circle className="fb-note-halo" cx={x} cy={y} r={r + 9} filter={ref('glow')} />}
+            <circle className="fb-note-body" cx={x} cy={y} r={r} filter={ref('shadow')} />
+            {!open && <circle className="fb-note-shine" cx={x} cy={y - 6} r={r * 0.6} />}
+            <text x={x} y={y + 6} textAnchor="middle">
               {label}
             </text>
           </g>
@@ -243,8 +344,8 @@ export function Fretboard({ notes, ghosts, tuning, capo, options, onNoteClick, h
               role="button"
               aria-label={`Picking finger ${n.rh ?? 'not set'}, edit`}
             >
-              <circle cx={X(pickX - 26)} cy={y} r="13" />
-              <text x={X(pickX - 26)} y={y + 5} textAnchor="middle">
+              <circle cx={X(pickX - 18)} cy={y} r="15" />
+              <text x={X(pickX - 18)} y={y + 5} textAnchor="middle">
                 {n.rh ?? '?'}
               </text>
               <text className="fb-pick-note" x={X(pickX + 2)} y={y + 5} textAnchor={anchor('start')}>
