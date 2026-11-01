@@ -107,6 +107,7 @@ function SongTile({ song, p, onOpen, onRemove }: { song: OpenSong; p?: SongProgr
         <strong className="tile-title">{song.title}</strong>
         <span className="tile-sub">{song.description ?? (song.format === 'tex' ? 'Text tab' : 'Imported score')}</span>
         <span className="tile-facts">
+          {song.level && <span className={`tile-level level-${song.level}`}>{LEVELS[song.level]}</span>}
           {facts.map((f) => (
             <span key={f}>{f}</span>
           ))}
@@ -125,6 +126,28 @@ function SongTile({ song, p, onOpen, onRemove }: { song: OpenSong; p?: SongProgr
       )}
     </li>
   )
+}
+
+type Kind = 'all' | 'song' | 'study' | 'mine'
+interface Filter {
+  kind: Kind
+  level: 0 | 1 | 2 | 3
+}
+const KINDS: { id: Kind; label: string }[] = [
+  { id: 'all', label: 'All' },
+  { id: 'song', label: 'Songs' },
+  { id: 'study', label: 'Studies' },
+  { id: 'mine', label: 'Imported' },
+]
+const FILTER_KEY = 'home-filter-v1'
+function loadFilter(): Filter {
+  try {
+    const f = JSON.parse(localStorage.getItem(FILTER_KEY) ?? '') as Filter
+    if (KINDS.some((k) => k.id === f.kind) && [0, 1, 2, 3].includes(f.level)) return f
+  } catch {
+    // No saved filter yet
+  }
+  return { kind: 'all', level: 0 }
 }
 
 const SHORTCUTS: { page: ShortcutPage; title: string; sub: string; icon: string; tone: string }[] = [
@@ -151,6 +174,26 @@ export function Library({ onOpen, onGo }: Props) {
   const [pasteCapo, setPasteCapo] = useState('')
   const [pasteTempo, setPasteTempo] = useState('80')
   const [dragging, setDragging] = useState(false)
+  const [query, setQuery] = useState('')
+  const [{ kind: savedKind, level }, setFilterState] = useState<Filter>(loadFilter)
+  const setFilter = (f: Filter) => {
+    setFilterState(f)
+    try {
+      localStorage.setItem(FILTER_KEY, JSON.stringify(f))
+    } catch {
+      // Private mode: the filter just isn't remembered
+    }
+  }
+  const mine = (songs ?? []).map(toOpenSong)
+  // A saved 'Imported' filter is meaningless once every import is removed
+  const kind: Kind = savedKind === 'mine' && songs?.length === 0 ? 'all' : savedKind
+  const all = [...mine, ...BUILT_IN_SONGS]
+  const q = query.trim().toLowerCase()
+  const shown = all
+    .filter((s) => (kind === 'all' ? true : kind === 'mine' ? !s.builtIn : s.builtIn && s.kind === kind))
+    .filter((s) => !level || s.level === level)
+    .filter((s) => !q || `${s.title} ${s.description ?? ''}`.toLowerCase().includes(q))
+    .sort((a, b) => (a.builtIn === b.builtIn ? (a.level ?? 0) - (b.level ?? 0) : a.builtIn ? 1 : -1))
 
   const importFiles = async (files: FileList | File[]) => {
     const added: string[] = []
@@ -279,43 +322,70 @@ export function Library({ onOpen, onGo }: Props) {
         ))}
       </div>
 
-      {songs && songs.length > 0 && (
-        <section className="shelf">
-          <div className="shelf-head">
-            <h2>Your songs</h2>
+      <section className="shelf browse">
+        <div className="shelf-head">
+          <h2>Songs and studies</h2>
+          <span className="shelf-note">
+            {shown.length} of {all.length}
+          </span>
+        </div>
+        <div className="browse-bar">
+          <label className="browse-search">
+            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+              <path d="M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14zM20 20l-4-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+            </svg>
+            <input type="search" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search songs and studies" aria-label="Search songs and studies" />
+          </label>
+          <div className="seg" role="group" aria-label="Type">
+            {KINDS.filter((k) => k.id !== 'mine' || mine.length > 0).map((k) => (
+              <button key={k.id} className={kind === k.id ? 'on' : ''} aria-pressed={kind === k.id} onClick={() => setFilter({ kind: k.id, level })}>
+                {k.label}
+              </button>
+            ))}
           </div>
+          <div className="seg" role="group" aria-label="Level">
+            {([0, 1, 2, 3] as const).map((l) => (
+              <button
+                key={l}
+                className={`${level === l ? 'on' : ''}${l ? ` level-${l}` : ''}`}
+                aria-pressed={level === l}
+                onClick={() => setFilter({ kind, level: l })}
+              >
+                {l ? LEVELS[l] : 'Any level'}
+              </button>
+            ))}
+          </div>
+        </div>
+        {shown.length > 0 ? (
           <ul className="tiles">
-            {songs.map((s) => (
+            {shown.map((s) => (
               <SongTile
                 key={s.id}
-                song={toOpenSong(s)}
+                song={s}
                 p={bySong.get(s.id)}
-                onOpen={() => void open(toOpenSong(s))}
-                onRemove={() => {
-                  if (window.confirm(`Remove ${s.title} from your library?`)) {
-                    void db.songs.delete(s.id)
-                    void db.settings.delete(s.id)
-                  }
-                }}
+                onOpen={() => void open(s)}
+                onRemove={
+                  s.builtIn
+                    ? undefined
+                    : () => {
+                        if (window.confirm(`Remove ${s.title} from your library?`)) {
+                          void db.songs.delete(s.id)
+                          void db.settings.delete(s.id)
+                        }
+                      }
+                }
               />
             ))}
           </ul>
-        </section>
-      )}
-
-      {(['song', 'study'] as const).map((kind) => (
-        <section key={kind} className="shelf">
-          <div className="shelf-head">
-            <h2>{kind === 'song' ? 'Free songs' : 'Fingerstyle studies'}</h2>
-            <span className="shelf-note">{kind === 'song' ? 'Public-domain tunes, arranged for fingerstyle' : 'Short exercises for thumb and fingers'}</span>
+        ) : (
+          <div className="browse-empty">
+            Nothing matches.{' '}
+            <button className="link" onClick={() => { setQuery(''); setFilter({ kind: 'all', level: 0 }) }}>
+              Show everything
+            </button>
           </div>
-          <ul className="tiles">
-            {BUILT_IN_SONGS.filter((s) => s.kind === kind).map((s) => (
-              <SongTile key={s.id} song={s} p={bySong.get(s.id)} onOpen={() => void open(s)} />
-            ))}
-          </ul>
-        </section>
-      ))}
+        )}
+      </section>
 
       <section className="import-card">
         <div className="import-text">

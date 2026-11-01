@@ -505,4 +505,317 @@ export const SONGS: Study[] = [
 (3.6{lf 4} 0.2).4 2.3{lf 2}.4 0.3.4 |
 (0.5 2.4{lf 3} 2.3{lf 4} 1.2{lf 2} 0.1).2 {d}`,
   },
+  {
+    id: 'song-amazing-grace',
+    level: 3,
+    kind: 'song',
+    title: 'Amazing Grace',
+    description:
+      'The 1779 hymn in D, with the melody on the treble strings over an alternating bass: the thumb plays the root on beat one and another bass note on beat two.',
+    tex:
+      header('Amazing Grace', 84, '', 'John Newton (1779), traditional tune, arranged for this app') +
+      `\\ts 1 4 2.3{lf 2 rf 2}.4 |
+\\ts 3 4 (0.4{rf 1} 3.2{lf 4 rf 3}).4 0.5{rf 1}.4 2.1{lf 3 rf 3}.8 3.2{lf 4 rf 2}.8 |
+(0.4{rf 1} 2.1{lf 3 rf 3}).4 0.5{rf 1}.4 (0.5{rf 1} 0.1{rf 3}).4 |
+(3.6{lf 3 rf 1} 3.2{lf 4 rf 3}).4 0.4{rf 1}.4 (0.3{rf 2} 0.2{rf 3}).4 |
+(0.4 2.3{lf 2}).4 0.5.4 (0.4 2.3{lf 2}).4 |
+(0.4 3.2{lf 4}).4 0.5.4 2.1{lf 3}.8 3.2{lf 4}.8 |
+(0.4 2.1{lf 3}).4 0.5.4 0.1.8 2.1{lf 3}.8 |
+(0.5 5.1{lf 5}).4 2.4{lf 2}.4 (2.2{lf 3} 2.1{lf 4}).4 |
+(0.4 5.1{lf 5}).4 0.5.4 2.1{lf 2}.8 3.2{lf 4}.8 |
+(0.4 2.1{lf 3}).4 0.5.4 (0.5 0.1).4 |
+(3.6{lf 3} 3.2{lf 4}).4 0.4.4 (0.3 0.2).4 |
+(0.4 2.3{lf 2}).4 0.5.4 2.3{lf 2}.4 |
+(0.4 3.2{lf 4}).4 0.5.4 2.1{lf 3}.8 3.2{lf 4}.8 |
+(0.5 2.1{lf 3}).4 2.4{lf 2}.4 (2.2{lf 2} 0.1).4 |
+(0.4 2.3{lf 2} 3.2{lf 4} 2.1{lf 3}).2 {d}`,
+  },
+  {
+    id: 'song-carol-of-the-bells',
+    level: 3,
+    kind: 'song',
+    title: 'Carol of the Bells',
+    description:
+      'Leontovych’s Ukrainian “Shchedryk” (1916). The four-note bell figure repeats over a falling bass, then moves into thirds that shift between the open position and the 7th fret.',
+    tex:
+      header('Carol of the Bells', 132, '\\ts 3 4\n', 'Mykola Leontovych (1916), arranged for this app') +
+      [
+        '(0.6{rf 1} 3.1{lf 4 rf 3}).4 2.1{lf 3 rf 2}.8 3.1{lf 4 rf 3}.8 0.1{rf 2}.4',
+        ...['0.6', '0.6', '0.6', '0.6', '0.4', '3.5{lf 3}', '2.5{lf 2}'].map((b) => `(${b} 3.1).4 2.1.8 3.1.8 0.1.4`),
+        '(0.6{rf 1} 0.3{rf 2} 7.1{lf 4 rf 3}).4 (4.4{lf 2 rf 1} 5.1{lf 3 rf 3}).8 (0.3{rf 2} 7.1{lf 4 rf 3}).8 (2.4{lf 2 rf 1} 3.1{lf 3 rf 3}).4',
+        ...['0.4', '8.6{lf 3}', '7.6{lf 2}', '0.6', '0.4', '8.6{lf 3}'].map((b) => `(${b} 0.3 7.1).4 (4.4 5.1).8 (0.3 7.1).8 (2.4 3.1).4`),
+      ].join(' |\n') +
+      ' |\n(0.6 2.5{lf 3} 2.4{lf 4} 0.3 0.2 0.1).2 {d}',
+  },
+  {
+    id: 'song-mozart-k545',
+    level: 3,
+    kind: 'song',
+    title: 'Sonata in C, K. 545 (opening)',
+    description:
+      'Mozart’s “easy” sonata: the tune on top with the rolling Alberti bass underneath, then the famous scale runs. Keep the bass soft and even.',
+    tex:
+      header('Sonata in C, K. 545 (opening)', 100, '', 'W. A. Mozart (1788), arranged for this app') +
+      `\\ts 4 4 (1.2{lf 2 rf 3} 3.5{lf 4 rf 1}).8 3.6{lf 4 rf 1}.8 2.4{lf 3 rf 1}.8 3.6{lf 4 rf 1}.8 (0.1{rf 4} 3.5{lf 4 rf 1}).8 3.6{lf 4 rf 1}.8 (3.1{lf 4 rf 4} 2.4{lf 3 rf 1}).8 3.6{lf 4 rf 1}.8 |
+(0.2{rf 3} 0.4{rf 1}).8 3.6{lf 4 rf 1}.8 1.6{lf 2 rf 1}.8 (1.2{lf 2 rf 3} 3.6{lf 4 rf 1}).16 3.2{lf 4 rf 3}.16 (1.2{lf 2 rf 3} 3.5{lf 4 rf 1}).8 3.6{lf 4 rf 1}.8 2.4{lf 3 rf 1}.8 3.6{lf 4 rf 1}.8 |
+(5.1{lf 5 rf 4} 3.5{lf 4 rf 1}).8 0.5{rf 1}.8 1.6{lf 2 rf 1}.8 0.5{rf 1}.8 (3.1{lf 2 rf 4} 3.5{lf 2 rf 1}).8 3.6{lf 2 rf 1}.8 (8.1{lf 5 rf 4} 7.5{lf 4 rf 1}).8 3.6{lf 4 rf 1}.8 |
+(3.1{lf 4 rf 4} 2.5{lf 3 rf 1}).8 3.6{lf 4 rf 1}.8 (1.1{lf 2 rf 4} 0.4{rf 1}).8 (0.1{rf 4} 3.6{lf 4 rf 1}).16 1.1{lf 2 rf 4}.16 (0.1{rf 4} 3.5{lf 4 rf 1}).8 3.6{lf 4 rf 1}.8 2.4{lf 3 rf 1}.8 3.6{lf 4 rf 1}.8 |
+(2.3{lf 3} 1.6{lf 2}).8 0.2.16 1.2{lf 2}.16 3.2{lf 4}.16 0.1.16 1.1{lf 2}.16 3.1{lf 4}.16 5.1{lf 5}.16 3.1{lf 4}.16 1.1{lf 2}.16 0.1.16 (3.2{lf 4} 1.6{lf 2}).16 1.2{lf 2}.16 0.2.16 2.3{lf 3}.16 |
+(0.3 0.6).8 2.3{lf 3}.16 0.2.16 1.2{lf 2}.16 3.2{lf 4}.16 0.1.16 1.1{lf 2}.16 3.1{lf 4}.16 1.1{lf 2}.16 0.1.16 3.2{lf 4}.16 (1.2{lf 2} 0.6).16 0.2.16 2.3{lf 3}.16 0.3.16 |
+(3.4{lf 4} 5.5{lf 5}).8 0.3.16 2.3{lf 3}.16 0.2.16 1.2{lf 2}.16 3.2{lf 4}.16 0.1.16 1.1{lf 2}.16 0.1.16 3.2{lf 4}.16 1.2{lf 2}.16 (0.2 0.4).16 2.3{lf 3}.16 0.3.16 3.4{lf 4}.16 |
+(2.4{lf 3} 3.5{lf 4}).8 3.4{lf 4}.16 0.3.16 2.3{lf 3}.16 0.2.16 1.2{lf 2}.16 3.2{lf 4}.16 0.1.16 3.2{lf 4}.16 1.2{lf 2}.16 0.2.16 (2.3{lf 3} 3.5{lf 4}).16 0.3.16 3.4{lf 4}.16 2.4{lf 3}.16`,
+  },
+  {
+    id: 'song-la-donna-e-mobile',
+    level: 3,
+    kind: 'song',
+    title: 'La donna è mobile',
+    description:
+      'The Duke’s aria from Rigoletto: a bouncy one-in-a-bar tune with a bass note on every downbeat.',
+    tex:
+      header('La donna è mobile', 96, '', 'Giuseppe Verdi (1851), arranged for this app') +
+      `\\ts 3 8 (2.1{lf 2 rf 4} 0.4{rf 1}).8 2.1{lf 2 rf 4}.8 2.1{lf 2 rf 4}.8 |
+(5.1{lf 5 rf 4} 0.5{rf 1}).16 {d} 3.1{lf 3 rf 4}.32 0.1{rf 4}.4 |
+(0.1{rf 4} 0.5{rf 1}).8 0.1{rf 4}.8 0.1{rf 4}.8 |
+(3.1{lf 3 rf 4} 0.5{rf 1}).16 {d} 2.1{lf 2 rf 4}.32 3.2{lf 3 rf 3}.4 |
+(2.1{lf 2} 0.5).8 0.1.8 3.2{lf 3}.8 |
+(3.2{lf 3} 0.5).16 {d} 2.2{lf 2}.32 2.2{lf 2}.4 |
+(0.1 0.5).8 3.2{lf 3}.8 0.2.8 |
+(0.2 0.4).16 {d} 2.3{lf 2}.32 2.3{lf 2}.4 |
+(2.1{lf 2} 0.4).8 2.1{lf 2}.8 2.1{lf 2}.8 |
+(5.1{lf 5} 0.5).16 {d} 3.1{lf 3}.32 0.1.4 |
+(0.1 0.5).8 0.1.8 0.1.8 |
+(3.1{lf 3} 0.4).16 {d} 2.1{lf 2}.32 3.2{lf 3}.4 |
+(2.1{lf 2} 0.4).8 0.1.8 3.2{lf 3}.8 |
+(3.2{lf 3} 0.5).16 {d} 2.2{lf 2}.32 2.2{lf 2}.4 |
+(0.1 0.5).8 3.2{lf 3}.8 0.2.8 |
+(0.2 0.4).16 {d} 2.3{lf 2}.32 2.3{lf 2}.4`,
+  },
+  {
+    id: 'song-der-lindenbaum',
+    level: 3,
+    kind: 'song',
+    title: 'Der Lindenbaum',
+    description:
+      'Schubert’s linden-tree song from Winterreise: a gentle melody over a bass note on every beat.',
+    tex:
+      header('Der Lindenbaum', 80, '', 'Franz Schubert (1827), arranged for this app') +
+      `\\ts 3 4 0.6{rf 1}.2 0.6{t}.8 0.1{rf 4}.8 |
+(0.1{rf 4} 0.5{rf 1}).4 {d} 2.2{lf 3 rf 3}.8 (2.2{lf 3 rf 3} 4.5{lf 5 rf 1}).8 2.2{lf 3 rf 3}.8 |
+(2.2{lf 3 rf 3} 0.5{rf 1}).4 2.3{lf 3 rf 2}.4 {d} 2.3{lf 3 rf 2}.8 |
+(0.2{rf 3} 0.6{rf 1}).4 {d} 2.2{lf 3 rf 3}.8 (3.2{lf 4 rf 3} 0.6{rf 1}).8 {tu 3} 2.2{lf 3 rf 3}.8 {tu 3} 0.2{rf 3}.8 {tu 3} |
+(2.3{lf 3} 0.5).4 0.5.4 2.5{lf 3}.8 0.1.8 |
+(0.1 0.5).4 {d} 2.2{lf 3}.8 (2.2{lf 3} 4.5{lf 5}).8 2.2{lf 3}.8 |
+(2.2{lf 3} 0.5).4 2.3{lf 3}.4 {d} 2.3{lf 3}.8 |
+(0.2 0.6).4 {d} 2.2{lf 3}.8 (3.2{lf 4} 0.6).8 {tu 3} 2.2{lf 3}.8 {tu 3} 0.2.8 {tu 3} |
+(2.3{lf 3} 0.5).4 0.5.4 2.5{lf 3}.8 2.3{lf 3}.8 |
+(0.2 1.4{lf 2}).4 {d} 0.2.8 (0.2 0.4).8 0.2.8 |
+(2.2{lf 3} 4.5{lf 5}).8 {d} 3.2{lf 4}.16 (0.1 0.5).4 {d} 0.1.8 |
+(2.1{lf 3} 0.4).4 {d} 0.1.8 (2.2{lf 3} 0.5).8 2.3{lf 3}.8 |
+(0.2 0.6).4 2.4{lf 3}.4 0.6.8 0.2.8 |
+(0.2 1.4{lf 2}).4 {d} 0.2.8 (0.2 0.4).8 0.2.8 |
+(2.2{lf 3} 4.5{lf 5}).8 {d} 3.2{lf 4}.16 (0.1 0.5).4 {d} 0.1.8 |
+(5.1{lf 5} 4.5{lf 4}).4 (0.1 4.5{lf 4}).8 2.2{lf 2}.8 (3.2{lf 3} 2.5{lf 2}).8 {d} 0.2.16 |
+(2.3{lf 2} 0.5).4 2.4{lf 2}.4 0.5.4`,
+  },
+  {
+    id: 'song-wachet-auf',
+    level: 3,
+    kind: 'song',
+    title: 'Wachet auf (chorale)',
+    description:
+      'Bach’s own soprano and bass lines from the chorale, played together. Two independent voices is the classic intermediate fingerstyle skill.',
+    tex:
+      header('Wachet auf (chorale)', 66, '', 'J. S. Bach, BWV 140 (1731), arranged for this app') +
+      `\\ts 4 4 (2.3{lf 2 rf 2} 0.5{rf 1}).4 2.2{lf 2 rf 3}.4 (0.1{rf 4} 0.5{t}).8 4.5{lf 4 rf 1}.8 2.4{lf 2 rf 1}.8 (0.1{rf 4} 0.4{rf 1}).8 |
+(0.1{rf 4} 4.5{lf 4 rf 1}).8 2.5{lf 2 rf 1}.8 (0.1{rf 4} 0.5{rf 1}).8 4.6{lf 4 rf 1}.8 (2.1{lf 2 rf 4} 0.5{rf 1}).8 2.6{lf 2 rf 1}.8 2.5{lf 2 rf 1}.4 |
+(0.1{rf 4} 0.6{rf 1}).2 {d} (0.1{rf 4} 2.4{lf 2 rf 1}).8 0.4{rf 1}.8 |
+(5.1{lf 5 rf 4} 4.5{lf 4 rf 1}).8 0.4{rf 1}.8 (0.1{rf 4} 4.5{lf 4 rf 1}).8 2.5{lf 2 rf 1}.8 (5.1{lf 5 rf 4} 0.5{rf 1}).8 7.1{lf 3 rf 4}.8 (9.1{lf 5 rf 4} 0.5{rf 1}).4 |
+(7.1{lf 5} 4.6{lf 2}).8 2.6{lf 2}.8 (5.1{lf 5} 2.4{lf 2}).8 6.5{lf 5}.8 (4.1{lf 4} 2.4{lf 2}).4 (2.1{lf 2} 2.5{lf 2}).4 |
+(0.1 0.6).2 {d} (0.1 0.5).8 3.6{lf 3}.8 |
+(5.1{lf 5} 2.6{lf 2}).8 4.6{lf 4}.8 (0.1 0.5).4 (2.1{lf 2} 0.4).8 0.6.8 (2.2{lf 2} 2.6{lf 2}).4 |
+\\ts 3 4 (3.2{lf 3} 2.5{lf 2}).8 2.2{lf 2}.8 (0.2 0.6).4 (2.3{lf 2} 0.5).4 |
+\\ts 1 4 (0.1 4.6{lf 4}).4 |
+\\ts 4 4 (0.1 0.5).4 2.5{lf 2}.8 3.2{lf 3}.8 (2.2{lf 2} 4.5{lf 4}).8 0.4.8 (0.2 2.4{lf 2}).8 0.6.8 |
+(2.3{lf 2} 2.6{lf 2}).2 {d} (0.1 4.5{lf 4}).4 |
+(0.1 4.6{lf 4}).8 2.6{lf 2}.8 0.6.8 3.2{lf 3}.8 (2.2{lf 2} 0.5).8 2.6{lf 2}.8 (0.2 0.4).8 0.6.8 |
+(2.3{lf 2} 0.5).2 {d} (0.2 2.4{lf 2}).8 0.4.8`,
+  },
+  {
+    id: 'song-jeanie',
+    level: 3,
+    kind: 'song',
+    title: 'Jeanie with the Light Brown Hair',
+    description:
+      'Foster’s parlour song: the melody over an alternating bass that follows the original chords.',
+    tex:
+      header('Jeanie with the Light Brown Hair', 76, '', 'Stephen Foster (1854), arranged for this app') +
+      `\\ts 4 4 r.2 2.1{lf 3 rf 4}.2 |
+(0.1{rf 4} 1.6{lf 2 rf 1}).4 3.5{lf 4 rf 1}.4 1.6{lf 2 rf 1}.4 (2.2{lf 3 rf 3} 3.5{lf 4 rf 1}).4 |
+(3.2{lf 4 rf 3} 1.5{lf 2 rf 1}).4 (2.2{lf 3 rf 3} 1.6{lf 2 rf 1}).4 (0.2{rf 3} 1.5{lf 2 rf 1}).4 (2.3{lf 3 rf 2} 1.6{lf 2 rf 1}).4 |
+(2.2{lf 3 rf 3} 1.6{lf 2 rf 1}).4 3.5{lf 4 rf 1}.4 (2.4{lf 3 rf 1} 3.5{lf 4 rf 1}).4 (4.4{lf 5 rf 1} 3.6{lf 4 rf 1}).4 |
+(2.3{lf 3} 1.6{lf 2}).4 3.5{lf 4}.4 1.6{lf 2}.4 3.5{lf 4}.4 |
+(2.3{lf 3} 1.6{lf 2}).4 3.5{lf 4}.4 (0.2 1.6{lf 2}).4 (2.2{lf 3} 3.5{lf 4}).4 |
+(5.1{lf 5} 1.5{lf 2}).4 1.6{lf 2}.4 (2.1{lf 3} 1.5{lf 2}).4 1.6{lf 2}.4 |
+(0.1 1.6{lf 2}).4 3.5{lf 4}.8 2.2{lf 3}.8 (0.2 3.6{lf 4}).4 (2.3{lf 3} 0.4).4 |
+(0.2 3.5{lf 4}).4 3.6{lf 4}.4 3.5{lf 4}.4 (2.1{lf 3} 3.6{lf 4}).4 |
+(0.1 1.6{lf 2}).4 3.5{lf 4}.4 1.6{lf 2}.4 (2.2{lf 3} 3.5{lf 4}).4 |
+(3.2{lf 4} 1.5{lf 2}).4 (2.2{lf 3} 1.6{lf 2}).4 (0.2 1.5{lf 2}).4 (2.3{lf 3} 1.6{lf 2}).4 |
+(2.2{lf 3} 1.6{lf 2}).4 3.5{lf 4}.4 (2.4{lf 3} 3.5{lf 4}).4 (4.4{lf 5} 3.6{lf 4}).4 |
+(2.3{lf 3} 1.6{lf 2}).4 3.5{lf 4}.4 1.6{lf 2}.4 3.5{lf 4}.4 |
+(0.2 3.6{lf 4}).4 (4.2{lf 5} 0.4).4 (0.1 3.6{lf 4}).4 (2.1{lf 3} 0.4).4 |
+(4.1{lf 5} 3.5{lf 4}).4 (5.1{lf 5} 3.6{lf 4}).4 (2.2{lf 3} 1.6{lf 2}).4 (2.1{lf 3} 3.5{lf 4}).4 |
+(0.1 3.5{lf 4}).4 3.6{lf 4}.4 (4.2{lf 5} 3.6{lf 4}).4 (4.2{lf 5} 0.4).4`,
+  },
+  {
+    id: 'song-aloha-oe',
+    level: 3,
+    kind: 'song',
+    title: 'Aloha ʻOe (chorus)',
+    description:
+      'The Hawaiian farewell song: the chorus melody over the original bass line.',
+    tex:
+      header('Aloha ʻOe (chorus)', 72, '', 'Queen Liliʻuokalani (1878), arranged for this app') +
+      `\\ts 4 4 (2.2{lf 2 rf 3} 0.5{rf 1}).4 0.1{rf 4}.4 (5.1{lf 5 rf 4} 0.5{rf 1}).8 (2.2{lf 2 rf 3} 0.5{rf 1}).8 (2.2{lf 2 rf 3} 0.5{rf 1}).8 (2.2{lf 2 rf 3} 0.5{rf 1}).8 |
+(0.2{rf 3} 2.4{lf 2 rf 1}).4 0.1{rf 4}.4 (4.1{lf 4 rf 4} 0.6{rf 1}).4 (0.1{rf 4} 2.4{lf 2 rf 1}).8 (0.1{rf 4} 2.4{lf 2 rf 1}).8 |
+(4.2{lf 4 rf 3} 2.5{lf 2 rf 1}).8 (4.2{lf 4 rf 3} 2.5{lf 2 rf 1}).8 (4.2{lf 4 rf 3} 2.5{lf 2 rf 1}).8 (0.1{rf 4} 2.5{lf 2 rf 1}).8 (2.1{lf 2 rf 4} 2.5{lf 2 rf 1}).8 (6.2{lf 5 rf 3} 2.5{lf 2 rf 1}).8 (2.1{lf 2 rf 4} 2.5{lf 2 rf 1}).8 (5.1{lf 5 rf 4} 2.5{lf 2 rf 1}).8 |
+(4.1{lf 4 rf 4} 2.4{lf 2 rf 1}).2 (0.1{rf 4} 0.6{rf 1}).4 {d} (4.2{lf 4 rf 3} 0.6{rf 1}).8 |
+(2.2{lf 2} 0.5).4 (0.1 0.5).4 (5.1{lf 5} 0.5).4 {d} (2.2{lf 2} 0.5).8 |
+(0.2 2.4{lf 2}).8 (0.2 2.4{lf 2}).8 (0.1 2.5{lf 2}).8 (0.1 2.5{lf 2}).8 (4.1{lf 4} 0.6).4 {d} (0.1 4.6{lf 4}).8 |
+(4.2{lf 4} 2.5{lf 2}).4 {d} (0.1 2.5{lf 2}).8 (4.1{lf 4} 2.5{lf 2}).8 2.1{lf 2}.4 (4.2{lf 4} 2.5{lf 2}).8 |
+\\ts 3 4 (0.1 0.6).2 {d}`,
+  },
+  {
+    id: 'song-carolans-concerto',
+    level: 3,
+    kind: 'song',
+    title: 'Carolan’s Concerto',
+    description:
+      'A favourite of Celtic fingerstyle players: running eighth notes over a root-and-fifth bass.',
+    tex:
+      header('Carolan’s Concerto', 96, '', 'Turlough O’Carolan (c. 1720), arranged for this app') +
+      `\\ts 3 16 (0.2{rf 3} 0.5{rf 1}).16 2.2{lf 3 rf 3}.16 4.2{lf 5 rf 3}.16 |
+\\ts 2 4 (0.1{rf 4} 3.6{lf 4 rf 1}).8 0.1{rf 4}.16 0.1{rf 4}.16 (0.1{rf 4} 0.4{rf 1}).8 4.2{lf 5 rf 3}.16 2.2{lf 3 rf 3}.16 |
+(0.2{rf 3} 0.4{rf 1}).16 2.2{lf 3 rf 3}.16 2.3{lf 3 rf 2}.16 0.2{rf 3}.16 (1.3{lf 2 rf 2} 0.5{rf 1}).8 0.2{rf 3}.8 |
+(4.4{lf 5 rf 1} 0.5{rf 1}).8 0.2{rf 3}.8 (2.4{lf 3 rf 1} 0.6{rf 1}).8 0.2{rf 3}.8 |
+(2.2{lf 3} 0.5).16 4.2{lf 5}.16 0.1.16 2.1{lf 3}.16 (0.1 0.6).16 4.2{lf 5}.16 2.2{lf 3}.16 0.2.16 |
+(0.1 0.4).8 7.1{lf 5}.8 (4.1{lf 2} 0.5).16 5.1{lf 3}.16 7.1{lf 5}.16 4.1{lf 2}.16 |
+(7.2{lf 5} 0.4).16 4.1{lf 2}.16 5.1{lf 3}.16 7.2{lf 5}.16 (4.1{lf 2} 0.5).16 5.1{lf 3}.16 7.1{lf 5}.16 4.1{lf 2}.16 |
+(5.1{lf 3} 0.4).16 7.1{lf 5}.16 9.1{lf 5}.16 5.1{lf 3}.16 (4.1{lf 2} 0.5).16 0.1.16 4.1{lf 2}.16 7.1{lf 5}.16 |
+(5.1{lf 5} 0.4).16 4.1{lf 4}.16 2.1{lf 2}.16 0.1.16 (0.1 0.5).16 4.2{lf 4}.16 2.2{lf 2}.16 0.2.16 |
+(2.2{lf 2} 3.6{lf 3}).16 0.1.16 2.2{lf 2}.16 0.1.16 (5.1{lf 5} 0.4).16 2.2{lf 2}.16 5.1{lf 5}.16 2.2{lf 2}.16 |
+(0.2 0.4).16 0.1.16 0.2.16 0.1.16 (4.1{lf 4} 0.5).16 0.2.16 4.1{lf 4}.16 0.2.16 |
+(2.3{lf 2} 0.6).16 2.2{lf 2}.16 2.3{lf 2}.16 2.2{lf 2}.16 (2.1{lf 2} 2.5{lf 2}).16 4.1{lf 5}.16 2.1{lf 3}.16 0.1.16 |
+(4.2{lf 5} 0.5).8 2.2{lf 3}.16 4.2{lf 5}.16 (0.2 0.6).8 {d} 2.3{lf 3}.16 |
+(1.3{lf 2} 0.4).16 2.3{lf 3}.16 0.2.16 1.3{lf 2}.16 (4.4{lf 5} 0.5).16 1.3{lf 2}.16 2.3{lf 3}.16 4.4{lf 5}.16 |
+(1.3{lf 2} 0.4).16 2.3{lf 3}.16 0.2.16 1.3{lf 2}.16 (2.3{lf 3} 0.5).16 0.2.16 2.2{lf 3}.16 2.3{lf 3}.16 |
+(0.2 0.4).8 0.1.8 (4.1{lf 5} 0.5).16 2.1{lf 3}.16 0.1.16 4.2{lf 5}.16 |
+(0.1 0.4).4 0.5.4`,
+  },
+  {
+    id: 'song-planxty-irwin',
+    level: 3,
+    kind: 'song',
+    title: 'Planxty Irwin',
+    description:
+      'A lilting O’Carolan tune in 3/4 with a waltz bass: the root on beat one, the fifth on beat two.',
+    tex:
+      header('Planxty Irwin', 100, '', 'Turlough O’Carolan (c. 1720), arranged for this app') +
+      `\\ts 1 8 (0.1{rf 4} 0.4{rf 1}).8 |
+\\ts 3 4 (5.1{lf 5 rf 4} 3.6{lf 3 rf 1}).4 (4.1{lf 4 rf 4} 0.4{rf 1}).8 2.1{lf 2 rf 4}.8 4.1{lf 4 rf 4}.8 5.1{lf 5 rf 4}.8 |
+(0.1{rf 4} 0.4{rf 1}).4 (3.2{lf 4 rf 3} 0.5{rf 1}).8 2.2{lf 3 rf 3}.8 0.2{rf 3}.8 2.3{lf 3 rf 2}.8 |
+(3.2{lf 4 rf 3} 0.6{rf 1}).4 (0.2{rf 3} 2.5{lf 3 rf 1}).8 2.2{lf 3 rf 3}.8 3.2{lf 4 rf 3}.8 0.1{rf 4}.8 |
+(1.3{lf 2} 0.5).4 (2.3{lf 3} 0.6).8 0.2.4 4.1{lf 5}.8 |
+(5.1{lf 5} 3.6{lf 4}).4 (4.1{lf 5} 0.4).8 2.1{lf 3}.8 4.1{lf 5}.8 5.1{lf 5}.8 |
+(0.1 0.4).4 (3.2{lf 4} 0.5).8 2.2{lf 3}.8 0.2.8 2.3{lf 3}.8 |
+(3.2{lf 4} 0.6).4 (0.2 2.5{lf 3}).8 2.2{lf 3}.8 3.2{lf 4}.8 0.1.8 |
+\\ts 5 8 (2.3{lf 3} 0.4).4 1.3{lf 2}.8 2.3{lf 3}.4 |
+\\ts 1 8 (0.1 0.4).8 |
+\\ts 3 4 (5.1{lf 3} 0.4).8 {d} 7.1{lf 5}.16 (5.1{lf 3} 0.5).8 5.1{lf 3}.4 5.1{lf 3}.8 |
+(7.1{lf 5} 0.5).4 (7.1{lf 5} 0.6).8 7.1{lf 5}.8 4.1{lf 2}.8 0.1.8 |
+(0.1 0.4).16 9.1{lf 5}.8 {d} (9.1{lf 5} 0.5).8 7.1{lf 3}.4 5.1{lf 5}.8 |
+(5.1{lf 5} 3.6{lf 3}).8 4.1{lf 4}.8 (2.1{lf 2} 0.4).8 0.1.8 2.1{lf 2}.8 4.1{lf 4}.8 |
+(5.1{lf 5} 3.6{lf 3}).4 (4.1{lf 4} 0.4).8 2.1{lf 2}.8 4.1{lf 4}.8 5.1{lf 5}.8 |
+(0.1 0.4).4 (3.2{lf 3} 0.5).8 2.2{lf 2}.8 0.2.8 2.3{lf 2}.8 |
+(3.2{lf 3} 0.4).4 (0.2 0.5).8 2.2{lf 2}.8 3.2{lf 3}.8 0.1.8`,
+  },
+  {
+    id: 'song-fanny-power',
+    level: 3,
+    kind: 'song',
+    title: 'Fanny Power',
+    description:
+      'O’Carolan’s best-loved air, in 3/4, with a waltz bass under the melody.',
+    tex:
+      header('Fanny Power', 96, '', 'Turlough O’Carolan (c. 1720), arranged for this app') +
+      `\\ts 3 4 (1.2{lf 2 rf 3} 0.5{rf 1}).4 (0.3{rf 2} 0.6{rf 1}).8 1.2{lf 2 rf 3}.8 3.2{lf 4 rf 3}.8 0.1{rf 4}.8 |
+\\ts 1 4 (0.1{rf 4} 0.5{rf 1}).8 1.2{lf 2 rf 3}.8 |
+\\ts 2 4 (2.3{lf 3 rf 2} 0.5{rf 1}).8 0.3{rf 2}.8 2.3{lf 3 rf 2}.8 0.3{rf 2}.8 |
+\\ts 1 4 (1.2{lf 2 rf 3} 0.4{rf 1}).8 1.1{lf 2 rf 4}.8 |
+\\ts 3 4 (0.1 0.5).8 3.2{lf 4}.8 (1.2{lf 2} 0.6).8 0.1.8 1.1{lf 2}.8 3.1{lf 4}.8 |
+\\ts 2 4 (3.2{lf 4} 0.6).8 3.2{lf 4}.4 1.2{lf 2}.8 |
+\\ts 3 4 (0.2 0.6).8 2.3{lf 3}.8 (0.3 2.5{lf 3}).8 0.3.8 2.3{lf 3}.8 0.2.8 |
+(1.2{lf 2} 0.5).4 0.6.8 1.2{lf 2}.4 {d} |
+(3.1{lf 4} 0.5).8 0.1.16 1.1{lf 2}.16 (3.1{lf 4} 0.6).8 3.1{lf 4}.8 0.1.16 1.1{lf 2}.16 3.1{lf 4}.8 |
+(1.2{lf 2} 0.5).4 (1.2{lf 2} 0.6).8 1.2{lf 2}.4 1.2{lf 2}.8 |
+(5.1{lf 4} 0.4).8 6.2{lf 5}.16 3.1{lf 2}.16 (5.1{lf 4} 0.5).8 5.1{lf 4}.8 6.2{lf 5}.16 3.1{lf 2}.16 5.1{lf 4}.8 |
+(3.2{lf 4} 0.6).4 (3.2{lf 4} 2.5{lf 3}).8 3.2{lf 4}.4 3.2{lf 4}.8 |
+(0.1 0.5).8 1.1{lf 2}.8 (3.1{lf 4} 0.6).8 10.2{lf 5}.8 7.1{lf 2}.8 8.1{lf 3}.8 |
+(7.1{lf 2} 0.6).8 8.1{lf 3}.8 (10.1{lf 5} 7.6{lf 2}).8 3.1{lf 3}.8 5.1{lf 5}.8 3.1{lf 4}.8 |
+(0.1 0.5).8 3.2{lf 4}.8 (1.2{lf 2} 0.6).8 3.2{lf 4}.8 0.1.8 3.2{lf 4}.8 |
+(1.2{lf 2} 0.5).4 0.6.8 1.2{lf 2}.4 {d}`,
+  },
+  {
+    id: 'song-carolans-farewell',
+    level: 3,
+    kind: 'song',
+    title: 'Carolan’s Farewell to Music',
+    description:
+      'Said to be the last tune O’Carolan wrote. A slow minor air: let every note ring into the next.',
+    tex:
+      header('Carolan’s Farewell to Music', 72, '', 'Turlough O’Carolan (1738), arranged for this app') +
+      `\\ts 1 4 (2.3{lf 3 rf 2} 1.6{lf 2 rf 1}).8 0.2{rf 3}.8 |
+\\ts 4 4 (1.2{lf 2 rf 3} 3.5{lf 4 rf 1}).4 (0.2{rf 3} 3.6{lf 4 rf 1}).8 2.3{lf 3 rf 2}.8 0.3{rf 2}.4 (2.3{lf 3 rf 2} 1.6{lf 2 rf 1}).8 0.2{rf 3}.8 |
+(1.2{lf 2 rf 3} 3.5{lf 4 rf 1}).4 (0.2{rf 3} 3.6{lf 4 rf 1}).8 2.3{lf 3 rf 2}.8 0.3{rf 2}.4 (1.2{lf 2 rf 3} 3.5{lf 4 rf 1}).8 3.2{lf 4 rf 3}.8 |
+(0.1{rf 4} 3.5{lf 4 rf 1}).4 (3.2{lf 2 rf 3} 3.6{lf 2 rf 1}).8 0.1{rf 4}.8 1.2{lf 2 rf 3}.4 (0.2{rf 3} 3.6{lf 4 rf 1}).8 2.3{lf 3 rf 2}.8 |
+(2.3{lf 3} 1.6{lf 2}).4 3.5{lf 4}.4 0.3.4 (3.2{lf 2} 3.6{lf 2}).8 0.1.8 |
+(1.1{lf 2} 1.6{lf 2}).4 (1.1{lf 2} 3.5{lf 4}).8 3.1{lf 4}.8 0.1.4 (0.1 3.5{lf 4}).8 1.1{lf 2}.8 |
+(3.2{lf 4} 0.5).8 2.2{lf 3}.8 (3.2{lf 4} 0.6).8 0.1.8 5.1{lf 5}.4 0.5.8 4.1{lf 4}.8 |
+(5.1{lf 5} 0.5).8 3.1{lf 4}.8 (0.1 0.6).8 3.2{lf 4}.8 1.2{lf 2}.8 2.3{lf 3}.8 (0.2 3.6{lf 4}).8 1.3{lf 2}.8 |
+\\ts 3 4 (2.3{lf 3} 1.6{lf 2}).4 3.5{lf 4}.4 2.3{lf 3}.4 |
+\\ts 1 4 (0.1 3.5{lf 4}).4 |
+\\ts 4 4 (3.1{lf 2} 3.5{lf 2}).8 0.1.8 (3.2{lf 2} 3.6{lf 2}).8 0.1.8 3.1{lf 2}.4 (3.1{lf 2} 3.5{lf 2}).8 5.1{lf 4}.8 |
+(3.1{lf 2} 3.5{lf 2}).8 0.1.8 (3.2{lf 2} 3.6{lf 2}).8 0.1.8 3.1{lf 4}.4 (0.1 3.5{lf 4}).4 |
+(5.1{lf 5} 1.6{lf 2}).8 4.1{lf 5}.8 (5.1{lf 4} 3.5{lf 2}).8 7.1{lf 5}.8 5.1{lf 4}.8 3.1{lf 2}.8 (0.1 3.5{lf 2}).8 3.1{lf 2}.8 |
+(7.1{lf 5} 3.6{lf 2}).4 0.4.4 5.1{lf 4}.8 7.1{lf 5}.8 (5.1{lf 5} 1.6{lf 2}).8 3.1{lf 4}.8 |
+(2.1{lf 3} 3.5{lf 4}).4 (1.1{lf 2} 3.6{lf 4}).8 3.1{lf 4}.8 0.1.4 (0.1 3.5{lf 4}).8 1.1{lf 2}.8 |
+(3.2{lf 4} 0.5).8 2.2{lf 3}.8 (3.2{lf 4} 0.6).8 0.1.8 5.1{lf 5}.4 0.5.8 4.1{lf 4}.8 |
+(5.1{lf 5} 0.5).8 3.1{lf 4}.8 (0.1 0.6).8 3.2{lf 4}.8 1.2{lf 2}.8 2.3{lf 3}.8 (0.2 3.5{lf 4}).8 1.3{lf 2}.8`,
+  },
+  {
+    id: 'song-drowsy-maggie',
+    level: 3,
+    kind: 'song',
+    title: 'Drowsy Maggie',
+    description:
+      'An Irish reel in A dorian. The tune keeps coming back to the open A while the bass moves between A minor and G.',
+    tex:
+      header('Drowsy Maggie', 100, '', 'Traditional (Ireland), arranged for this app') +
+      `\\ts 4 4 (2.3{lf 3 rf 2} 0.6{rf 1}).4 (0.1{rf 4} 2.5{lf 3 rf 1}).8 2.3{lf 3 rf 2}.8 (3.1{lf 4 rf 4} 0.6{rf 1}).8 2.3{lf 3 rf 2}.8 (0.1{rf 4} 2.5{lf 3 rf 1}).8 2.3{lf 3 rf 2}.8 |
+(2.3{lf 3 rf 2} 0.6{rf 1}).4 (0.1{rf 4} 2.5{lf 3 rf 1}).8 2.3{lf 3 rf 2}.8 (3.2{lf 4 rf 3} 0.4{rf 1}).8 0.2{rf 3}.8 (0.3{rf 2} 0.5{rf 1}).8 0.2{rf 3}.8 |
+(2.3{lf 3 rf 2} 0.6{rf 1}).4 (0.1{rf 4} 2.5{lf 3 rf 1}).8 2.3{lf 3 rf 2}.8 (3.1{lf 4 rf 4} 0.6{rf 1}).8 2.3{lf 3 rf 2}.8 (0.1{rf 4} 2.5{lf 3 rf 1}).8 2.3{lf 3 rf 2}.8 |
+(0.1{rf 4} 0.6{rf 1}).8 3.2{lf 4 rf 3}.8 (0.1{rf 4} 2.5{lf 3 rf 1}).8 2.1{lf 3 rf 4}.8 (3.1{lf 4 rf 4} 0.4{rf 1}).8 3.2{lf 4 rf 3}.8 (0.2{rf 3} 0.5{rf 1}).8 0.3{rf 2}.8 |
+(2.3{lf 3} 0.6).4 (0.1 2.5{lf 3}).8 2.3{lf 3}.8 (3.1{lf 4} 0.6).8 2.3{lf 3}.8 (0.1 2.5{lf 3}).8 2.3{lf 3}.8 |
+(2.3{lf 3} 0.6).4 (0.1 2.5{lf 3}).8 2.3{lf 3}.8 (3.2{lf 4} 0.4).8 0.2.8 (0.3 0.5).8 0.2.8 |
+(2.3{lf 3} 0.6).4 (0.1 2.5{lf 3}).8 2.3{lf 3}.8 (3.1{lf 4} 0.6).8 2.3{lf 3}.8 (0.1 2.5{lf 3}).8 2.3{lf 3}.8 |
+(0.1 0.6).8 3.2{lf 4}.8 (0.1 2.5{lf 3}).8 2.1{lf 3}.8 (3.1{lf 4} 0.4).8 3.2{lf 4}.8 (0.2 0.5).8 3.2{lf 4}.8 |
+(3.1{lf 4} 0.4).4 (7.1{lf 4} 0.5).8 8.2{lf 5}.8 (6.2{lf 3} 0.6).4 (5.1{lf 2} 7.6{lf 4}).8 6.2{lf 3}.8 |
+(8.2{lf 5} 0.6).8 5.1{lf 2}.8 (7.1{lf 2} 7.6{lf 2}).8 8.1{lf 3}.8 (10.1{lf 5} 0.6).8 7.1{lf 2}.8 (8.1{lf 3} 7.6{lf 2}).8 10.2{lf 5}.8 |
+(8.2{lf 3} 0.4).4 (7.1{lf 2} 0.5).8 3.1{lf 4}.8 (1.1{lf 2} 0.6).4 (5.1{lf 5} 2.5{lf 3}).8 1.1{lf 2}.8 |
+(0.1 0.6).8 3.2{lf 4}.8 (0.1 2.5{lf 3}).8 1.1{lf 2}.8 (3.1{lf 4} 0.4).8 3.2{lf 4}.8 (0.2 0.5).8 3.2{lf 4}.8 |
+(3.1{lf 4} 0.4).4 (7.1{lf 4} 0.5).8 8.2{lf 5}.8 (6.2{lf 3} 0.6).4 (5.1{lf 2} 7.6{lf 4}).8 6.2{lf 3}.8 |
+(8.2{lf 5} 0.6).8 5.1{lf 2}.8 (7.1{lf 2} 7.6{lf 2}).8 8.1{lf 3}.8 (10.1{lf 5} 0.6).8 7.1{lf 2}.8 (8.1{lf 3} 7.6{lf 2}).8 10.2{lf 5}.8 |
+(10.1{lf 5} 0.6).8 7.1{lf 4}.8 (8.1{lf 5} 7.6{lf 4}).8 5.1{lf 2}.8 (7.1{lf 4} 0.4).8 8.2{lf 5}.8 (5.1{lf 2} 0.5).8 1.1{lf 2}.8 |
+(0.1 0.6).8 3.2{lf 4}.8 (0.1 2.5{lf 3}).8 1.1{lf 2}.8 (3.1{lf 4} 0.4).8 3.2{lf 4}.8 (0.2 0.5).8 0.3.8`,
+  },
 ]
