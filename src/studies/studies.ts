@@ -505,4 +505,46 @@ export const SONGS: Study[] = [
 (3.6{lf 4} 0.2).4 2.3{lf 2}.4 0.3.4 |
 (0.5 2.4{lf 3} 2.3{lf 4} 1.2{lf 2} 0.1).2 {d}`,
   },
+  {
+    id: 'song-amazing-grace',
+    level: 3,
+    kind: 'song',
+    title: 'Amazing Grace',
+    description:
+      'The 1779 hymn in D, with the melody on the treble strings over an alternating bass: the thumb plays the root on beat one and another bass note on beat two.',
+    tex:
+      header('Amazing Grace', 84, '', 'John Newton (1779), traditional tune, arranged for this app') +
+      `\\ts 1 4 2.3{lf 2 rf 2}.4 |
+\\ts 3 4 (0.4{rf 1} 3.2{lf 4 rf 3}).4 0.5{rf 1}.4 2.1{lf 3 rf 3}.8 3.2{lf 4 rf 2}.8 |
+(0.4{rf 1} 2.1{lf 3 rf 3}).4 0.5{rf 1}.4 (0.5{rf 1} 0.1{rf 3}).4 |
+(3.6{lf 3 rf 1} 3.2{lf 4 rf 3}).4 0.4{rf 1}.4 (0.3{rf 2} 0.2{rf 3}).4 |
+(0.4 2.3{lf 2}).4 0.5.4 (0.4 2.3{lf 2}).4 |
+(0.4 3.2{lf 4}).4 0.5.4 2.1{lf 3}.8 3.2{lf 4}.8 |
+(0.4 2.1{lf 3}).4 0.5.4 0.1.8 2.1{lf 3}.8 |
+(0.5 5.1{lf 5}).4 2.4{lf 2}.4 (2.2{lf 3} 2.1{lf 4}).4 |
+(0.4 5.1{lf 5}).4 0.5.4 2.1{lf 2}.8 3.2{lf 4}.8 |
+(0.4 2.1{lf 3}).4 0.5.4 (0.5 0.1).4 |
+(3.6{lf 3} 3.2{lf 4}).4 0.4.4 (0.3 0.2).4 |
+(0.4 2.3{lf 2}).4 0.5.4 2.3{lf 2}.4 |
+(0.4 3.2{lf 4}).4 0.5.4 2.1{lf 3}.8 3.2{lf 4}.8 |
+(0.5 2.1{lf 3}).4 2.4{lf 2}.4 (2.2{lf 2} 0.1).4 |
+(0.4 2.3{lf 2} 3.2{lf 4} 2.1{lf 3}).2 {d}`,
+  },
+  {
+    id: 'song-carol-of-the-bells',
+    level: 3,
+    kind: 'song',
+    title: 'Carol of the Bells',
+    description:
+      'Leontovych’s Ukrainian “Shchedryk” (1916). The four-note bell figure repeats over a falling bass, then moves into thirds that shift between the open position and the 7th fret.',
+    tex:
+      header('Carol of the Bells', 132, '\\ts 3 4\n', 'Mykola Leontovych (1916), arranged for this app') +
+      [
+        '(0.6{rf 1} 3.1{lf 4 rf 3}).4 2.1{lf 3 rf 2}.8 3.1{lf 4 rf 3}.8 0.1{rf 2}.4',
+        ...['0.6', '0.6', '0.6', '0.6', '0.4', '3.5{lf 3}', '2.5{lf 2}'].map((b) => `(${b} 3.1).4 2.1.8 3.1.8 0.1.4`),
+        '(0.6{rf 1} 0.3{rf 2} 7.1{lf 4 rf 3}).4 (4.4{lf 2 rf 1} 5.1{lf 3 rf 3}).8 (0.3{rf 2} 7.1{lf 4 rf 3}).8 (2.4{lf 2 rf 1} 3.1{lf 3 rf 3}).4',
+        ...['0.4', '8.6{lf 3}', '7.6{lf 2}', '0.6', '0.4', '8.6{lf 3}'].map((b) => `(${b} 0.3 7.1).4 (4.4 5.1).8 (0.3 7.1).8 (2.4 3.1).4`),
+      ].join(' |\n') +
+      ' |\n(0.6 2.5{lf 3} 2.4{lf 4} 0.3 0.2 0.1).2 {d}',
+  },
 ]
