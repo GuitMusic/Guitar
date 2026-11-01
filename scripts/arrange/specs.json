@@ -114,5 +114,153 @@
     "M"
    ]
   ]
+ },
+ "lamma": {
+  "file": "$AREALB/lamma-bada-yatathanna.musicxml",
+  "measures": [
+   1,
+   14
+  ],
+  "bass": "chords",
+  "seg": 2.5,
+  "alt": false,
+  "ts_den": 8,
+  "source": "Melody from the Arabic Real Book (github.com/infojunkie/arealb, tunes/), clone it and set AREALB to its tunes folder"
+ },
+ "zein": {
+  "file": "$AREALB/ah-ya-zein.musicxml",
+  "measures": [
+   0,
+   10
+  ],
+  "bass": "chords",
+  "seg": 2,
+  "source": "Melody from the Arabic Real Book (github.com/infojunkie/arealb, tunes/), clone it and set AREALB to its tunes folder"
+ },
+ "bafta": {
+  "file": "$AREALB/bafta-hindi.musicxml",
+  "measures": [
+   1,
+   12
+  ],
+  "bass": "chords",
+  "seg": 2,
+  "source": "Melody from the Arabic Real Book (github.com/infojunkie/arealb, tunes/), clone it and set AREALB to its tunes folder"
+ },
+ "hamama": {
+  "file": "$AREALB/hamama-beida-12tet.musicxml",
+  "measures": [
+   1,
+   12
+  ],
+  "bass": "chords",
+  "seg": 2,
+  "source": "Melody from the Arabic Real Book (github.com/infojunkie/arealb, tunes/), clone it and set AREALB to its tunes folder"
+ },
+ "shedd": {
+  "file": "$AREALB/shedd-el-hizam.musicxml",
+  "measures": [
+   1,
+   19
+  ],
+  "bass": "chords",
+  "seg": 2,
+  "source": "Melody from the Arabic Real Book (github.com/infojunkie/arealb, tunes/), clone it and set AREALB to its tunes folder"
+ },
+ "helwa": {
+  "file": "$AREALB/el-helwa-di.musicxml",
+  "measures": [
+   1,
+   16
+  ],
+  "bass": "chords",
+  "seg": 2,
+  "source": "Melody from the Arabic Real Book (github.com/infojunkie/arealb, tunes/), clone it and set AREALB to its tunes folder"
+ },
+ "shams": {
+  "file": "$AAM/a025eef0-d130-496f-9581-f5ce40bd1783.xml",
+  "measures": [
+   54,
+   64
+  ],
+  "bass": "harm",
+  "seg": 3,
+  "alt": true,
+  "chordset": [
+   [
+    "C",
+    "M"
+   ],
+   [
+    "B-",
+    "M"
+   ],
+   [
+    "F",
+    "M"
+   ]
+  ],
+  "source": "Melody from the CompMusic Arab-Andalusian corpus transcriptions (zenodo.org/record/1291776, scores-musicxml/), set AAM to that folder"
+ },
+ "inkunta": {
+  "file": "$AAM/6311c0de-d66f-482d-8dd1-8d8917ca6a76.xml",
+  "measures": [
+   42,
+   53
+  ],
+  "bass": "harm",
+  "seg": 3,
+  "alt": true,
+  "chordset": [
+   [
+    "C",
+    "M"
+   ],
+   [
+    "B-",
+    "M"
+   ],
+   [
+    "F",
+    "M"
+   ]
+  ],
+  "source": "Melody from the CompMusic Arab-Andalusian corpus transcriptions (zenodo.org/record/1291776, scores-musicxml/), set AAM to that folder"
+ },
+ "qamarun": {
+  "file": "$AAM/9781e524-92de-43f2-87e3-1e9f05931f0e.xml",
+  "measures": [
+   36,
+   47
+  ],
+  "bass": "harm",
+  "seg": 2,
+  "alt": true,
+  "source": "Melody from the CompMusic Arab-Andalusian corpus transcriptions (zenodo.org/record/1291776, scores-musicxml/), set AAM to that folder"
+ },
+ "shawq": {
+  "file": "$AAM/56da9cc8-dbdf-4123-9f05-d866b8380d93.xml",
+  "measures": [
+   50,
+   61
+  ],
+  "bass": "harm",
+  "seg": 3,
+  "alt": true,
+  "chordset": [
+   [
+    "F",
+    "M"
+   ],
+   [
+    "C",
+    "M"
+   ],
+   [
+    "B-",
+    "M"
+   ]
+  ],
+  "source": "Melody from the CompMusic Arab-Andalusian corpus transcriptions (zenodo.org/record/1291776, scores-musicxml/), set AAM to that folder"
  }
 }
