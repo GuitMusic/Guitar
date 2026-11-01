@@ -77,6 +77,8 @@ export function chooseFingers(
   previous: number | null,
   open: number[] = [],
   hint?: Map<string, number>,
+  /** Never one finger on two strings (only for notes that sound together and don't need a barre). */
+  noBarre = false,
 ): { fingers: Map<FretNote, FretFinger>; position: number | null; cost: number } {
   const fingers = new Map<FretNote, FretFinger>()
   const pinned = fretted.filter((n) => n.lh !== null && n.lh > 0)
@@ -97,7 +99,7 @@ export function chooseFingers(
   const minFret = Math.min(...fretted.map((n) => n.fret))
   // The same chord comes back again and again in a song, so remember the answers
   const hintKey = hint ? [...hint].map(([k, f]) => `${k}=${f}`).join(',') : ''
-  const cacheKey = `${previous}|${open.join('.')}|${hintKey}|${pinned.map((n) => `${n.string}.${n.fret}.${n.lh}`).join(',')}|${free.map((n) => `${n.string}.${n.fret}`).join(',')}`
+  const cacheKey = `${noBarre ? 'nb|' : ''}${previous}|${open.join('.')}|${hintKey}|${pinned.map((n) => `${n.string}.${n.fret}.${n.lh}`).join(',')}|${free.map((n) => `${n.string}.${n.fret}`).join(',')}`
   let solved = chordCache.get(cacheKey)
   if (!solved) {
     solved = searchFingers(
@@ -107,11 +109,12 @@ export function chooseFingers(
       minFret,
       open,
       hint,
+      noBarre,
     )
     if (chordCache.size > 2000) chordCache.clear()
     chordCache.set(cacheKey, solved)
   }
-  const known = knownGrip(pinned, free, previous, minFret, open, hint)
+  const known = noBarre ? null : knownGrip(pinned, free, previous, minFret, open, hint)
   if (known && known.cost < solved.cost) solved = known
   const { best, cost: bestCost, position: bestPos } = solved
   if (bestCost === Infinity) {
@@ -195,7 +198,7 @@ const chordCache = new Map<string, { best: number[]; cost: number; position: num
  * Tries the fingers note by note and stops early on anything unplayable (one finger on two
  * frets, crossed fingers, too wide a stretch), so only playable fingerings get scored.
  */
-function searchFingers(known: Placed[], free: Placed[], previous: number | null, minFret: number, open: number[], hint?: Map<string, number>) {
+function searchFingers(known: Placed[], free: Placed[], previous: number | null, minFret: number, open: number[], hint?: Map<string, number>, noBarre = false) {
   const all = known.concat(free)
   const k = known.length
   let best: number[] = []
@@ -215,7 +218,7 @@ function searchFingers(known: Placed[], free: Placed[], previous: number | null,
   for (let i = 1; i < k; i++) if (!fits(i)) return { best, cost, position }
   const step = (i: number) => {
     if (i === all.length) {
-      const scored = scoreFingering(all, previous, minFret, open, hint)
+      const scored = scoreFingering(all, previous, minFret, open, hint, noBarre)
       if (scored.cost < cost) {
         cost = scored.cost
         best = free.map((n) => n.f)
@@ -238,7 +241,7 @@ interface Placed {
   f: number
 }
 
-function scoreFingering(notes: Placed[], previous: number | null, minFret: number, open: number[] = [], hint?: Map<string, number>): { cost: number; position: number } {
+function scoreFingering(notes: Placed[], previous: number | null, minFret: number, open: number[] = [], hint?: Map<string, number>, noBarre = false): { cost: number; position: number } {
   let cost = 0
   // A finger already on a note (from the shape before) stays on it
   if (hint) for (const n of notes) {
@@ -261,6 +264,7 @@ function scoreFingering(notes: Placed[], previous: number | null, minFret: numbe
   }
   for (const [f, list] of byFinger) {
     if (list.length < 2) continue
+    if (noBarre) return { cost: Infinity, position }
     if (list.some((n) => n.fret !== list[0].fret)) return { cost: Infinity, position }
     // One finger on several strings: a barre
     const strings = list.map((n) => n.string)

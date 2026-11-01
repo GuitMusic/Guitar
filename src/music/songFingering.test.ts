@@ -59,3 +59,18 @@ describe('fingerSong', () => {
     expect(fingersOf(events, fingers)).toEqual(['5/3:3', '4/2:2', '2/1:1', '4/2:2', '3/2:3', '2/1:1'])
   })
 })
+
+describe('fingerSong: no barre where two fingers fit', () => {
+  it('a bass and a melody note on the same fret get two fingers, not an index barre', () => {
+    // Melody F#-G-A on the high E with a B bass under the F#, as in Lamma Bada
+    const events: FingerEvent[] = [
+      { bar: 0, notes: [n(1, 2, 1)] },
+      { bar: 0, notes: [n(1, 3, 2)] },
+      { bar: 0, notes: [n(1, 5, 4)] },
+      { bar: 0, notes: [n(1, 2), n(5, 2)] },
+    ]
+    const { fingers } = fingerSong(events)
+    const [mel, bass] = events[3].notes
+    expect(fingers.get(mel.key)).not.toBe(fingers.get(bass.key))
+  })
+})
