@@ -2,6 +2,7 @@ import { useEffect, useId, useMemo, useState } from 'react'
 import { fretFingerLabel } from '../music/fingering'
 import { noteName, pitchClassName } from '../music/notes'
 import type { FretNote } from '../music/types'
+import { makeFretX, NECK_END, NUT_W, NUT_X, PICK_W, STRING_GAP, TOP, W } from './fretboardGeometry'
 
 export type LabelMode = 'finger' | 'note'
 export type StringOrder = 'tab' | 'player'
@@ -20,6 +21,8 @@ export interface FretboardOptions {
   sound?: GuitarSound
   /** Show every fretted note of the current bar, and where the hand sits. Default true. */
   showShape?: boolean
+  /** Show the 3D view of the fretting hand under the fretboard. Default true. */
+  hand3d?: boolean
 }
 
 export interface FretMark {
@@ -54,24 +57,9 @@ interface Props {
   handPosition?: number | null
 }
 
-const W = 1000
-/** Room left of the nut for string-name chips and open-string bubbles. */
-const NUT_X = 92
-const NUT_W = 9
-const PICK_W = 96
-const NECK_END = W - PICK_W - 18
-/** Fret numbers sit in a strip above the neck. */
-const TOP = 62
-const STRING_GAP = 38
 const NOTE_R = 17
 const CHIP_X = 20
 const OPEN_X = NUT_X - 34
-
-/** Distance from the nut using real guitar fret spacing, scaled to fit the visible frets. */
-function makeFretX(frets: number) {
-  const scale = (NECK_END - NUT_X) / (1 - Math.pow(2, -frets / 12))
-  return (n: number) => NUT_X + scale * (1 - Math.pow(2, -n / 12))
-}
 
 const SINGLE_INLAYS = [3, 5, 7, 9, 15, 17, 19, 21]
 

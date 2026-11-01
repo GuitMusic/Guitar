@@ -1,8 +1,8 @@
 import * as alphaTab from '@coderline/alphatab'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { applyFingering } from '../music/fingering'
 import { noteName } from '../music/notes'
-import type { FingeringOverride, FretNote } from '../music/types'
+import type { FingeringOverride, FingeringOverrides, FretNote } from '../music/types'
 import { loadSettings, newId, saveSettings, type SongSettings } from '../library/db'
 import type { OpenSong } from '../library/songs'
 import { beatToFretNotes, nextSoundingBeat } from '../player/alphaTabAdapter'
@@ -54,6 +54,8 @@ function setGuitarSound(score: alphaTab.model.Score, sound: GuitarSound = 'steel
 type Score = alphaTab.model.Score
 
 const BASE = import.meta.env.BASE_URL
+// three.js is big, so the 3D hand loads only when it's shown
+const HandPanel = lazy(() => import('../hand/HandPanel'))
 
 function formatTime(ms: number): string {
   const s = Math.max(0, Math.floor(ms / 1000))
@@ -85,6 +87,35 @@ function heldNotes(active: Beat[], soundingStrings: Set<number>): FretNote[] {
     }
   }
   return [...byString.values()]
+}
+
+/**
+ * Fingers new notes together with the notes still held from earlier in the bar, as one
+ * chord shape. Held notes that don't fit a playable shape with the new notes must have
+ * been let go, so they are dropped, the farthest from the new notes first.
+ */
+function fingerWithHeld(raw: FretNote[], held: FretNote[], strings: number, before: number | null, overrides: FingeringOverrides | undefined) {
+  const frets = raw.filter((n) => n.tabFret > 0).map((n) => n.fret)
+  const centre = frets.length ? frets.reduce((a, b) => a + b, 0) / frets.length : before ?? 0
+  let keep = [...held].sort((a, b) => Math.abs(a.fret - centre) - Math.abs(b.fret - centre))
+  while (keep.length > 0) {
+    const joint = applyFingering([...keep, ...raw], strings, before, overrides)
+    if (playable(joint.notes)) return joint
+    keep = keep.slice(0, -1)
+  }
+  return applyFingering(raw, strings, before, overrides)
+}
+
+function playable(notes: FretNote[]): boolean {
+  const fretted = notes.filter((n) => n.tabFret > 0 && !n.isDead)
+  if (fretted.length === 0) return true
+  const frets = fretted.map((n) => n.fret)
+  if (Math.max(...frets) - Math.min(...frets) > 5) return false
+  for (let f = 1; f <= 4; f++) {
+    const at = new Set(fretted.filter((n) => n.lh === f).map((n) => n.fret))
+    if (at.size > 1) return false
+  }
+  return true
 }
 
 export function Practice({ song }: Props) {
@@ -350,22 +381,24 @@ export function Practice({ song }: Props) {
       .filter((b): b is Beat => b !== null && b.notes.length > 0)
       .flatMap(beatToFretNotes)
     const before = applyFingering(previous, stringCount, null, overrides).position
-    const result = applyFingering(raw, stringCount, before, overrides)
+    // Notes still held from earlier in the bar are part of the chord shape, so they are
+    // fingered together with the new notes (a finger can't be in two places at once)
+    const held = heldNotes(beats, new Set(raw.map((n) => n.string)))
+    const result = fingerWithHeld(raw, held, stringCount, before, overrides)
     const nextRaw = beats
       .map(nextSoundingBeat)
       .filter((b): b is Beat => b !== null)
       .flatMap(beatToFretNotes)
     const current = new Set(result.notes.map((n) => `${n.string}:${n.fret}`))
-    const held = heldNotes(beats, new Set(result.notes.map((n) => n.string)))
-    const heldFingered = applyFingering(held, stringCount, result.position, overrides).notes
     // The whole fretting-hand shape for this bar: every fretted note, fingered beat by beat
     const shapeNotes: FretNote[] = []
-    const seen = new Set([...current, ...heldFingered.map((n) => `${n.string}:${n.fret}`)])
+    const seen = new Set(result.notes.map((n) => `${n.string}:${n.fret}`))
     for (const bar of new Set(beats.map((b) => b.voice.bar))) {
       let pos: number | null = null
       const barBeats = bar.voices.flatMap((v) => v.beats).sort((a, b) => a.playbackStart - b.playbackStart)
       for (const b of barBeats) {
-        const fingered = applyFingering(beatToFretNotes(b), stringCount, pos, overrides)
+        const own = beatToFretNotes(b)
+        const fingered = fingerWithHeld(own, heldNotes([b], new Set(own.map((n) => n.string))), stringCount, pos, overrides)
         pos = fingered.position
         for (const n of fingered.notes) {
           const id = `${n.string}:${n.fret}`
@@ -376,7 +409,7 @@ export function Practice({ song }: Props) {
       }
     }
     return {
-      notes: [...heldFingered, ...result.notes],
+      notes: result.notes,
       ghosts: nextRaw.filter((n) => !current.has(`${n.string}:${n.fret}`)),
       shape: shapeNotes,
       position: result.position,
@@ -563,6 +596,16 @@ export function Practice({ song }: Props) {
           shape={view.showShape === false ? [] : shape}
           handPosition={view.showShape === false ? null : position}
         />
+        {view.hand3d !== false && (
+          <Suspense fallback={<div className="hand-panel" />}>
+            <HandPanel
+              notes={notes}
+              shape={view.showShape === false ? [] : shape}
+              handPosition={position}
+              layout={{ strings: tuning.length, leftHanded: view.leftHanded, stringOrder: view.stringOrder }}
+            />
+          </Suspense>
+        )}
         <div className="rotate-hint">Turn your phone sideways for a bigger fretboard.</div>
         <div className="legend-row">
           <span className="legend-hint">
@@ -819,6 +862,9 @@ export function Practice({ song }: Props) {
               <option value="steel-dry">Steel-string, close and dry</option>
               <option value="nylon-dry">Nylon-string, close and dry</option>
             </select>
+          </label>
+          <label className="check">
+            <input type="checkbox" checked={view.hand3d !== false} onChange={(e) => setView({ hand3d: e.target.checked })} /> Show the 3D hand
           </label>
           <label className="check">
             <input type="checkbox" checked={view.showShape !== false} onChange={(e) => setView({ showShape: e.target.checked })} /> Show the hand shape for the bar
