@@ -363,7 +363,7 @@ export const SONGS: Study[] = [
     level: 2,
     kind: 'song',
     title: 'Malagueña',
-    description: 'The traditional Andalusian malagueña (not Lecuona's 1928 piece): Am, G, F, E with the open high E ringing, then the famous melody in the thumb on the bass strings.',
+    description: 'The traditional Andalusian malagueña (not Lecuona’s 1928 piece): Am, G, F, E with the open high E ringing, then the famous melody in the thumb on the bass strings.',
     tex:
       header('Malagueña', 120, '\\ts 3 4\n', 'Traditional (Spain), arranged for this app') +
       `:8 (0.5{rf 1} 1.2{lf 2 rf 2}) 0.1{rf 3} 1.2{rf 2} 0.1{rf 3} 1.2{rf 2} 0.1{rf 3} |
