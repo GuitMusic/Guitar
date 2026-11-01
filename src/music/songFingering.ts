@@ -120,5 +120,26 @@ export function fingerSong(events: FingerEvent[], overrides: FingeringOverrides 
     solved = solve(spots, open)
   })
   close(evs.length - 1)
+
+  // A grip says which finger plays each note, but notes that come one after another can share
+  // a finger at the same fret (it hops across). When two of them sound together that would be
+  // a barre: use another free finger instead when one fits, like the middle finger next to the index
+  evs.forEach((ev, i) => {
+    // Fingers written in the file (or chosen by the player) stay as they are
+    const chosen = new Set(ev.notes.filter((n) => n.lh !== null).map((n) => n.key))
+    const sounding = ev.notes.filter(fretted).map((n) => ({ ...n, lh: n.lh ?? fingers.get(n.key) ?? null }))
+    const barred = sounding.filter((n) => sounding.some((m) => m !== n && m.lh === n.lh && m.fret === n.fret && m.string !== n.string))
+    const free = barred.filter((n) => !chosen.has(n.key))
+    if (free.length === 0) return
+    const freeKeys = new Set(free.map((n) => n.key))
+    const notes = sounding.map((n) => (freeKeys.has(n.key) ? { ...n, lh: null } : n))
+    const open = ev.notes.filter((n) => n.tabFret === 0 && !n.isDead).map((n) => n.string)
+    const refit = chooseFingers(notes, grips[gripOf[i]].position, open, undefined, true)
+    if (refit.cost === Infinity) return
+    for (const n of notes) {
+      const f = refit.fingers.get(n)
+      if (freeKeys.has(n.key) && f) fingers.set(n.key, f)
+    }
+  })
   return { fingers, grips, gripOf }
 }
