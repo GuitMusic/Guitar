@@ -2343,6 +2343,84 @@ textarea {
   color: var(--text-2);
   font-size: 0.9rem;
 }
+.browse-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.browse-search {
+  flex: 1 1 260px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 14px;
+  min-height: 42px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--text-2);
+}
+.browse-search:focus-within {
+  border-color: color-mix(in srgb, var(--accent) 60%, var(--border));
+}
+.browse-search input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  background: none;
+  color: var(--text);
+  font: inherit;
+  outline: none;
+  padding: 0;
+}
+.seg {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+}
+.seg button {
+  flex: none;
+  padding: 6px 14px;
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  color: var(--text-2);
+  font-weight: 600;
+  font-size: 0.88rem;
+  white-space: nowrap;
+}
+.seg button:hover {
+  color: var(--text);
+}
+.seg button.on {
+  background: var(--surface-2);
+  color: var(--text);
+  box-shadow: inset 0 0 0 1px var(--border);
+}
+.seg button.on.level-1 {
+  color: #6ee7a8;
+}
+.seg button.on.level-2 {
+  color: #7cc4ff;
+}
+.seg button.on.level-3 {
+  color: #ffb057;
+}
+.browse-empty {
+  padding: 28px;
+  text-align: center;
+  color: var(--text-2);
+  background: var(--surface);
+  border: 1px dashed var(--border);
+  border-radius: 18px;
+}
+.tile-facts .tile-level {
+  display: none;
+}
 .tiles {
   list-style: none;
   margin: 0;
@@ -2591,21 +2669,73 @@ textarea {
     width: 36px;
     height: 36px;
   }
+  /* Phone: a compact vertical list instead of a sideways row */
   .tiles {
-    display: flex;
-    overflow-x: auto;
-    scroll-snap-type: x mandatory;
-    gap: 12px;
-    margin: 0 -16px;
-    padding: 2px 16px 10px;
-    scrollbar-width: none;
+    grid-template-columns: 1fr;
+    gap: 10px;
   }
-  .tiles::-webkit-scrollbar {
+  .tile-main {
+    display: grid;
+    grid-template-columns: 96px 1fr;
+    grid-template-rows: auto auto 1fr;
+    column-gap: 12px;
+    row-gap: 2px;
+    padding: 0;
+    border-radius: 16px;
+  }
+  .tile-art {
+    grid-row: 1 / 4;
+    aspect-ratio: auto;
+    min-height: 92px;
+    margin: 0;
+  }
+  .tile-art .level {
     display: none;
   }
-  .tile {
-    flex: 0 0 74%;
-    scroll-snap-align: start;
+  .tile-title {
+    padding: 12px 12px 0 0;
+    font-size: 1rem;
+  }
+  .tile-sub {
+    padding: 0 12px 0 0;
+    -webkit-line-clamp: 1;
+  }
+  .tile-facts {
+    padding: 4px 12px 12px 0;
+  }
+  .tile-facts .tile-level {
+    display: inline;
+  }
+  .tile-facts .tile-level.level-1 {
+    color: #6ee7a8;
+  }
+  .tile-facts .tile-level.level-2 {
+    color: #7cc4ff;
+  }
+  .tile-facts .tile-level.level-3 {
+    color: #ffb057;
+  }
+  .tile-play {
+    width: 34px;
+    height: 34px;
+    right: auto;
+    left: 31px;
+    bottom: auto;
+    top: calc(50% - 17px);
+  }
+  .tile-play svg {
+    width: 16px;
+    height: 16px;
+  }
+  .browse-bar .seg {
+    flex: 1 1 100%;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .seg button {
+    flex: 1 0 auto;
+    padding: 6px 10px;
+    font-size: 0.82rem;
   }
   .tile-play {
     opacity: 1;
