@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { registerAudioContext } from '../audio/unlock'
 
 const SUBDIVISIONS = [
   { value: 1, label: 'Quarter notes' },
@@ -23,6 +24,8 @@ export function Metronome() {
   useEffect(() => {
     if (!running) return
     const ctx = new AudioContext()
+    const unregister = registerAudioContext(ctx)
+    void ctx.resume().catch(() => {})
     let next = ctx.currentTime + 0.1
     let step = 0
     const timers: number[] = []
@@ -55,6 +58,7 @@ export function Metronome() {
     return () => {
       window.clearInterval(interval)
       timers.forEach((t) => window.clearTimeout(t))
+      unregister()
       void ctx.close()
       setBeat(-1)
     }

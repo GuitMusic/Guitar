@@ -1,5 +1,6 @@
 import { PitchDetector } from 'pitchy'
 import { frequencyToMidi, midiToFrequency } from '../music/notes'
+import { sharedAudioContext } from './unlock'
 
 export interface PitchReading {
   freq: number
@@ -63,8 +64,9 @@ export function micErrorMessage(e: unknown): string {
 
 /** Plays a plucked-sounding reference tone. */
 export function playTone(midi: number, seconds = 1.6): void {
-  const ctx = new AudioContext()
-  const t = ctx.currentTime
+  const ctx = sharedAudioContext()
+  // A little ahead, so the attack is not cut off while the context wakes up
+  const t = ctx.currentTime + 0.02
   const out = ctx.createGain()
   out.gain.setValueAtTime(0.0001, t)
   out.gain.exponentialRampToValueAtTime(0.5, t + 0.01)
@@ -80,6 +82,6 @@ export function playTone(midi: number, seconds = 1.6): void {
     osc.connect(g).connect(out)
     osc.start(t)
     osc.stop(t + seconds + 0.05)
-    if (i === 0) osc.onended = () => void ctx.close()
+    if (i === 0) osc.onended = () => out.disconnect()
   })
 }

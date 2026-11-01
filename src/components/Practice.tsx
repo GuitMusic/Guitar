@@ -8,6 +8,7 @@ import type { OpenSong } from '../library/songs'
 import { beatToFretNotes, nextSoundingBeat } from '../player/alphaTabAdapter'
 import { Fretboard, type FretboardOptions } from './Fretboard'
 import { playTone } from '../audio/pitch'
+import { registerAudioContext, resumeAudio, useAudioBlocked } from '../audio/unlock'
 import { FingerEditor } from './FingerEditor'
 import { CheckPanel, ListenMenu } from './CheckPanel'
 import { BeatLights, Icon, Menu, ProgressLine, TogglePill } from './PlayerBar'
@@ -109,6 +110,7 @@ export function Practice({ song }: Props) {
   const [error, setError] = useState<string | null>(null)
   const [loadingSound, setLoadingSound] = useState(0)
   const [ready, setReady] = useState(false)
+  const audioBlocked = useAudioBlocked()
   const [playing, setPlaying] = useState(false)
   const [time, setTime] = useState({ current: 0, end: 0, tick: 0 })
   const [activeBeats, setActiveBeats] = useState<Beat[]>([])
@@ -174,8 +176,28 @@ export function Practice({ song }: Props) {
     })
     api.error.on((e) => setError(e.message ?? String(e)))
     api.soundFontLoad.on((e) => setLoadingSound(Math.round((e.loaded / Math.max(1, e.total)) * 100)))
-    api.playerReady.on(() => setReady(true))
-    api.playerStateChanged.on((e) => setPlaying(e.state === alphaTab.synth.PlayerState.Playing))
+    // alphaTab plays through its own AudioContext: track it so a click wakes it up
+    // again after the laptop sleeps or the output device changes
+    let unregisterAudio = () => {}
+    const watchAudio = () => {
+      const ctx = (api.player as unknown as { output?: { context?: AudioContext | null } } | null)?.output?.context
+      if (ctx) {
+        unregisterAudio()
+        unregisterAudio = registerAudioContext(ctx)
+      }
+    }
+    api.playerReady.on(() => {
+      watchAudio()
+      setReady(true)
+    })
+    api.playerStateChanged.on((e) => {
+      const isPlaying = e.state === alphaTab.synth.PlayerState.Playing
+      if (isPlaying) {
+        watchAudio()
+        resumeAudio()
+      }
+      setPlaying(isPlaying)
+    })
     api.playerFinished.on(() => {
       if (!api.isLooping) setFinished(true)
     })
@@ -199,6 +221,7 @@ export function Practice({ song }: Props) {
     }
 
     return () => {
+      unregisterAudio()
       api.destroy()
       apiRef.current = null
       setApi(null)
@@ -552,6 +575,11 @@ export function Practice({ song }: Props) {
         <button className="pb-icon-btn" disabled={!ready} onClick={() => apiRef.current?.stop()} aria-label="Back to the start" title="Back to the start">
           <Icon name="restart" />
         </button>
+        {ready && playing && audioBlocked && (
+          <button className="pb-sound-off" onClick={resumeAudio} title="The browser paused the sound">
+            Sound is off. Click to turn it on
+          </button>
+        )}
         {!ready && <span className="pb-loading">{loadingSound > 0 && loadingSound < 100 ? `Loading sound ${loadingSound}%` : 'Loading…'}</span>}
         <span className="time">{formatTime(time.current)}</span>
         <ProgressLine
