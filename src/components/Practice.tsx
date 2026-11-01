@@ -583,6 +583,7 @@ export function Practice({ song }: Props) {
       </div>
 
       <div className="fretboard-wrap" ref={fretboardWrapEl}>
+        <div className={`fretboard-row${view.hand3d !== false ? ' with-hand' : ''}`}>
         <Fretboard
           notes={notes}
           ghosts={ghosts}
@@ -606,6 +607,7 @@ export function Practice({ song }: Props) {
             />
           </Suspense>
         )}
+        </div>
         <div className="rotate-hint">Turn your phone sideways for a bigger fretboard.</div>
         <div className="legend-row">
           <span className="legend-hint">
