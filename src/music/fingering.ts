@@ -72,12 +72,17 @@ function clampFinger(f: number): FretFinger {
  *
  * Fingers already known (from the file or the player) are kept and shape the choice.
  */
-export function chooseFingers(fretted: FretNote[], previous: number | null, open: number[] = []): { fingers: Map<FretNote, FretFinger>; position: number | null } {
+export function chooseFingers(
+  fretted: FretNote[],
+  previous: number | null,
+  open: number[] = [],
+  hint?: Map<string, number>,
+): { fingers: Map<FretNote, FretFinger>; position: number | null; cost: number } {
   const fingers = new Map<FretNote, FretFinger>()
   const pinned = fretted.filter((n) => n.lh !== null && n.lh > 0)
   const free = fretted.filter((n) => n.lh === null)
-  if (fretted.length === 0) return { fingers, position: previous }
-  if (free.length === 0 || free.length > 6) {
+  if (fretted.length === 0) return { fingers, position: previous, cost: 0 }
+  if (free.length > 8 || (free.length === 0 && pinned.length > 8)) {
     // Nothing to choose (or too many notes to search): the old rule, one finger per fret
     const minFret = Math.min(...fretted.map((n) => n.fret))
     const maxFret = Math.max(...fretted.map((n) => n.fret))
@@ -86,12 +91,13 @@ export function chooseFingers(fretted: FretNote[], previous: number | null, open
     if (pin) position = Math.max(1, pin.fret - (pin.lh! - 1))
     else if (position === null || minFret < position || maxFret > position + 3) position = minFret
     for (const n of free) fingers.set(n, clampFinger(n.fret - position + 1))
-    return { fingers, position }
+    return { fingers, position, cost: Infinity }
   }
 
   const minFret = Math.min(...fretted.map((n) => n.fret))
   // The same chord comes back again and again in a song, so remember the answers
-  const cacheKey = `${previous}|${open.join('.')}|${pinned.map((n) => `${n.string}.${n.fret}.${n.lh}`).join(',')}|${free.map((n) => `${n.string}.${n.fret}`).join(',')}`
+  const hintKey = hint ? [...hint].map(([k, f]) => `${k}=${f}`).join(',') : ''
+  const cacheKey = `${previous}|${open.join('.')}|${hintKey}|${pinned.map((n) => `${n.string}.${n.fret}.${n.lh}`).join(',')}|${free.map((n) => `${n.string}.${n.fret}`).join(',')}`
   let solved = chordCache.get(cacheKey)
   if (!solved) {
     solved = searchFingers(
@@ -100,19 +106,87 @@ export function chooseFingers(fretted: FretNote[], previous: number | null, open
       previous,
       minFret,
       open,
+      hint,
     )
     if (chordCache.size > 2000) chordCache.clear()
     chordCache.set(cacheKey, solved)
   }
+  const known = knownGrip(pinned, free, previous, minFret, open, hint)
+  if (known && known.cost < solved.cost) solved = known
   const { best, cost: bestCost, position: bestPos } = solved
   if (bestCost === Infinity) {
     // Nothing playable (e.g. the file's fingers clash): fall back to one finger per fret
     const position = previous !== null && minFret >= previous && Math.max(...fretted.map((n) => n.fret)) <= previous + 3 ? previous : minFret
     for (const n of free) fingers.set(n, clampFinger(n.fret - position + 1))
-    return { fingers, position }
+    return { fingers, position, cost: Infinity }
   }
   free.forEach((n, i) => fingers.set(n, best[i] as FretFinger))
-  return { fingers, position: bestPos }
+  return { fingers, position: bestPos, cost: bestCost }
+}
+
+/**
+ * Chord shapes as most players finger them (low E string first, x = not played, 0 = open,
+ * then fret:finger). Notes that all belong to one of these get its usual fingers, unless
+ * that would be clearly harder: an intermediate player reaches for the shape they know.
+ */
+const GRIP_SHAPES: string[] = [
+  'x 3:3 2:2 0 1:1 0', // C
+  'x 3:3 2:2 0 0 0', // Cmaj7
+  'x 3:3 2:2 3:4 1:1 0', // C7
+  'x 3:2 2:1 0 3:3 0', // Cadd9
+  '3:2 2:1 0 0 0 3:3', // G
+  '3:2 2:1 0 0 3:3 3:4', // G, rock G
+  '3:3 2:2 0 0 0 1:1', // G7
+  'x x 0 2:1 3:3 2:2', // D
+  'x x 0 2:2 1:1 2:3', // D7
+  'x x 0 2:2 3:3 1:1', // Dm
+  'x x 0 2:1 3:3 3:4', // Dsus4
+  'x x 0 2:1 3:3 0', // Dsus2
+  'x x 0 2:1 2:2 2:3', // Dmaj7
+  'x 0 2:1 2:2 2:3 0', // A
+  'x 0 2:2 0 2:3 0', // A7
+  'x 0 2:2 2:3 1:1 0', // Am
+  'x 0 2:2 0 1:1 0', // Am7
+  'x 0 2:2 2:3 0 0', // Asus2
+  '0 2:2 2:3 1:1 0 0', // E
+  '0 2:2 2:3 0 0 0', // Em
+  '0 2:2 0 1:1 0 0', // E7
+  '0 2:2 2:3 0 3:4 0', // Em7
+  'x x 3:3 2:2 1:1 1:1', // F (small)
+  'x x 3:3 2:2 1:1 0', // Fmaj7
+  '1:1 3:3 3:4 2:2 1:1 1:1', // F barre
+  'x 2:2 1:1 2:3 0 2:4', // B7
+  'x 2:1 4:3 4:4 3:2 2:1', // Bm
+]
+const GRIPS: Map<string, number>[] = GRIP_SHAPES.map((shape) => {
+  const m = new Map<string, number>()
+  shape.split(' ').forEach((cell, i) => {
+    if (cell === 'x' || cell === '0') return
+    const [fret, finger] = cell.split(':').map(Number)
+    m.set(`${6 - i}.${fret}`, finger)
+  })
+  return m
+})
+/** How much easier a familiar chord shape feels than its score says. */
+const GRIP_BONUS = 2.5
+
+function knownGrip(pinned: FretNote[], free: FretNote[], previous: number | null, minFret: number, open: number[], hint?: Map<string, number>) {
+  const all = [...pinned, ...free]
+  if (all.length < 2) return null
+  let found: { best: number[]; cost: number; position: number } | null = null
+  for (const grip of GRIPS) {
+    // Shapes are written as tab, so they work with a capo too
+    const at = (n: FretNote) => `${n.string}.${n.tabFret}`
+    if (!all.every((n) => grip.has(at(n)))) continue
+    if (!pinned.every((n) => grip.get(at(n)) === n.lh)) continue
+    // An open string the shape frets can't ring
+    if (open.some((s) => [...grip.keys()].some((k) => k.startsWith(`${s}.`)))) continue
+    const placed = all.map((n) => ({ string: n.string, fret: n.fret, f: grip.get(at(n))! }))
+    const scored = scoreFingering(placed, previous, minFret, open, hint)
+    const cost = scored.cost - GRIP_BONUS
+    if (!found || cost < found.cost) found = { best: free.map((n) => grip.get(at(n))!), cost, position: scored.position }
+  }
+  return found
 }
 
 const chordCache = new Map<string, { best: number[]; cost: number; position: number }>()
@@ -121,7 +195,7 @@ const chordCache = new Map<string, { best: number[]; cost: number; position: num
  * Tries the fingers note by note and stops early on anything unplayable (one finger on two
  * frets, crossed fingers, too wide a stretch), so only playable fingerings get scored.
  */
-function searchFingers(known: Placed[], free: Placed[], previous: number | null, minFret: number, open: number[]) {
+function searchFingers(known: Placed[], free: Placed[], previous: number | null, minFret: number, open: number[], hint?: Map<string, number>) {
   const all = known.concat(free)
   const k = known.length
   let best: number[] = []
@@ -141,7 +215,7 @@ function searchFingers(known: Placed[], free: Placed[], previous: number | null,
   for (let i = 1; i < k; i++) if (!fits(i)) return { best, cost, position }
   const step = (i: number) => {
     if (i === all.length) {
-      const scored = scoreFingering(all, previous, minFret, open)
+      const scored = scoreFingering(all, previous, minFret, open, hint)
       if (scored.cost < cost) {
         cost = scored.cost
         best = free.map((n) => n.f)
@@ -164,8 +238,13 @@ interface Placed {
   f: number
 }
 
-function scoreFingering(notes: Placed[], previous: number | null, minFret: number, open: number[] = []): { cost: number; position: number } {
+function scoreFingering(notes: Placed[], previous: number | null, minFret: number, open: number[] = [], hint?: Map<string, number>): { cost: number; position: number } {
   let cost = 0
+  // A finger already on a note (from the shape before) stays on it
+  if (hint) for (const n of notes) {
+    const f = hint.get(`${n.string}.${n.fret}`)
+    if (f !== undefined && f !== n.f) cost += 1.2
+  }
   // The hand sits where the index finger is; without the index, where it would be
   const index = notes.find((n) => n.f === 1)
   let position = Infinity
@@ -189,7 +268,7 @@ function scoreFingering(notes: Placed[], previous: number | null, minFret: numbe
     // A finger lying across the strings would stop an open string ringing in between
     if (open.some((s) => s > Math.min(...strings) && s < Math.max(...strings))) return { cost: Infinity, position }
     // Short index barres compete with separate fingers; long ones are the only way
-    if (f === 1) cost += spread <= 3 ? 2.8 : 1.8
+    if (f === 1) cost += spread === 2 ? 1.2 : spread === 3 ? 2.8 : 1.8
     else if (spread === list.length && list.length <= 3) cost += 1.6 * (list.length - 1)
     else return { cost: Infinity, position }
     // Nothing on a lower fret may sit inside the barre's reach for index barres
@@ -211,7 +290,7 @@ function scoreFingering(notes: Placed[], previous: number | null, minFret: numbe
       if (a.fret === b.fret && a.string < b.string) cost += 2.5
     }
   }
-  if (previous !== null && position !== previous) cost += 3
+  if (previous !== null && position !== previous) cost += 1.5 + 0.25 * Math.abs(position - previous)
   cost += 0.3 * Math.abs(position - minFret)
   return { cost, position }
 }
