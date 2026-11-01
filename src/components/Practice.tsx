@@ -9,7 +9,8 @@ import { beatToFretNotes, nextSoundingBeat } from '../player/alphaTabAdapter'
 import { Fretboard, type FretboardOptions } from './Fretboard'
 import { playTone } from '../audio/pitch'
 import { FingerEditor } from './FingerEditor'
-import { CheckPanel } from './CheckPanel'
+import { CheckPanel, ListenMenu } from './CheckPanel'
+import { BeatLights, Icon, Menu, ProgressLine, TogglePill } from './PlayerBar'
 import { accuracy, nextTrainerSpeed } from '../check/noteCheck'
 import { usePracticeCheck, type CheckMode } from '../check/usePracticeCheck'
 import { logPractice } from '../progress/practiceLog'
@@ -95,7 +96,7 @@ export function Practice({ song }: Props) {
   const [loadingSound, setLoadingSound] = useState(0)
   const [ready, setReady] = useState(false)
   const [playing, setPlaying] = useState(false)
-  const [time, setTime] = useState({ current: 0, end: 0 })
+  const [time, setTime] = useState({ current: 0, end: 0, tick: 0 })
   const [activeBeats, setActiveBeats] = useState<Beat[]>([])
   const [settings, setSettings] = useState<SongSettings | null>(null)
   const view = useFretboardView()
@@ -103,6 +104,7 @@ export function Practice({ song }: Props) {
   const [metronome, setMetronome] = useState(false)
   const [countIn, setCountIn] = useState(false)
   const [loop, setLoop] = useState<{ on: boolean; start: number; end: number }>({ on: false, start: 1, end: 4 })
+  const [showLegend, setShowLegend] = useState(false)
   const [editing, setEditing] = useState<{ note: FretNote; anchor: { x: number; y: number } } | null>(null)
   const [checkMode, setCheckMode] = useState<CheckMode>('off')
   const [muteSong, setMuteSong] = useState(true)
@@ -160,7 +162,7 @@ export function Practice({ song }: Props) {
     api.playerReady.on(() => setReady(true))
     api.playerStateChanged.on((e) => setPlaying(e.state === alphaTab.synth.PlayerState.Playing))
     api.playerPositionChanged.on((e) => {
-      setTime((t) => (Math.abs(t.current - e.currentTime) > 200 || t.end !== e.endTime ? { current: e.currentTime, end: e.endTime } : t))
+      setTime((t) => (Math.abs(t.current - e.currentTime) > 120 || t.end !== e.endTime ? { current: e.currentTime, end: e.endTime, tick: e.currentTick } : t))
       // Playback jumping back while looping = one pass of the loop finished
       const range = api.playbackRange
       if (api.isLooping && range && e.currentTick + 960 < lastTick.current && e.currentTick <= range.startTick + 960) onLoopPass.current()
@@ -309,6 +311,21 @@ export function Practice({ song }: Props) {
   }
 
   const barCount = score?.masterBars.length ?? 0
+  // Start tick of each bar plus the end of the song, for the progress line
+  const barTicks = useMemo(() => {
+    const bars = score?.masterBars ?? []
+    if (!bars.length) return []
+    const last = bars[bars.length - 1]
+    return [...bars.map((b) => b.start), last.start + last.calculateDuration()]
+  }, [score])
+  // Which beat of the bar is playing, for the metronome lights
+  const beatInfo = useMemo(() => {
+    const beat = activeBeats[0]
+    const master = beat?.voice.bar.masterBar ?? score?.masterBars[0]
+    if (!master) return { count: 4, index: null as number | null }
+    const unit = 3840 / master.timeSignatureDenominator
+    return { count: master.timeSignatureNumerator, index: beat ? Math.floor(beat.playbackStart / unit) : null }
+  }, [activeBeats, score])
   const speed = settings?.speed ?? 1
   const tuning = staff?.tuning ?? [64, 59, 55, 50, 45, 40]
   const capo = staff?.capo ?? 0
@@ -460,90 +477,172 @@ export function Practice({ song }: Props) {
           handPosition={view.showShape === false ? null : position}
         />
         <div className="rotate-hint">Turn your phone sideways for a bigger fretboard.</div>
-        <div className="legend">
-          <span className="legend-item"><i className="dot fb-finger-1" />1 index</span>
-          <span className="legend-item"><i className="dot fb-finger-2" />2 middle</span>
-          <span className="legend-item"><i className="dot fb-finger-3" />3 ring</span>
-          <span className="legend-item"><i className="dot fb-finger-4" />4 little</span>
-          <span className="legend-item"><i className="dot dashed" />suggested by the app</span>
-          <span className="legend-item"><i className="dot ghost" />coming next</span>
-          <span className="legend-item"><i className="dot shape" />rest of the bar's hand shape</span>
+        <div className="legend-row">
           <span className="legend-hint">
             <span className="tap-word">Tap</span><span className="click-word">Click</span> a note to change its fingering, or an empty fret to hear it. <span className="keys">Keys: Space play, ↑↓ speed, L loop</span>
           </span>
+          <button className="legend-toggle" aria-label="What the colours mean" aria-expanded={showLegend} onClick={() => setShowLegend(!showLegend)} title="What the colours mean">
+            ?
+          </button>
         </div>
+        {showLegend && (
+          <div className="legend">
+            <span className="legend-item"><i className="dot fb-finger-1" />1 index</span>
+            <span className="legend-item"><i className="dot fb-finger-2" />2 middle</span>
+            <span className="legend-item"><i className="dot fb-finger-3" />3 ring</span>
+            <span className="legend-item"><i className="dot fb-finger-4" />4 little</span>
+            <span className="legend-item"><i className="dot dashed" />suggested by the app</span>
+            <span className="legend-item"><i className="dot ghost" />coming next</span>
+            <span className="legend-item"><i className="dot shape" />rest of the bar's hand shape</span>
+            <span className="legend-item">Picking hand: p thumb, i index, m middle, a ring</span>
+          </div>
+        )}
       </div>
 
-      <div className="transport">
-        <div className="transport-group">
-          <button className="primary" disabled={!ready} onClick={() => apiRef.current?.playPause()}>
-            {!ready ? (loadingSound > 0 && loadingSound < 100 ? `Loading sound ${loadingSound}%` : 'Loading…') : playing ? 'Pause' : 'Play'}
-          </button>
-          <button disabled={!ready} onClick={() => apiRef.current?.stop()}>
-            Stop
-          </button>
-          <span className="time">
-            {formatTime(time.current)} / {formatTime(time.end)}
-          </span>
-        </div>
+      <div className="player-bar">
+        <button
+          className="pb-play"
+          disabled={!ready}
+          onClick={() => apiRef.current?.playPause()}
+          aria-label={playing ? 'Pause' : 'Play'}
+          title={playing ? 'Pause (Space)' : 'Play (Space)'}
+        >
+          <Icon name={playing ? 'pause' : 'play'} size={24} />
+        </button>
+        <button className="pb-icon-btn" disabled={!ready} onClick={() => apiRef.current?.stop()} aria-label="Back to the start" title="Back to the start">
+          <Icon name="restart" />
+        </button>
+        {!ready && <span className="pb-loading">{loadingSound > 0 && loadingSound < 100 ? `Loading sound ${loadingSound}%` : 'Loading…'}</span>}
+        <span className="time">{formatTime(time.current)}</span>
+        <ProgressLine
+          barTicks={barTicks}
+          tick={time.tick}
+          loop={loop}
+          onSeekBar={(bar) => {
+            const api = apiRef.current
+            if (api && barTicks[bar - 1] !== undefined) api.tickPosition = barTicks[bar - 1]
+          }}
+          onLoopBars={(start, end) => setLoop({ on: true, start, end })}
+        />
+        <span className="time">{formatTime(time.end)}</span>
 
-        <div className="transport-group">
-          <label className="field speed">
-            Speed {Math.round(speed * 100)}%
-            <input
-              type="range"
-              min={0.25}
-              max={1.5}
-              step={0.05}
-              value={speed}
-              onChange={(e) => updateSettings((s) => ({ ...s, speed: Number(e.target.value) }))}
-            />
-          </label>
-          {[0.5, 0.75, 1].map((v) => (
-            <button key={v} className={speed === v ? 'chip active' : 'chip'} onClick={() => updateSettings((s) => ({ ...s, speed: v }))}>
-              {v * 100}%
+        <div className="pb-group">
+          <Menu
+            label="Speed"
+            trigger={
+              <>
+                <Icon name="speed" />
+                <span className="pb-pill-label">Speed {Math.round(speed * 100)}%</span>
+              </>
+            }
+          >
+            <label className="field speed">
+              Speed {Math.round(speed * 100)}%
+              <input
+                type="range"
+                min={0.25}
+                max={1.5}
+                step={0.05}
+                value={speed}
+                onChange={(e) => updateSettings((s) => ({ ...s, speed: Number(e.target.value) }))}
+              />
+            </label>
+            <div className="row">
+              {[0.5, 0.75, 1].map((v) => (
+                <button key={v} className={speed === v ? 'chip active' : 'chip'} onClick={() => updateSettings((s) => ({ ...s, speed: v }))}>
+                  {v * 100}%
+                </button>
+              ))}
+            </div>
+            <p className="hint">Keys: ↑ and ↓ change the speed by 5%.</p>
+          </Menu>
+
+          <TogglePill
+            on={loop.on}
+            icon="loop"
+            label={loop.start === loop.end ? `Loop bar ${loop.start}` : `Loop bars ${loop.start}–${loop.end}`}
+            title="Repeat these bars (L). Drag across the progress line to pick bars."
+            onToggle={() => setLoop({ ...loop, on: !loop.on })}
+            menuLabel="Choose the bars to loop"
+          >
+            <div className="row">
+              Bars
+              <input
+                className="bar-input"
+                type="number"
+                min={1}
+                max={barCount || 1}
+                value={loop.start}
+                aria-label="Loop start bar"
+                onChange={(e) => {
+                  const start = Math.max(1, Number(e.target.value))
+                  setLoop({ ...loop, start, end: Math.max(start, loop.end) })
+                }}
+              />
+              to
+              <input
+                className="bar-input"
+                type="number"
+                min={loop.start}
+                max={barCount || 1}
+                value={loop.end}
+                aria-label="Loop end bar"
+                onChange={(e) => setLoop({ ...loop, end: Math.max(loop.start, Number(e.target.value)) })}
+              />
+            </div>
+            <button className="chip" onClick={saveLoop} disabled={!score}>
+              Save as a section
             </button>
-          ))}
-        </div>
+            <p className="hint">Tip: drag across the progress line to pick bars.</p>
+          </TogglePill>
 
-        <div className="transport-group">
-          <label className="check">
-            <input type="checkbox" checked={loop.on} onChange={(e) => setLoop({ ...loop, on: e.target.checked })} /> Loop bars
-          </label>
-          <input
-            className="bar-input"
-            type="number"
-            min={1}
-            max={barCount || 1}
-            value={loop.start}
-            aria-label="Loop start bar"
-            onChange={(e) => {
-              const start = Math.max(1, Number(e.target.value))
-              setLoop({ ...loop, start, end: Math.max(start, loop.end) })
-            }}
-          />
-          to
-          <input
-            className="bar-input"
-            type="number"
-            min={loop.start}
-            max={barCount || 1}
-            value={loop.end}
-            aria-label="Loop end bar"
-            onChange={(e) => setLoop({ ...loop, end: Math.max(loop.start, Number(e.target.value)) })}
-          />
-          <button className="chip" onClick={saveLoop} disabled={!score}>
-            Save section
-          </button>
-        </div>
+          <TogglePill
+            on={metronome}
+            icon="metronome"
+            label="Metronome"
+            title="Tick on every beat while the song plays"
+            onToggle={() => setMetronome(!metronome)}
+            menuLabel="Metronome options"
+            extra={metronome && <BeatLights count={beatInfo.count} current={playing ? beatInfo.index : null} />}
+          >
+            <label className="check">
+              <input type="checkbox" checked={countIn} onChange={(e) => setCountIn(e.target.checked)} /> Count in one bar before the song starts
+            </label>
+            <p className="hint">The metronome ticks on every beat while the song plays. Check me and Wait for me turn it on.</p>
+          </TogglePill>
 
-        <div className="transport-group">
-          <label className="check">
-            <input type="checkbox" checked={metronome} onChange={(e) => setMetronome(e.target.checked)} /> Click
-          </label>
-          <label className="check">
-            <input type="checkbox" checked={countIn} onChange={(e) => setCountIn(e.target.checked)} /> Count-in
-          </label>
+          <Menu
+            label="Listen while I play"
+            trigger={
+              <>
+                <Icon name="mic" />
+                <span className="pb-pill-label">{checkMode === 'play-along' ? 'Check me' : checkMode === 'wait' ? 'Wait for me' : 'Listen'}</span>
+              </>
+            }
+          >
+            <ListenMenu
+        mode={checkMode}
+        onModeChange={(m) => {
+          setCheckMode(m)
+          if (m !== 'off') setMetronome(true)
+        }}
+        muteSong={muteSong}
+        onMuteSongChange={setMuteSong}
+        listening={check.listening}
+        error={check.error}
+        judged={check.judged}
+        waiting={check.waiting}
+        onSkip={check.skipWait}
+        onClear={check.clearResults}
+        barCount={barCount}
+        onBarClick={(bar) => setLoop({ on: true, start: bar, end: bar })}
+        trainer={trainer}
+        onStartTrainer={startTrainer}
+        onStopTrainer={() => setTrainer((t) => ({ ...t, on: false, message: null }))}
+        onTargetChange={(target) => setTrainer((t) => ({ ...t, target }))}
+        speed={speed}
+            />
+          </Menu>
         </div>
       </div>
 
