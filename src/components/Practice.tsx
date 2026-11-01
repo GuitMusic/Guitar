@@ -16,6 +16,8 @@ import { usePracticeCheck, type CheckMode } from '../check/usePracticeCheck'
 import { logPractice } from '../progress/practiceLog'
 import type { FretMark, GuitarSound } from './Fretboard'
 import { getView, setView, useFretboardView } from './fretboardView'
+import { SongCover } from './Library'
+import { SongComplete } from './SongComplete'
 import { useTheme } from './theme'
 
 type Beat = alphaTab.model.Beat
@@ -89,6 +91,17 @@ export function Practice({ song }: Props) {
   const scrollEl = useRef<HTMLDivElement>(null)
   const apiRef = useRef<alphaTab.AlphaTabApi | null>(null)
   const [api, setApi] = useState<alphaTab.AlphaTabApi | null>(null)
+  const [finished, setFinished] = useState(false)
+  // The floating Play button only shows once the player bar has scrolled off screen
+  const playerBarEl = useRef<HTMLDivElement>(null)
+  const [barVisible, setBarVisible] = useState(true)
+  useEffect(() => {
+    const el = playerBarEl.current
+    if (!el || typeof IntersectionObserver === 'undefined') return
+    const io = new IntersectionObserver(([e]) => setBarVisible(e.isIntersecting))
+    io.observe(el)
+    return () => io.disconnect()
+  }, [])
   const lastTick = useRef(0)
   const onLoopPass = useRef<() => void>(() => {})
 
@@ -163,6 +176,9 @@ export function Practice({ song }: Props) {
     api.soundFontLoad.on((e) => setLoadingSound(Math.round((e.loaded / Math.max(1, e.total)) * 100)))
     api.playerReady.on(() => setReady(true))
     api.playerStateChanged.on((e) => setPlaying(e.state === alphaTab.synth.PlayerState.Playing))
+    api.playerFinished.on(() => {
+      if (!api.isLooping) setFinished(true)
+    })
     api.playerPositionChanged.on((e) => {
       setTime((t) => (Math.abs(t.current - e.currentTime) > 120 || t.end !== e.endTime ? { current: e.currentTime, end: e.endTime, tick: e.currentTick } : t))
       // Playback jumping back while looping = one pass of the loop finished
@@ -454,7 +470,11 @@ export function Practice({ song }: Props) {
   return (
     <div className="practice">
       <div className="song-head">
-        <div>
+        <div className="song-head-art" aria-hidden="true">
+          <SongCover id={song.id} dots={false} />
+        </div>
+        <div className="song-head-text">
+          <p className="eyebrow">{song.kind === 'study' ? 'Fingerstyle study' : song.builtIn ? 'Free song' : 'Your song'}</p>
           <h1>{score?.title || song.title}</h1>
           <div className="song-meta">
             {score?.artist && <span>{score.artist}</span>}
@@ -519,7 +539,7 @@ export function Practice({ song }: Props) {
         )}
       </div>
 
-      <div className="player-bar">
+      <div className="player-bar" ref={playerBarEl}>
         <button
           className="pb-play"
           disabled={!ready}
@@ -771,7 +791,7 @@ export function Practice({ song }: Props) {
       </div>
 
       <button
-        className="fab-play primary"
+        className={`fab-play primary${barVisible ? ' fab-hidden' : ''}`}
         disabled={!ready}
         onClick={() => apiRef.current?.playPause()}
         aria-label={playing ? 'Pause' : 'Play'}
@@ -782,6 +802,28 @@ export function Practice({ song }: Props) {
           <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path d="M8 5v14l11-7z" fill="currentColor" /></svg>
         )}
       </button>
+
+      {finished && (
+        <SongComplete
+          songId={song.id}
+          title={score?.title || song.title}
+          speed={speed}
+          onAgain={() => {
+            setFinished(false)
+            apiRef.current?.play()
+          }}
+          onFaster={
+            speed < 1.5
+              ? () => {
+                  updateSettings((s) => ({ ...s, speed: Math.min(1.5, Math.round((s.speed + 0.1) * 100) / 100) }))
+                  setFinished(false)
+                  window.setTimeout(() => apiRef.current?.play(), 100)
+                }
+              : undefined
+          }
+          onClose={() => setFinished(false)}
+        />
+      )}
 
       {editing && (
         <FingerEditor
