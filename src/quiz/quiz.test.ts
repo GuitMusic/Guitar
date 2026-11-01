@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { STANDARD_TUNING } from '../music/notes'
-import { checkAnswer, nextQuestion, questionText, spots, StableNote, type QuizSettings } from './quiz'
+import { checkAnswer, dayStreak, isUnlocked, LEVELS, nextQuestion, NoteEvents, questionText, spots, StableNote, starsFor, type QuizSettings } from './quiz'
 
 const base: QuizSettings = {
   mode: 'find-note',
@@ -86,5 +86,62 @@ describe('StableNote', () => {
   it('ignores pitches between notes', () => {
     const s = new StableNote(1)
     expect(s.push(45.5)).toBeNull()
+  })
+})
+
+describe('find-all', () => {
+  it('asks for every octave of the note in range', () => {
+    const q = nextQuestion({ ...base, mode: 'find-all', naturalsOnly: true }, () => 0)!
+    expect(q.midi % 12).toBe(4)
+    expect(q.targets).toEqual([40, 52, 64, 76])
+    expect(questionText(q)).toBe('Find every E')
+    expect(checkAnswer(q, 52).correct).toBe(true)
+    expect(checkAnswer(q, 53).correct).toBe(false)
+  })
+})
+
+describe('melody', () => {
+  it('makes a phrase of small steps with no repeated notes', () => {
+    let seed = 1
+    const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647)
+    for (let n = 0; n < 50; n++) {
+      const q = nextQuestion({ ...base, mode: 'melody', maxFret: 5, naturalsOnly: true, phraseLength: 4 }, rnd)!
+      expect(q.targets).toHaveLength(4)
+      for (let i = 1; i < 4; i++) {
+        expect(q.targets[i]).not.toBe(q.targets[i - 1])
+        expect(Math.abs(q.targets[i] - q.targets[i - 1])).toBeLessThanOrEqual(6)
+      }
+      expect(q.midi).toBe(q.targets[0])
+    }
+  })
+})
+
+describe('NoteEvents', () => {
+  it('counts a held note once and a re-picked note again after silence', () => {
+    const ev = new NoteEvents(2)
+    const out = [60, 60, 60, 60, null, null, null, 60, 60, 62, 62].map((m) => ev.push(m))
+    expect(out.filter((x) => x !== null)).toEqual([60, 60, 62])
+  })
+})
+
+describe('path', () => {
+  it('gives stars and unlocks levels in order within a group', () => {
+    expect(starsFor(6, 10)).toBe(0)
+    expect(starsFor(7, 10)).toBe(1)
+    expect(starsFor(9, 10)).toBe(2)
+    expect(starsFor(10, 10)).toBe(3)
+    expect(isUnlocked(0, {})).toBe(true)
+    expect(isUnlocked(1, {})).toBe(false)
+    expect(isUnlocked(1, { [LEVELS[0].id]: 1 })).toBe(true)
+    const firstEar = LEVELS.findIndex((l) => l.group === 'Ear')
+    expect(isUnlocked(firstEar, {})).toBe(true)
+  })
+  it('every level has notes to ask', () => {
+    for (const l of LEVELS) expect(spots({ ...l.settings, tuning: STANDARD_TUNING }).length).toBeGreaterThan(3)
+  })
+  it('counts a day streak', () => {
+    expect(dayStreak(['2026-10-30', '2026-10-31', '2026-11-01'], '2026-11-01')).toBe(3)
+    expect(dayStreak(['2026-10-30', '2026-10-31'], '2026-11-01')).toBe(2)
+    expect(dayStreak(['2026-10-29'], '2026-11-01')).toBe(0)
   })
 })

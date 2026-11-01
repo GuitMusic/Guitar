@@ -85,3 +85,23 @@ export function playTone(midi: number, seconds = 1.6): void {
     if (i === 0) osc.onended = () => out.disconnect()
   })
 }
+
+/** A short, quiet two-note chime for a right answer ('right'), or one low tone for a miss. */
+export function playChime(kind: 'right' | 'late' | 'miss'): void {
+  const ctx = sharedAudioContext()
+  const notes = kind === 'right' ? [88, 95] : kind === 'late' ? [88] : [52]
+  notes.forEach((midi, i) => {
+    const t = ctx.currentTime + 0.02 + i * 0.09
+    const osc = ctx.createOscillator()
+    const g = ctx.createGain()
+    osc.type = kind === 'miss' ? 'triangle' : 'sine'
+    osc.frequency.value = midiToFrequency(midi)
+    g.gain.setValueAtTime(0.0001, t)
+    g.gain.exponentialRampToValueAtTime(kind === 'miss' ? 0.12 : 0.08, t + 0.01)
+    g.gain.exponentialRampToValueAtTime(0.0001, t + (kind === 'miss' ? 0.35 : 0.5))
+    osc.connect(g).connect(ctx.destination)
+    osc.start(t)
+    osc.stop(t + 0.6)
+    osc.onended = () => g.disconnect()
+  })
+}
