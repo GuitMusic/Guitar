@@ -375,7 +375,7 @@ main {
 /* 3D view of the fretting hand, under the fretboard */
 .hand-panel {
   position: relative;
-  height: clamp(190px, 26vw, 330px);
+  height: clamp(170px, 44vw, 300px);
   margin-top: 6px;
   border-radius: 14px;
   overflow: hidden;
@@ -426,9 +426,22 @@ main {
   pointer-events: none;
 }
 
-@media (max-height: 500px) and (orientation: landscape) {
-  .hand-panel {
-    height: 52vh;
+/* Wide screens and phones held sideways: the 3D hand sits beside the fretboard, as tall as it */
+@media (min-width: 900px), (orientation: landscape) and (min-width: 600px) {
+  .fretboard-row.with-hand {
+    display: grid;
+    grid-template-columns: minmax(0, 1.75fr) minmax(0, 1fr);
+    gap: 10px;
+    align-items: stretch;
+  }
+  .fretboard-row.with-hand .hand-panel {
+    height: auto;
+    min-height: 0;
+    margin-top: 0;
+  }
+  .fretboard-row.with-hand .hand-panel-canvas {
+    position: absolute;
+    inset: 0;
   }
 }
 
@@ -3337,6 +3350,8 @@ button.chip.active {
   }
   .quiz-prompt {
     font-size: 1.7rem;
+  }
+}
 
 /* Slim player docked at the bottom while the big player bar is out of sight */
 .practice {
@@ -3416,4 +3431,28 @@ button.chip.active {
   .mini-player {
     transition: none;
   }
+}
+
+/* Compact song header in Practice, so the fretboard and the hand get the room */
+.practice .song-head {
+  padding: 8px 14px;
+  border-radius: 14px;
+  margin-bottom: 8px;
+}
+.practice .song-head-text {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+}
+.practice .song-head .eyebrow {
+  display: none;
+}
+.practice .song-head h1 {
+  font-size: clamp(1.05rem, 2vw, 1.35rem);
+  margin: 0;
+}
+.practice .song-meta span {
+  padding: 2px 8px;
+  font-size: 0.75rem;
 }

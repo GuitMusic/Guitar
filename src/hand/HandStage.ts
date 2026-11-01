@@ -10,7 +10,6 @@ import {
   Mesh,
   MeshDepthMaterial,
   MeshStandardMaterial,
-  PCFSoftShadowMap,
   PerspectiveCamera,
   Scene,
   SkinnedMesh,
@@ -115,9 +114,7 @@ export class HandStage {
   constructor(canvas: HTMLCanvasElement, modelUrl: string) {
     this.renderer = new WebGLRenderer({ canvas, alpha: true, antialias: true, powerPreference: 'low-power' })
     this.renderer.setClearColor(0x000000, 0)
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2))
-    this.renderer.shadowMap.enabled = true
-    this.renderer.shadowMap.type = PCFSoftShadowMap
+    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5))
 
     this.scene.add(new HemisphereLight(0xfff2e2, 0x3a2a20, 2.2))
     this.key = new DirectionalLight(0xfff0dd, 2.2)
@@ -295,6 +292,8 @@ export class HandStage {
   resize(width: number, height: number) {
     this.renderer.setSize(width, height, false)
     this.camera.aspect = width / height
+    // A narrower panel needs a wider lens to keep the whole hand in view
+    this.camera.fov = Math.min(46, Math.max(30, 30 * (2.2 / this.camera.aspect) ** 0.6))
     this.camera.updateProjectionMatrix()
     this.kick()
   }
@@ -352,7 +351,7 @@ export class HandStage {
     this.alphaTarget = [1, ...task.fingers.map((f) => weight[f.kind]), 1]
     // Look at the middle of the hand
     const fx = task.fingers.map((f) => pressX(this.neck, f.fret))
-    const local = new Vector3((Math.min(...fx) + Math.max(...fx)) / 2, (this.neck.edgeLow + this.neck.edgeHigh) / 2 - 38, -10)
+    const local = new Vector3((Math.min(...fx) + Math.max(...fx)) / 2, (this.neck.edgeLow + this.neck.edgeHigh) / 2 - 48, -12)
     this.world.updateMatrixWorld()
     this.focusTarget.copy(this.world.localToWorld(local))
     if (!this.hasPose || this.reduceMotion) {

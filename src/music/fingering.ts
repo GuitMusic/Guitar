@@ -89,27 +89,20 @@ export function chooseFingers(fretted: FretNote[], previous: number | null): { f
   }
 
   const minFret = Math.min(...fretted.map((n) => n.fret))
-  const known = pinned.map((n) => ({ string: n.string, fret: n.fret, f: n.lh as number }))
-  const choice = new Array<number>(free.length).fill(1)
-  let best: number[] = []
-  let bestCost = Infinity
-  let bestPos = 1
-  const all = known.concat(free.map((n) => ({ string: n.string, fret: n.fret, f: 1 })))
-  const total = Math.pow(4, free.length)
-  for (let code = 0; code < total; code++) {
-    let c = code
-    for (let i = 0; i < free.length; i++) {
-      choice[i] = (c % 4) + 1
-      c = Math.floor(c / 4)
-      all[known.length + i].f = choice[i]
-    }
-    const scored = scoreFingering(all, previous, minFret)
-    if (scored.cost < bestCost) {
-      bestCost = scored.cost
-      best = [...choice]
-      bestPos = scored.position
-    }
+  // The same chord comes back again and again in a song, so remember the answers
+  const cacheKey = `${previous}|${pinned.map((n) => `${n.string}.${n.fret}.${n.lh}`).join(',')}|${free.map((n) => `${n.string}.${n.fret}`).join(',')}`
+  let solved = chordCache.get(cacheKey)
+  if (!solved) {
+    solved = searchFingers(
+      pinned.map((n) => ({ string: n.string, fret: n.fret, f: n.lh as number })),
+      free.map((n) => ({ string: n.string, fret: n.fret, f: 1 })),
+      previous,
+      minFret,
+    )
+    if (chordCache.size > 2000) chordCache.clear()
+    chordCache.set(cacheKey, solved)
   }
+  const { best, cost: bestCost, position: bestPos } = solved
   if (bestCost === Infinity) {
     // Nothing playable (e.g. the file's fingers clash): fall back to one finger per fret
     const position = previous !== null && minFret >= previous && Math.max(...fretted.map((n) => n.fret)) <= previous + 3 ? previous : minFret
@@ -118,6 +111,49 @@ export function chooseFingers(fretted: FretNote[], previous: number | null): { f
   }
   free.forEach((n, i) => fingers.set(n, best[i] as FretFinger))
   return { fingers, position: bestPos }
+}
+
+const chordCache = new Map<string, { best: number[]; cost: number; position: number }>()
+
+/**
+ * Tries the fingers note by note and stops early on anything unplayable (one finger on two
+ * frets, crossed fingers, too wide a stretch), so only playable fingerings get scored.
+ */
+function searchFingers(known: Placed[], free: Placed[], previous: number | null, minFret: number) {
+  const all = known.concat(free)
+  const k = known.length
+  let best: number[] = []
+  let cost = Infinity
+  let position = 1
+  const fits = (i: number) => {
+    const a = all[i]
+    for (let j = 0; j < i; j++) {
+      const b = all[j]
+      if (a.f === b.f && a.fret !== b.fret) return false
+      if (a.f < b.f && a.fret > b.fret) return false
+      if (a.f > b.f && a.fret < b.fret) return false
+      if (Math.abs(a.fret - b.fret) > 5) return false
+    }
+    return true
+  }
+  for (let i = 1; i < k; i++) if (!fits(i)) return { best, cost, position }
+  const step = (i: number) => {
+    if (i === all.length) {
+      const scored = scoreFingering(all, previous, minFret)
+      if (scored.cost < cost) {
+        cost = scored.cost
+        best = free.map((n) => n.f)
+        position = scored.position
+      }
+      return
+    }
+    for (let f = 1; f <= 4; f++) {
+      all[i].f = f
+      if (fits(i)) step(i + 1)
+    }
+  }
+  step(k)
+  return { best, cost, position }
 }
 
 interface Placed {
