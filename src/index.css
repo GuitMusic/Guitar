@@ -1669,6 +1669,22 @@ input.wide {
   font-size: 0.85rem;
   color: var(--text-2);
 }
+.pb-sound-off {
+  padding: 6px 12px;
+  border: 1px solid color-mix(in srgb, var(--accent) 60%, var(--border));
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  color: var(--text);
+  font-size: 0.85rem;
+  font-weight: 600;
+  white-space: nowrap;
+  animation: pb-sound-pulse 1.6s ease-in-out infinite;
+}
+@keyframes pb-sound-pulse {
+  50% {
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 22%, transparent);
+  }
+}
 .player-bar .time {
   min-width: 0;
   font-size: 0.85rem;
