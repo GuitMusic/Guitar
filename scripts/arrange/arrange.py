@@ -5,10 +5,14 @@ Takes the melody (top voice) and either the score's own bass line or a simple
 harmonisation, transposes to a guitar-friendly key, picks strings, frets and
 fretting fingers with a small dynamic program, and prints alphaTex.
 
+A spec can also point at a local MusicXML file with "file" (environment variables
+are expanded, see "source" in specs.json for where each score comes from), limit
+the bars with "measures", and print 10/8-style signatures with "ts_den": 8.
+
   pip install music21
   python3 scripts/arrange/arrange.py "$(python3 -c 'import json;print(json.dumps(json.load(open("scripts/arrange/specs.json"))["irwin"]))')"
 """
-import sys, json, itertools
+import sys, json, itertools, os
 from fractions import Fraction as F
 import music21
 from music21 import corpus, converter, harmony, note, chord, key as m21key
@@ -22,8 +26,11 @@ def voice_events(part, mrange, pick):
     """Per measure: list of (offset, midi, dur, tie_dest). pick = 'high' | 'low'."""
     out = []
     ms = part.getElementsByClass('Measure')
+    seen = 0
     for m in ms:
         if m.number < mrange[0] or m.number > mrange[1]: continue
+        seen += 1
+        if seen > mrange[1] - mrange[0] + 1: break  # repeated numbers (e.g. a scale chart after the tune)
         evs = []
         for el in m.recurse().notes:
             if isinstance(el, harmony.ChordSymbol): continue
@@ -41,11 +48,14 @@ def voice_events(part, mrange, pick):
     return out
 
 def chord_symbols(part, mrange):
-    res = {}
+    res = {}; seen = 0
     for m in part.getElementsByClass('Measure'):
         if m.number < mrange[0] or m.number > mrange[1]: continue
+        seen += 1
+        if seen > mrange[1] - mrange[0] + 1: break
         for cs in m.recurse().getElementsByClass(harmony.ChordSymbol):
-            res.setdefault(m.number, []).append((frac(cs.getOffsetInHierarchy(m)), cs.root().pitchClass, cs.fifth.pitchClass if cs.fifth else None))
+            if isinstance(cs, harmony.NoChord) or cs.root() is None: continue
+            res.setdefault(m.number, []).append((frac(cs.getOffsetInHierarchy(m)), cs.bass().pitchClass, cs.fifth.pitchClass if cs.fifth else None))
     return res
 
 def harmonize(mel, k, seg, spec_chords=None):
@@ -130,8 +140,7 @@ def build_events(mel, bass, shift, bass_oct):
             notes = []
             if o in md: notes.append(('m', md[o][1] + shift, md[o][3]))
             if o in bd:
-                b = bd[o][1] if bd[o][1] > 12 else bd[o][1] + 36  # pitch class -> octave 3
-                b = b + shift if bd[o][1] > 12 else b + 0
+                b = (bd[o][1] if bd[o][1] > 12 else bd[o][1] + 36) + shift  # pitch class -> octave 3, then transpose with the melody
                 while b > 52 + bass_oct: b -= 12
                 while b < 40: b += 12
                 if not notes or notes[0][1] - b >= 3: notes.append(('b', b, bd[o][3]))
@@ -235,7 +244,9 @@ def _abc_path(p):
     return p
 
 def arrange(spec):
-    s = corpus.parse(spec['src']) if not spec.get('abc') else None
+    s = corpus.parse(spec['src']) if spec.get('src') else None
+    if spec.get('file'):
+        s = converter.parse(os.path.expanduser(os.path.expandvars(spec['file'])))
     if spec.get('abc'):
         op = converter.parse(_abc_path(spec['abc']))
         s = op if not hasattr(op, 'scores') else next(sc for sc in op.scores if sc.metadata.title.strip().lower() == spec['title_in_src'].lower())
@@ -294,8 +305,8 @@ def arrange(spec):
         pre = ''
         if ln != prev:
             num = ln; den = 4
-            while num.denominator != 1: num *= 2; den *= 2
-            pre = f'\\\\ts {int(num) if den == 4 else int(num)} {den} '
+            while num.denominator != 1 or (den < spec.get('ts_den', 4)): num *= 2; den *= 2
+            pre = f'\\\\ts {int(num)} {den} '
             prev = ln
         lines.append(pre + toks)
     tonic = music21.pitch.Pitch(k.tonic.midi + shift).name
