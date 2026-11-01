@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { STANDARD_TUNING } from '../music/notes'
-import { checkAnswer, dayStreak, isUnlocked, LEVELS, nextQuestion, NoteEvents, questionText, spots, StableNote, starsFor, type QuizSettings } from './quiz'
+import { Attacks, checkAnswer, dayStreak, isUnlocked, LEVELS, nextQuestion, NoteEvents, questionText, samePitch, spots, StableNote, starsFor, type QuizSettings } from './quiz'
 
 const base: QuizSettings = {
   mode: 'find-note',
@@ -64,11 +64,24 @@ describe('checkAnswer', () => {
   const q = nextQuestion({ ...base, mode: 'find-on-string', strings: [5], minFret: 3, maxFret: 3 }, () => 0)!
   it('wants the exact pitch on a named string', () => {
     expect(checkAnswer(q, 48.1).correct).toBe(true)
-    expect(checkAnswer(q, 60).correct).toBe(false)
+    expect(checkAnswer(q, 49).correct).toBe(false)
+    expect(checkAnswer(q, 72).correct).toBe(false)
   })
   it('accepts any octave in find-note mode', () => {
     expect(checkAnswer({ ...q, mode: 'find-note' }, 60).correct).toBe(true)
     expect(checkAnswer({ ...q, mode: 'find-note' }, 61).correct).toBe(false)
+  })
+  it('accepts low E heard an octave too high on string 6 (the mic misses the fundamental)', () => {
+    const lowE = nextQuestion({ ...base, mode: 'find-on-string', strings: [6], minFret: 0, maxFret: 0 }, () => 0)!
+    expect(lowE.midi).toBe(40)
+    expect(checkAnswer(lowE, 52).correct).toBe(true)
+    expect(checkAnswer(lowE, 64).correct).toBe(false)
+    expect(checkAnswer(lowE, 41).correct).toBe(false)
+  })
+  it('wants the exact octave from the middle strings up', () => {
+    expect(samePitch(55, 67)).toBe(false)
+    expect(samePitch(45, 57)).toBe(true)
+    expect(samePitch(57, 45)).toBe(false)
   })
   it('counts silence as a miss', () => {
     expect(checkAnswer(q, null)).toEqual({ correct: false, heard: null })
@@ -83,9 +96,10 @@ describe('StableNote', () => {
     expect(s.push(45.1)).toBeNull()
     expect(s.push(44.9)).toBe(45)
   })
-  it('ignores pitches between notes', () => {
-    const s = new StableNote(1)
-    expect(s.push(45.5)).toBeNull()
+  it('forgives tuning: anything that rounds to the note counts', () => {
+    const s = new StableNote(2)
+    expect(s.push(44.6)).toBeNull()
+    expect(s.push(45.45)).toBe(45)
   })
 })
 
@@ -121,6 +135,26 @@ describe('NoteEvents', () => {
     const ev = new NoteEvents(2)
     const out = [60, 60, 60, 60, null, null, null, 60, 60, 62, 62].map((m) => ev.push(m))
     expect(out.filter((x) => x !== null)).toEqual([60, 60, 62])
+  })
+})
+
+describe('Attacks', () => {
+  it('spots a pluck, not a string fading out or the open string under a lifted finger', () => {
+    const a = new Attacks(4, 1.4, 0.003)
+    // silence, then a pluck
+    ;[0.001, 0.001, 0.001, 0.05].forEach((l) => a.push(l))
+    expect(a.recently(0)).toBe(true)
+    // ringing on and fading: no new pluck
+    for (let i = 0; i < 30; i++) a.push(0.05 * Math.pow(0.97, i))
+    expect(a.recently(20)).toBe(false)
+    // a quieter re-pluck of the ringing string still counts
+    a.push(0.04)
+    expect(a.recently(0)).toBe(true)
+  })
+  it('ignores noise below the floor', () => {
+    const a = new Attacks(4, 1.4, 0.003)
+    ;[0, 0, 0.002].forEach((l) => a.push(l))
+    expect(a.recently(5)).toBe(false)
   })
 })
 

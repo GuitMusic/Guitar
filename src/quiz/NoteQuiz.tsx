@@ -6,6 +6,7 @@ import { noteName, pitchClassName, TUNINGS } from '../music/notes'
 import type { FretNote } from '../music/types'
 import { localDate } from '../progress/practiceLog'
 import {
+  Attacks,
   checkAnswer,
   dayStreak,
   isUnlocked,
@@ -15,6 +16,7 @@ import {
   questionText,
   registerName,
   ROUND,
+  samePitch,
   spots,
   starsFor,
   type Level,
@@ -120,6 +122,8 @@ const DEFAULT_PREFS: Prefs = {
 
 const CONFETTI = ['#ff7a45', '#ff4f7b', '#fbbf24', '#2dd4bf', '#a78bfa', '#7cc4ff']
 const NOTE_GAP_MS = 650
+/** A wrong note only counts if it was plucked within this many mic frames (about half a second). */
+const PLUCK_FRAMES = 40
 
 function Stars({ n, of = 3 }: { n: number; of?: number }) {
   return (
@@ -165,6 +169,7 @@ export function NoteQuiz() {
 
   const listener = useRef<PitchListener | null>(null)
   const events = useRef(new NoteEvents(6))
+  const attacks = useRef(new Attacks())
   const L = useRef({
     question: null as Question | null,
     phase: 'idle' as Phase,
@@ -339,6 +344,9 @@ export function NoteQuiz() {
     if (!q || S.phase !== 'listening') return
     setHeard(note)
     const wrong = () => {
+      // No fresh pluck: a string ringing on from before, or the open string under a
+      // lifted finger. Not a guess, so it does not count against you.
+      if (!attacks.current.recently(PLUCK_FRAMES)) return
       if (!S.wrong.includes(note)) {
         S.wrong = [...S.wrong, note]
         setWrongTries(S.wrong)
@@ -353,11 +361,11 @@ export function NoteQuiz() {
       }
     } else if (q.mode === 'melody') {
       const expected = q.targets[S.found.length]
-      if (note === expected) {
-        S.found = [...S.found, note]
+      if (samePitch(expected, note)) {
+        S.found = [...S.found, expected]
         setFound(S.found)
         if (S.found.length === q.targets.length) finish(true)
-      } else if (note !== q.targets[S.found.length - 1]) wrong()
+      } else if (S.found.length === 0 || !samePitch(q.targets[S.found.length - 1], note)) wrong()
     } else if (checkAnswer(q, note).correct) finish(true)
     else wrong()
   }
@@ -375,8 +383,9 @@ export function NoteQuiz() {
     L.current.question = null
     try {
       if (!listener.current) {
-        listener.current = await listenForPitch((reading) => {
+        listener.current = await listenForPitch((reading, level) => {
           const S = L.current
+          attacks.current.push(level)
           // live "hearing" readout, only re-rendered when the note changes
           const rounded = reading ? Math.round(reading.midi) : null
           if (rounded === null) S.quiet++
@@ -506,7 +515,7 @@ export function NoteQuiz() {
       const extra = wrongTries.length ? ' (not first try)' : ''
       if (question.mode === 'melody') return `You got the melody${time}${extra}`
       if (question.mode === 'find-all') return `All ${question.targets.length} found${time}${extra}`
-      return `Correct, ${noteName(heard ?? question.midi)}${time}${extra}`
+      return `Correct, ${noteName(question.mode === 'find-note' ? (heard ?? question.midi) : question.midi)}${time}${extra}`
     }
     if (phase === 'timeout') {
       if (question.mode === 'melody') return `It was ${question.targets.map(noteName).join(', ')}. Listen once more.`
