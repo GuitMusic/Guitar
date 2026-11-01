@@ -93,15 +93,39 @@ export function Practice({ song }: Props) {
   const apiRef = useRef<alphaTab.AlphaTabApi | null>(null)
   const [api, setApi] = useState<alphaTab.AlphaTabApi | null>(null)
   const [finished, setFinished] = useState(false)
-  // The floating Play button only shows once the player bar has scrolled off screen
+  // A slim player docks at the bottom of the screen whenever the big player bar's Play button
+  // can't be seen: scrolled off the top, tucked under the sticky fretboard, or below the fold.
   const playerBarEl = useRef<HTMLDivElement>(null)
+  const fretboardWrapEl = useRef<HTMLDivElement>(null)
   const [barVisible, setBarVisible] = useState(true)
   useEffect(() => {
-    const el = playerBarEl.current
-    if (!el || typeof IntersectionObserver === 'undefined') return
-    const io = new IntersectionObserver(([e]) => setBarVisible(e.isIntersecting))
-    io.observe(el)
-    return () => io.disconnect()
+    let frame = 0
+    const check = () => {
+      frame = 0
+      const play = playerBarEl.current?.querySelector('.pb-play')
+      if (!play) return
+      const r = play.getBoundingClientRect()
+      const fb = fretboardWrapEl.current?.getBoundingClientRect()
+      const top = Math.max(0, fb ? fb.bottom : 0)
+      const nav = document.querySelector('nav.main-nav')
+      const navTop = nav && getComputedStyle(nav).position === 'fixed' ? nav.getBoundingClientRect().top : window.innerHeight
+      setBarVisible(r.top >= top - 4 && r.bottom <= navTop + 4)
+    }
+    const schedule = () => {
+      if (!frame) frame = requestAnimationFrame(check)
+    }
+    check()
+    window.addEventListener('scroll', schedule, { passive: true, capture: true })
+    window.addEventListener('resize', schedule)
+    const ro = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(schedule) : null
+    if (ro && fretboardWrapEl.current) ro.observe(fretboardWrapEl.current)
+    if (ro && playerBarEl.current) ro.observe(playerBarEl.current)
+    return () => {
+      window.removeEventListener('scroll', schedule, { capture: true })
+      window.removeEventListener('resize', schedule)
+      ro?.disconnect()
+      if (frame) cancelAnimationFrame(frame)
+    }
   }, [])
   const lastTick = useRef(0)
   const onLoopPass = useRef<() => void>(() => {})
@@ -525,7 +549,7 @@ export function Practice({ song }: Props) {
         )}
       </div>
 
-      <div className="fretboard-wrap">
+      <div className="fretboard-wrap" ref={fretboardWrapEl}>
         <Fretboard
           notes={notes}
           ghosts={ghosts}
@@ -818,18 +842,48 @@ export function Practice({ song }: Props) {
         <div ref={scoreEl} />
       </div>
 
-      <button
-        className={`fab-play primary${barVisible ? ' fab-hidden' : ''}`}
-        disabled={!ready}
-        onClick={() => apiRef.current?.playPause()}
-        aria-label={playing ? 'Pause' : 'Play'}
-      >
-        {playing ? (
-          <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1" fill="currentColor" /><rect x="14" y="5" width="4" height="14" rx="1" fill="currentColor" /></svg>
+      <div className={`mini-player${barVisible ? ' mini-hidden' : ''}`} aria-hidden={barVisible} role="region" aria-label="Player">
+        <button
+          className="pb-play"
+          disabled={!ready}
+          tabIndex={barVisible ? -1 : 0}
+          onClick={() => apiRef.current?.playPause()}
+          aria-label={playing ? 'Pause' : 'Play'}
+          title={playing ? 'Pause (Space)' : 'Play (Space)'}
+        >
+          <Icon name={playing ? 'pause' : 'play'} size={22} />
+        </button>
+        <button
+          className="pb-icon-btn"
+          disabled={!ready}
+          tabIndex={barVisible ? -1 : 0}
+          onClick={() => apiRef.current?.stop()}
+          aria-label="Back to the start"
+          title="Back to the start"
+        >
+          <Icon name="restart" />
+        </button>
+        {ready && playing && audioBlocked ? (
+          <button className="pb-sound-off" onClick={resumeAudio} tabIndex={barVisible ? -1 : 0}>
+            Sound is off. Tap to turn it on
+          </button>
         ) : (
-          <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path d="M8 5v14l11-7z" fill="currentColor" /></svg>
+          <>
+            <ProgressLine
+              barTicks={barTicks}
+              tick={time.tick}
+              loop={loop}
+              onSeekBar={(bar) => {
+                const api = apiRef.current
+                if (api && barTicks[bar - 1] !== undefined) api.tickPosition = barTicks[bar - 1]
+              }}
+              onLoopBars={(start, end) => setLoop({ on: true, start, end })}
+            />
+            <span className="time">{formatTime(time.current)}</span>
+          </>
         )}
-      </button>
+        <span className="mini-speed" title="Speed">{Math.round(speed * 100)}%</span>
+      </div>
 
       {finished && (
         <SongComplete
