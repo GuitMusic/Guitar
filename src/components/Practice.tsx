@@ -89,18 +89,19 @@ function heldNotes(active: Beat[], soundingStrings: Set<number>): FretNote[] {
 
 /**
  * Fingers new notes together with the notes still held from earlier in the bar, as one
- * chord shape. When that shape can't be played (the held notes are an old melody, far
- * away), the new notes are fingered on their own and the held ones around them.
+ * chord shape. Held notes that don't fit a playable shape with the new notes must have
+ * been let go, so they are dropped, the farthest from the new notes first.
  */
 function fingerWithHeld(raw: FretNote[], held: FretNote[], strings: number, before: number | null, overrides: FingeringOverrides | undefined) {
-  if (held.length > 0) {
-    const joint = applyFingering([...held, ...raw], strings, before, overrides)
+  const frets = raw.filter((n) => n.tabFret > 0).map((n) => n.fret)
+  const centre = frets.length ? frets.reduce((a, b) => a + b, 0) / frets.length : before ?? 0
+  let keep = [...held].sort((a, b) => Math.abs(a.fret - centre) - Math.abs(b.fret - centre))
+  while (keep.length > 0) {
+    const joint = applyFingering([...keep, ...raw], strings, before, overrides)
     if (playable(joint.notes)) return joint
+    keep = keep.slice(0, -1)
   }
-  const result = applyFingering(raw, strings, before, overrides)
-  if (held.length === 0) return result
-  const heldFingered = applyFingering(held, strings, result.position, overrides).notes
-  return { notes: [...heldFingered, ...result.notes], position: result.position }
+  return applyFingering(raw, strings, before, overrides)
 }
 
 function playable(notes: FretNote[]): boolean {
