@@ -29,6 +29,8 @@
   --error-text: #8a2b15;
   --ok-bg: #e7f3ea;
   --ok-text: #1e5a32;
+  --score-bg: #ffffff;
+  --score-ink: #000000;
   color-scheme: light;
   font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   line-height: 1.45;
@@ -36,21 +38,44 @@
   background: var(--bg);
 }
 
+:root[data-theme='dark'] {
+  --bg: #121110;
+  --surface: #1b1916;
+  --surface-2: #26221d;
+  --text: #f1ece4;
+  --text-2: #a89f92;
+  --border: #322d26;
+  --accent: #e8875a;
+  --accent-text: #1a120b;
+  --error-bg: #3a1d15;
+  --error-text: #f3b4a0;
+  --ok-bg: #16301f;
+  --ok-text: #a8dcb6;
+  --open: #2b261f;
+  --score-bg: #1b1916;
+  --score-ink: #e8e0d4;
+  --score-bar: rgba(232, 135, 90, 0.1);
+  color-scheme: dark;
+}
+
 @media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #17140f;
-    --surface: #211d17;
-    --surface-2: #2b261f;
+  :root[data-theme='system'] {
+    --bg: #121110;
+    --surface: #1b1916;
+    --surface-2: #26221d;
     --text: #f1ece4;
     --text-2: #a89f92;
-    --border: #3a342b;
-    --accent: #e0814f;
+    --border: #322d26;
+    --accent: #e8875a;
     --accent-text: #1a120b;
     --error-bg: #3a1d15;
     --error-text: #f3b4a0;
     --ok-bg: #16301f;
     --ok-text: #a8dcb6;
     --open: #2b261f;
+    --score-bg: #1b1916;
+    --score-ink: #e8e0d4;
+  --score-bar: rgba(232, 135, 90, 0.1);
     color-scheme: dark;
   }
 }
@@ -661,8 +686,8 @@ main {
 .score-scroll {
   /* keep alphaTab's cursor layers below the menus and the phone tab bar */
   isolation: isolate;
-  background: #fff;
-  color: #000;
+  background: var(--score-bg);
+  color: var(--score-ink);
   border-radius: 12px;
   border: 1px solid var(--border);
   max-height: 60vh;
@@ -671,7 +696,7 @@ main {
 }
 
 .score-scroll .at-cursor-bar {
-  background: rgba(255, 210, 122, 0.25);
+  background: var(--score-bar, rgba(255, 210, 122, 0.25));
 }
 
 .score-scroll .at-selection div {
@@ -1853,4 +1878,153 @@ input.wide {
 }
 .fab-play.primary {
   min-width: 0;
+}
+
+/* Theme and header */
+.topbar .pb-menu {
+  margin-left: 4px;
+}
+.topbar .pb-menu > .pb-pill-main {
+  background: transparent;
+  color: var(--text-2);
+  padding: 6px 10px;
+}
+.topbar .pb-menu > .pb-pill-main:hover {
+  background: var(--surface-2);
+  color: var(--text);
+}
+.settings-hand {
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+.pb-menu-panel.down {
+  bottom: auto;
+  top: calc(100% + 8px);
+  right: 0;
+}
+.settings-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.settings-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-2);
+}
+@media (min-width: 701px) {
+  nav.main-nav .nav-icon {
+    display: block;
+    width: 18px;
+    height: 18px;
+    opacity: 0.75;
+  }
+  nav.main-nav .nav-item.active .nav-icon {
+    opacity: 1;
+    color: var(--accent);
+  }
+}
+@media (max-width: 700px) {
+  .topbar .pb-menu {
+    margin-left: auto;
+  }
+  .pb-menu-panel.down {
+    position: fixed;
+    top: 56px;
+    bottom: auto;
+    left: 12px;
+    right: 12px;
+  }
+}
+
+/* Library cards */
+.song-list li {
+  overflow: hidden;
+  transition: transform 140ms ease, border-color 140ms ease, box-shadow 140ms ease;
+}
+.song-list li:hover {
+  transform: translateY(-2px);
+  border-color: var(--accent);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.18);
+}
+.song-card {
+  padding-top: 0;
+}
+.song-card strong {
+  font-size: 1.05rem;
+  margin-top: 12px;
+}
+.card-neck {
+  display: block;
+  width: calc(100% + 32px);
+  margin: 0 -16px;
+  height: 34px;
+}
+.card-neck-wood {
+  fill: #3d2519;
+}
+.card-neck-fret {
+  fill: #cfccc6;
+  opacity: 0.8;
+}
+.card-neck-nut {
+  fill: #f3eee2;
+}
+.card-neck-plain {
+  fill: #e3e5e9;
+  opacity: 0.85;
+}
+.card-neck-wound {
+  fill: #c39b62;
+}
+.song-list li:hover .card-neck-wound,
+.song-list li:hover .card-neck-plain {
+  fill: var(--string-active);
+}
+.level {
+  background: color-mix(in srgb, currentColor 14%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, currentColor 35%, transparent);
+}
+.speed-meter {
+  display: inline-block;
+  width: 48px;
+  height: 5px;
+  border-radius: 3px;
+  background: var(--surface-2);
+  overflow: hidden;
+}
+.speed-meter i {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+}
+.continue-card {
+  background: linear-gradient(120deg, color-mix(in srgb, var(--accent) 16%, var(--surface)), var(--surface) 60%);
+}
+@media (prefers-reduced-motion: reduce) {
+  .song-list li,
+  .song-list li:hover {
+    transition: none;
+    transform: none;
+  }
+}
+
+/* Phone held sideways: logo, pages and settings on one line */
+@media (max-height: 500px) and (orientation: landscape) {
+  .topbar {
+    flex-wrap: nowrap;
+    padding: 6px 12px;
+  }
+  .brand-name {
+    display: none;
+  }
+  nav.main-nav .nav-icon {
+    display: none;
+  }
+  nav.main-nav .nav-item {
+    padding: 6px 9px;
+  }
+  .topbar .pb-menu {
+    margin-left: 0;
+  }
 }

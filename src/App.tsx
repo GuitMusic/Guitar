@@ -6,6 +6,8 @@ import { setView, useFretboardView } from './components/fretboardView'
 import { Metronome } from './tools/Metronome'
 import { Tuner } from './tools/Tuner'
 import { NoteQuiz } from './quiz/NoteQuiz'
+import { Icon, Menu } from './components/PlayerBar'
+import { setTheme, useTheme } from './components/theme'
 import { Progress } from './progress/Progress'
 
 type Page = 'library' | 'practice' | 'quiz' | 'progress' | 'tuner' | 'metronome'
@@ -24,6 +26,7 @@ export default function App() {
   const [page, setPage] = useState<Page>('library')
   const [song, setSong] = useState<OpenSong | null>(null)
   const { leftHanded } = useFretboardView()
+  const { theme } = useTheme()
   useEffect(() => {
     window.scrollTo(0, 0)
   }, [page])
@@ -45,7 +48,7 @@ export default function App() {
             <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" strokeWidth="2" />
             <circle cx="12" cy="12" r="3.5" fill="currentColor" />
           </svg>
-          Fingerstyle Trainer
+          <span className="brand-name">Fingerstyle Trainer</span>
         </div>
         <nav className="main-nav" aria-label="Pages">
           {nav('library', 'Library')}
@@ -55,14 +58,44 @@ export default function App() {
           {nav('tuner', 'Tuner')}
           {nav('metronome', 'Metronome')}
         </nav>
-        <button
-            className={leftHanded ? 'nav-item hand-toggle active' : 'nav-item hand-toggle'}
-            onClick={() => setView({ leftHanded: !leftHanded })}
-            aria-pressed={leftHanded}
-            title="Switch between left-handed and right-handed fretboards"
-          >
-            {leftHanded ? 'Left-handed' : 'Right-handed'}
-          </button>
+        <Menu
+          label="Settings"
+          down
+          trigger={
+            <>
+              <Icon name="settings" size={20} />
+              <span className="settings-hand">{leftHanded ? 'Left' : 'Right'}</span>
+            </>
+          }
+        >
+          <div className="settings-row">
+            <span className="settings-label">Fretboard</span>
+            <div className="segmented" role="radiogroup" aria-label="Fretboard for">
+              <button role="radio" aria-checked={leftHanded} className={leftHanded ? 'active' : ''} onClick={() => setView({ leftHanded: true })}>
+                Left-handed
+              </button>
+              <button role="radio" aria-checked={!leftHanded} className={!leftHanded ? 'active' : ''} onClick={() => setView({ leftHanded: false })}>
+                Right-handed
+              </button>
+            </div>
+          </div>
+          <div className="settings-row">
+            <span className="settings-label">Theme</span>
+            <div className="segmented" role="radiogroup" aria-label="Theme">
+              {(
+                [
+                  ['dark', 'Dark'],
+                  ['light', 'Light'],
+                  ['system', 'Match device'],
+                ] as const
+              ).map(([t, label]) => (
+                <button key={t} role="radio" aria-checked={theme === t} className={theme === t ? 'active' : ''} onClick={() => setTheme(t)}>
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </Menu>
       </header>
       <main className={page === 'practice' ? 'on-practice' : ''}>
         {page === 'library' && (

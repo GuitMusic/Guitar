@@ -16,6 +16,7 @@ import { usePracticeCheck, type CheckMode } from '../check/usePracticeCheck'
 import { logPractice } from '../progress/practiceLog'
 import type { FretMark, GuitarSound } from './Fretboard'
 import { getView, setView, useFretboardView } from './fretboardView'
+import { useTheme } from './theme'
 
 type Beat = alphaTab.model.Beat
 
@@ -100,6 +101,7 @@ export function Practice({ song }: Props) {
   const [activeBeats, setActiveBeats] = useState<Beat[]>([])
   const [settings, setSettings] = useState<SongSettings | null>(null)
   const view = useFretboardView()
+  const { dark } = useTheme()
   const [staveProfile, setStaveProfile] = useState<'tab' | 'both'>('both')
   const [metronome, setMetronome] = useState(false)
   const [countIn, setCountIn] = useState(false)
@@ -145,7 +147,7 @@ export function Practice({ song }: Props) {
         playerMode: alphaTab.PlayerMode.EnabledSynthesizer,
         soundFont: `${BASE}sounds/guitar.sf3`,
         scrollElement: scrollEl.current,
-        scrollOffsetY: -40,
+        scrollOffsetY: -100,
       },
     } as unknown as alphaTab.Settings)
     apiRef.current = api
@@ -203,6 +205,24 @@ export function Practice({ song }: Props) {
     api.updateSettings()
     api.renderTracks([track])
   }, [track, staveProfile])
+
+  // Notation ink that suits the page: light ink on dark paper in the dark theme
+  useEffect(() => {
+    const api = apiRef.current
+    if (!api) return
+    const r = api.settings.display.resources
+    const ink = (hex: string) => alphaTab.model.Color.fromJson(hex)!
+    const main = dark ? '#e8e0d4' : '#000000'
+    const soft = dark ? '#8f877b' : '#a5a5a5'
+    r.mainGlyphColor = ink(main)
+    r.secondaryGlyphColor = ink(dark ? '#e8e0d466' : '#00000066')
+    r.scoreInfoColor = ink(main)
+    r.staffLineColor = ink(soft)
+    r.barSeparatorColor = ink(dark ? '#b8afa2' : '#222222')
+    r.barNumberColor = ink(dark ? '#e8875a' : '#c80000')
+    api.updateSettings()
+    if (api.score) api.render()
+  }, [dark, api])
 
   // Switching steel and nylon: change every track's instrument and rebuild the playback
   useEffect(() => {
