@@ -168,6 +168,57 @@ export const STUDIES: Study[] = [
 3.5{lf 4} 0.3 1.2{lf 2} 0.1 1.2 0.3 |
 (3.5{lf 4 rf 1} 2.4{lf 3} 0.3{rf 2} 1.2{lf 2 rf 3} 0.1{rf 4}).2 {d}`,
   },
+  {
+    id: 'study-barre-arpeggios',
+    level: 3,
+    kind: 'study',
+    title: 'Study 10: Barre Arpeggios',
+    description:
+      'Arpeggios through E-shape and A-shape barre chords up and down the neck. Set the whole barre before the bass note and keep it down for the full bar.',
+    tex:
+      header('Study 10: Barre Arpeggios', 76) +
+      `:8 3.5{lf 2 rf 1} 5.3{lf 4 rf 2} 5.2{lf 4 rf 3} 3.1{lf 2 rf 4} 5.2{rf 3} 5.3{rf 2} 5.4{lf 4 rf 1} 5.3{rf 2} |
+5.6{lf 2 rf 1} 5.3{lf 2 rf 2} 5.2{rf 3} 5.1{rf 4} 5.2 5.3 7.4{lf 5 rf 1} 5.3 |
+5.5{lf 2 rf 1} 7.3{lf 5 rf 2} 6.2{lf 3 rf 3} 5.1{lf 2 rf 4} 6.2 7.3 7.4{lf 4 rf 1} 7.3 |
+3.6{lf 2 rf 1} 4.3{lf 3 rf 2} 3.2{lf 2 rf 3} 3.1{lf 2 rf 4} 3.2 4.3 5.4{lf 5 rf 1} 4.3 |
+1.6{lf 2 rf 1} 2.3{lf 3 rf 2} 1.2{lf 2 rf 3} 1.1{lf 2 rf 4} 1.2 2.3 3.4{lf 5 rf 1} 2.3 |
+0.6{rf 1} 1.3{lf 2 rf 2} 0.2{rf 3} 0.1{rf 4} 0.2 1.3 2.5{lf 3 rf 1} 1.3 |
+(5.6{lf 2 rf 1} 7.5{lf 4} 7.4{lf 5} 5.3 5.2 5.1).1`,
+  },
+  {
+    id: 'study-tremolo',
+    level: 3,
+    kind: 'study',
+    title: 'Study 11: Tremolo',
+    description:
+      'Thumb on the beat, then a-m-i on the same melody note. Aim for even, quiet repeats so the tune sounds like one long held note. Start slow; speed comes later.',
+    tex:
+      header('Study 11: Tremolo', 56) +
+      `:16 0.5{rf 1} 0.1{rf 4} 0.1{rf 3} 0.1{rf 2} 2.4{lf 3 rf 1} 0.1{rf 4} 0.1{rf 3} 0.1{rf 2} 2.3{lf 4 rf 1} 1.1{lf 2 rf 4} 1.1{rf 3} 1.1{rf 2} 2.4{lf 3 rf 1} 0.1{rf 4} 0.1{rf 3} 0.1{rf 2} |
+0.4 1.1{lf 2} 1.1 1.1 2.3{lf 3} 1.1 1.1 1.1 0.4 3.1{lf 4} 3.1 3.1 2.3{lf 3} 1.1 1.1 1.1 |
+0.6 0.1 0.1 0.1 2.5{lf 3} 0.1 0.1 0.1 2.4{lf 4} 0.2 0.2 0.2 1.3{lf 2} 0.2 0.2 0.2 |
+0.5 0.1 0.1 0.1 2.4{lf 3} 1.2{lf 2} 1.2 1.2 2.3{lf 4} 1.2 1.2 1.2 2.4 0.1 0.1 0.1 |
+(0.5 2.4{lf 3} 2.3{lf 4} 1.2{lf 2} 0.1).1`,
+  },
+  {
+    id: 'study-thirds',
+    level: 3,
+    kind: 'study',
+    title: 'Study 12: Thirds Up the Neck',
+    description:
+      'Pairs of notes a third apart on the B and high E strings, shifting from the open position to the 12th fret and back, then the same pairs broken. Lead every shift with the index finger.',
+    tex:
+      header('Study 12: Thirds Up the Neck', 72) +
+      `:4 (3.5{lf 4 rf 1} 1.2{lf 2 rf 2} 0.1{rf 3}) (3.2{lf 4 rf 2} 1.1{lf 2 rf 3}) (5.2{lf 4 rf 2} 3.1{lf 2 rf 3}) (6.2{lf 3 rf 2} 5.1{lf 2 rf 3}) |
+(8.2{lf 3} 7.1{lf 2}) (10.2{lf 4} 8.1{lf 2}) (12.2{lf 4} 10.1{lf 2}) (13.2{lf 3} 12.1{lf 2}) |
+(13.2 12.1) (12.2 10.1) (10.2 8.1) (8.2 7.1) |
+(6.2 5.1) (5.2 3.1) (3.2 1.1) (1.2 0.1) |
+:8 1.2{rf 2} 0.1{rf 3} 3.2 1.1 5.2 3.1 6.2 5.1 |
+8.2 7.1 10.2 8.1 12.2 10.1 13.2 12.1 |
+12.1 13.2 10.1 12.2 8.1 10.2 7.1 8.2 |
+5.1 6.2 3.1 5.2 1.1 3.2 0.1 1.2 |
+(3.5 2.4 0.3 1.2 0.1).1`,
+  },
 ]
 
 const PD = 'Traditional, arranged for this app'
@@ -378,5 +429,80 @@ export const SONGS: Study[] = [
 0.5{rf 1} 0.1{rf 3} 2.5{lf 3 rf 1} 0.1{rf 3} 3.5{lf 4 rf 1} 0.1{rf 3} |
 2.5{lf 3 rf 1} 0.1{rf 3} 0.5{rf 1} 0.1{rf 3} 4.6{lf 5 rf 1} 0.1{rf 3} |
 1.6{lf 2 rf 1} 0.1{rf 3} 0.6{rf 1} 0.1{rf 3} (0.6 2.5{lf 3} 2.4{lf 4} 1.3{lf 2} 0.2 0.1).4`,
+  },
+  {
+    id: 'song-gymnopedie',
+    level: 3,
+    kind: 'song',
+    title: 'Gymnopédie No. 1 (opening)',
+    description:
+      'Satie’s slow, floating waltz. The thumb plays a low note on beat one, the fingers answer with a soft chord, and the melody sits on top. Let everything ring.',
+    tex:
+      header('Gymnopédie No. 1 (opening)', 72, '\\ts 3 4\n', 'Erik Satie (1888), arranged for this app') +
+      `3.6{lf 3 rf 1}.4 (4.4{lf 4 rf 1} 0.3{rf 2} 0.2{rf 3}).2 |
+0.4{rf 1}.4 (2.3{lf 2 rf 2} 2.2{lf 2 rf 3} 2.1{lf 2 rf 4}).2 |
+3.6.4 (4.4 0.3 0.2).2 |
+0.4.4 (2.3 2.2 2.1).2 |
+3.6.4 (4.4 0.3 0.2 2.1{lf 2 rf 4}).4 5.1{lf 5 rf 4}.4 |
+(0.4 3.1{lf 3}).4 (2.3{lf 2} 2.2{lf 2} 2.1{lf 2}).4 2.2.4 |
+(3.6{lf 3} 0.2).4 (4.4{lf 4} 0.3 2.2{lf 2}).4 3.2{lf 3}.4 |
+(0.4 2.3{lf 2}).4 (2.2 2.1).2 |
+(3.6{lf 3} 4.4{lf 4}).4 (0.3 0.2).2 |
+(0.4 2.3 2.2 2.1).2 {d}`,
+  },
+  {
+    id: 'song-bach-prelude',
+    level: 3,
+    kind: 'song',
+    title: 'Prelude in C (opening)',
+    description:
+      'The first prelude of Bach’s Well-Tempered Clavier as a guitar arpeggio piece: the same eight-note pattern twice a bar while the chords move underneath. Hold each chord shape for the whole bar.',
+    tex:
+      header('Prelude in C (opening)', 66, '', 'J. S. Bach, BWV 846 (1722), arranged for this app') +
+      ':16 3.5{lf 4 rf 1} 2.4{lf 3 rf 1} 0.3{rf 2} 1.2{lf 2 rf 3} 0.1{rf 4} 0.3{rf 2} 1.2{rf 3} 0.1{rf 4} 3.5 2.4 0.3 1.2 0.1 0.3 1.2 0.1 |\n' +
+      [
+        ['3.5{lf 4}', '0.4', '2.3{lf 3}', '3.2{lf 5}', '1.1{lf 2}'],
+        ['2.5{lf 3}', '0.4', '0.3', '3.2{lf 4}', '1.1{lf 2}'],
+        ['3.5', '2.4', '0.3', '1.2', '0.1'],
+        ['3.5{lf 4}', '2.4{lf 2}', '2.3{lf 3}', '0.1', '5.1{lf 5}'],
+        ['3.5{lf 4}', '0.4', '2.3{lf 2}', '3.2{lf 5}', '2.1{lf 3}'],
+        ['2.5{lf 3}', '0.4', '0.3', '3.2{lf 4}', '3.1{lf 5}'],
+        ['2.5{lf 3}', '2.4{lf 4}', '0.3', '1.2{lf 2}', '0.1'],
+        ['0.5', '2.4{lf 3}', '0.3', '1.2{lf 2}', '0.1'],
+        ['0.4', '2.3{lf 3}', '1.2{lf 2}', '2.1{lf 4}', '5.1{lf 5}'],
+        ['3.6{lf 4}', '2.5{lf 3}', '0.4', '0.3', '0.2'],
+      ]
+        .map((n) => {
+          const [a, b, c, d, e] = n.map((x) => x.replace(/\{[^}]*\}/g, ''))
+          return `${n.join(' ')} ${c} ${d} ${e} ${a} ${b} ${c} ${d} ${e} ${c} ${d} ${e} |\n`
+        })
+        .join('') +
+      '(3.5 2.4 0.3 1.2 0.1).1',
+  },
+  {
+    id: 'song-scarborough-fair',
+    level: 3,
+    kind: 'song',
+    title: 'Scarborough Fair',
+    description:
+      'The English folk ballad in A dorian. Melody on the treble strings with a bass note on every downbeat, moving between Am, G, D and Em shapes.',
+    tex:
+      header('Scarborough Fair', 100, '\\ts 3 4\n', 'Traditional (England), arranged for this app') +
+      `(0.5{rf 1} 2.3{lf 3 rf 2}).2 2.3{rf 2}.4 |
+(0.5{rf 1} 0.1{rf 3}).4 0.1{rf 2}.4 0.1{rf 3}.4 |
+(3.6{lf 4 rf 1} 0.2{rf 3}).4 {d} 1.2{lf 2 rf 2}.8 0.2{rf 3}.4 |
+(0.5 2.3{lf 3}).2 {d} |
+0.5.4 0.1.4 3.1{lf 4}.4 |
+(3.6{lf 2} 5.1{lf 4}).2 3.1{lf 2}.4 |
+(0.4 0.1).4 2.1{lf 3}.4 3.2{lf 4}.4 |
+(0.6 0.1).2 {d} |
+(0.5 5.1{lf 4}).2 5.1.4 |
+(3.6{lf 2} 3.1{lf 4}).4 0.1.4 0.1.4 |
+(0.4 3.2{lf 4}).4 1.2{lf 2}.4 0.2.4 |
+(3.6{lf 3} 0.3).2 {d} |
+(0.5 2.3{lf 3}).2 0.1.4 |
+(0.4 3.2{lf 4}).2 1.2{lf 2}.4 |
+(3.6{lf 4} 0.2).4 2.3{lf 2}.4 0.3.4 |
+(0.5 2.4{lf 3} 2.3{lf 4} 1.2{lf 2} 0.1).2 {d}`,
   },
 ]
