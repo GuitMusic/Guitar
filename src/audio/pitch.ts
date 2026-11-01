@@ -1,5 +1,6 @@
 import { PitchDetector } from 'pitchy'
 import { frequencyToMidi, midiToFrequency } from '../music/notes'
+import { correctOctave } from './octave'
 import { sharedAudioContext } from './unlock'
 
 export interface PitchReading {
@@ -15,9 +16,10 @@ export interface PitchListener {
 
 /**
  * Listens to the microphone and reports the pitch of single notes (McLeod pitch method).
- * Calls onReading with null when nothing clear is heard.
+ * Calls onReading with null when nothing clear is heard. `level` is the loudness
+ * (RMS, 0 to 1) of every frame, pitched or not, so callers can spot a fresh pluck.
  */
-export async function listenForPitch(onReading: (r: PitchReading | null) => void): Promise<PitchListener> {
+export async function listenForPitch(onReading: (r: PitchReading | null, level: number) => void): Promise<PitchListener> {
   const stream = await navigator.mediaDevices.getUserMedia({
     audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false },
   })
@@ -34,14 +36,19 @@ export async function listenForPitch(onReading: (r: PitchReading | null) => void
 
   const tick = () => {
     analyser.getFloatTimeDomainData(buffer)
-    const [freq, clarity] = detector.findPitch(buffer, ctx.sampleRate)
-    if (clarity > 0.92 && freq > 60 && freq < 1400) {
+    let sum = 0
+    for (let i = 0; i < buffer.length; i++) sum += buffer[i] * buffer[i]
+    const level = Math.sqrt(sum / buffer.length)
+    const [raw, clarity] = detector.findPitch(buffer, ctx.sampleRate)
+    if (clarity > 0.92 && raw > 60 && raw < 1400) {
+      // low strings are often heard an octave too high (see octave.ts)
+      const freq = correctOctave(buffer, ctx.sampleRate, raw)
       const m = frequencyToMidi(freq)
       smoothed = smoothed === null || Math.abs(smoothed - m) > 0.5 ? m : smoothed * 0.7 + m * 0.3
-      onReading({ freq, midi: smoothed, clarity })
+      onReading({ freq, midi: smoothed, clarity }, level)
     } else {
       smoothed = null
-      onReading(null)
+      onReading(null, level)
     }
     frame = requestAnimationFrame(tick)
   }

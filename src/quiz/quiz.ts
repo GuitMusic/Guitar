@@ -127,8 +127,20 @@ function melodyQuestion(
 }
 
 /**
+ * Below this (D3 and lower: strings 6 and 5 in open position) a heard pitch one
+ * octave too high still counts. Low strings have a weak fundamental and phone mics
+ * barely pick it up, so the detector can hear E2 as E3 even after octave correction.
+ */
+export const OCTAVE_SLACK_BELOW = 51
+
+/** Is `heard` the exact note asked for, allowing the low-string octave slip? */
+export function samePitch(target: number, heard: number): boolean {
+  return heard === target || (target < OCTAVE_SLACK_BELOW && heard === target + 12)
+}
+
+/**
  * Checks a heard pitch. "Find the note" accepts any octave; the string and ear modes
- * want the exact pitch.
+ * want the exact pitch (see samePitch for low notes).
  */
 export function checkAnswer(q: Question, heardMidi: number | null): Answer {
   if (heardMidi === null) return { correct: false, heard: null }
@@ -138,7 +150,7 @@ export function checkAnswer(q: Question, heardMidi: number | null): Answer {
       ? heard % 12 === q.midi % 12
       : q.mode === 'find-all'
         ? q.targets.includes(heard)
-        : heard === q.midi
+        : samePitch(q.midi, heard)
   return { correct, heard }
 }
 
@@ -177,8 +189,9 @@ export class StableNote {
       this.candidate = null
       return null
     }
+    // The goal is the right string and fret, not perfect tuning: anything that rounds
+    // to a note counts as that note, even a guitar up to half a semitone out.
     const rounded = Math.round(midi)
-    if (Math.abs(midi - rounded) > 0.35) return null
     if (rounded === this.candidate) this.count++
     else {
       this.candidate = rounded
@@ -220,6 +233,48 @@ export class NoteEvents {
     this.stable.reset()
     this.last = null
     this.quiet = 0
+  }
+}
+
+/**
+ * Spots fresh plucks from the loudness of each mic frame: a frame clearly louder
+ * than the quietest of the frames just before it. A string still ringing from the
+ * last question, or the open string you hear when you lift a finger, has no pluck,
+ * so a wrong note without one is not held against you.
+ */
+export class Attacks {
+  private recent: number[] = []
+  private sinceAttack = Infinity
+  private readonly lookback: number
+  private readonly rise: number
+  private readonly floor: number
+  /**
+   * lookback: frames to look back for the quiet before the pluck.
+   * rise: how much louder than that a pluck is (1.4 = about 3 dB).
+   * floor: quieter than this is not a pluck (about -50 dBFS).
+   */
+  constructor(lookback = 8, rise = 1.4, floor = 0.003) {
+    this.lookback = lookback
+    this.rise = rise
+    this.floor = floor
+  }
+
+  push(level: number): void {
+    const before = this.recent.length ? Math.min(...this.recent) : Infinity
+    if (level > this.floor && level > before * this.rise) this.sinceAttack = 0
+    else this.sinceAttack++
+    this.recent.push(level)
+    if (this.recent.length > this.lookback) this.recent.shift()
+  }
+
+  /** Was there a pluck in the last `frames` frames? */
+  recently(frames: number): boolean {
+    return this.sinceAttack <= frames
+  }
+
+  reset(): void {
+    this.recent = []
+    this.sinceAttack = Infinity
   }
 }
 
