@@ -372,6 +372,19 @@ main {
   padding: 4px 0 6px;
 }
 
+.fretboard-stack {
+  position: relative;
+}
+
+/* The 3D hand sits exactly on top of the drawing and lets taps through to the notes */
+.hand-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
 .fretboard {
   width: 100%;
   height: auto;
