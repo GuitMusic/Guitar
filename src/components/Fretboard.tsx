@@ -18,6 +18,8 @@ export interface FretboardOptions {
   zoom?: 'song' | 'neck'
   /** Which guitar sample the player uses. */
   sound?: GuitarSound
+  /** Show every fretted note of the current bar, and where the hand sits. Default true. */
+  showShape?: boolean
 }
 
 export interface FretMark {
@@ -44,6 +46,10 @@ interface Props {
   showPickZone?: boolean
   /** Rings that show whether notes were played right. */
   marks?: FretMark[]
+  /** Other fretted notes in the current bar, so the whole hand shape is visible. */
+  shape?: FretNote[]
+  /** Fret under the index finger, drawn as the four-fret box the hand covers. */
+  handPosition?: number | null
 }
 
 const W = 1000
@@ -61,7 +67,7 @@ function makeFretX(frets: number) {
 
 const SINGLE_INLAYS = [3, 5, 7, 9, 15, 17, 19, 21]
 
-export function Fretboard({ notes, ghosts, tuning, capo, options, onNoteClick, highlightStrings = [], maxFret, showPickZone = true, marks = [] }: Props) {
+export function Fretboard({ notes, ghosts, tuning, capo, options, onNoteClick, highlightStrings = [], maxFret, showPickZone = true, marks = [], shape = [], handPosition = null }: Props) {
   const stringCount = tuning.length
   const maxNoteFret = Math.max(0, ...notes.map((n) => n.fret), ...ghosts.map((n) => n.fret))
   const frets = maxFret ?? (maxNoteFret > 15 ? Math.min(24, maxNoteFret + 2) : capo > 7 ? 17 : 15)
@@ -154,6 +160,29 @@ export function Fretboard({ notes, ghosts, tuning, capo, options, onNoteClick, h
           picking hand
         </text>
       </g>}
+
+      {handPosition !== null && handPosition > 0 && handPosition <= frets && (notes.some((n) => n.tabFret > 0) || shape.length > 0) && (() => {
+        const last = Math.min(frets, handPosition + 3)
+        const x1 = X(fretX(handPosition - 1))
+        const x2 = X(fretX(last))
+        return (
+          <g className="fb-hand">
+            <rect x={Math.min(x1, x2)} y={TOP - 16} width={Math.abs(x2 - x1)} height={bottom - TOP + 32} rx="6" />
+            <text x={(x1 + x2) / 2} y={TOP - 22} textAnchor="middle">
+              index finger at fret {handPosition}
+            </text>
+          </g>
+        )
+      })()}
+
+      {shape.map((n) => (
+        <g key={`s-${n.key}`} className={`fb-shape fb-finger-${n.lh ?? 'x'}`} onClick={click(n)} role="button" aria-label={`${noteName(n.midi)} later in this bar, edit fingering`}>
+          <circle cx={X(noteX(n))} cy={Y(n.string)} r="12" />
+          <text x={X(noteX(n))} y={Y(n.string) + 5} textAnchor="middle">
+            {options.labelMode === 'note' ? pitchClassName(n.midi) : n.lh !== null ? fretFingerLabel(n.lh) : ''}
+          </text>
+        </g>
+      ))}
 
       {options.showGhosts &&
         ghosts.map((n) => (

@@ -245,7 +245,7 @@ export function Practice({ song }: Props) {
 
   // What to show on the fretboard
   const overrides = settings?.fingering
-  const { notes, ghosts } = useMemo(() => {
+  const { notes, ghosts, shape, position } = useMemo(() => {
     const beats = activeBeats.filter((b) => !track || b.voice.bar.staff.track === track)
     const raw = beats.flatMap(beatToFretNotes)
     const stringCount = staff?.tuning.length ?? 6
@@ -263,9 +263,28 @@ export function Practice({ song }: Props) {
     const current = new Set(result.notes.map((n) => `${n.string}:${n.fret}`))
     const held = heldNotes(beats, new Set(result.notes.map((n) => n.string)))
     const heldFingered = applyFingering(held, stringCount, result.position, overrides).notes
+    // The whole fretting-hand shape for this bar: every fretted note, fingered beat by beat
+    const shapeNotes: FretNote[] = []
+    const seen = new Set([...current, ...heldFingered.map((n) => `${n.string}:${n.fret}`)])
+    for (const bar of new Set(beats.map((b) => b.voice.bar))) {
+      let pos: number | null = null
+      const barBeats = bar.voices.flatMap((v) => v.beats).sort((a, b) => a.playbackStart - b.playbackStart)
+      for (const b of barBeats) {
+        const fingered = applyFingering(beatToFretNotes(b), stringCount, pos, overrides)
+        pos = fingered.position
+        for (const n of fingered.notes) {
+          const id = `${n.string}:${n.fret}`
+          if (n.tabFret <= 0 || n.isDead || n.isTieContinuation || seen.has(id)) continue
+          seen.add(id)
+          shapeNotes.push(n)
+        }
+      }
+    }
     return {
       notes: [...heldFingered, ...result.notes],
       ghosts: nextRaw.filter((n) => !current.has(`${n.string}:${n.fret}`)),
+      shape: shapeNotes,
+      position: result.position,
     }
   }, [activeBeats, track, staff, overrides])
 
@@ -426,6 +445,8 @@ export function Practice({ song }: Props) {
           onNoteClick={(note, anchor) => setEditing({ note, anchor })}
           marks={marks}
           maxFret={fretsShown}
+          shape={view.showShape === false ? [] : shape}
+          handPosition={view.showShape === false ? null : position}
         />
         <div className="rotate-hint">Turn your phone sideways for a bigger fretboard.</div>
         <div className="legend">
@@ -435,6 +456,7 @@ export function Practice({ song }: Props) {
           <span className="legend-item"><i className="dot fb-finger-4" />4 little</span>
           <span className="legend-item"><i className="dot dashed" />suggested by the app</span>
           <span className="legend-item"><i className="dot ghost" />coming next</span>
+          <span className="legend-item"><i className="dot shape" />rest of the bar's hand shape</span>
           <span className="legend-hint">
             <span className="tap-word">Tap</span><span className="click-word">Click</span> a note to change its fingering. <span className="keys">Keys: Space play, ↑↓ speed, L loop</span>
           </span>
@@ -595,6 +617,9 @@ export function Practice({ song }: Props) {
               <option value="steel-dry">Steel-string, close and dry</option>
               <option value="nylon-dry">Nylon-string, close and dry</option>
             </select>
+          </label>
+          <label className="check">
+            <input type="checkbox" checked={view.showShape !== false} onChange={(e) => setView({ showShape: e.target.checked })} /> Show the hand shape for the bar
           </label>
           <label className="check">
             <input type="checkbox" checked={view.showGhosts} onChange={(e) => setView({ ...view, showGhosts: e.target.checked })} /> Show next notes

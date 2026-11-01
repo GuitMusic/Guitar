@@ -1423,3 +1423,37 @@ input.wide {
     gap: 2px 10px;
   }
 }
+
+/* Hand shape for the bar */
+.fb-hand rect {
+  fill: rgba(255, 210, 122, 0.12);
+  stroke: rgba(255, 210, 122, 0.55);
+  stroke-width: 1.5;
+  stroke-dasharray: 5 4;
+}
+.fb-hand text {
+  fill: var(--text-2);
+  font-size: 13px;
+  font-weight: 600;
+}
+.fb-shape {
+  cursor: pointer;
+}
+.fb-shape circle {
+  fill-opacity: 0.35;
+  stroke: #fff;
+  stroke-opacity: 0.7;
+  stroke-width: 1.5;
+  stroke-dasharray: 3 2;
+}
+.fb-shape text {
+  fill: #fff;
+  fill-opacity: 0.85;
+  font-size: 13px;
+  font-weight: 700;
+}
+.dot.shape {
+  background: var(--f2);
+  opacity: 0.4;
+  border: 1px dashed var(--text-2);
+}
