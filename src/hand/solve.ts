@@ -39,6 +39,8 @@ export interface HandTask {
 /** Fingertip height above the fingerboard when pressing a string (mm). */
 const PRESS_Z = 2.5
 const HOVER_Z = 13
+/** Height of the strings above the fingerboard (mm). */
+const STRING_CLEAR = 3.5
 const FREE_Z = 19
 
 /** Where across a fret the fingertip lands: 0 = previous fret, 1 = the fret wire. Close to the wire, like a real player. */
@@ -53,6 +55,7 @@ export function pressX(neck: Neck, fret: number): number {
 
 /** Relaxed angles: a gently curved hand. */
 const RELAXED = [0, 0.75, 0.95, 0.55]
+const CURLED = [0, 0.95, 1.25, 0.8]
 const LIMITS: [number, number][] = [
   [-0.32, 0.32], // spread
   [-0.3, 1.55], // knuckle
@@ -114,7 +117,13 @@ function residuals(rig: HandRig, neck: Neck, task: HandTask, p: Float64Array, ou
     const x = pressX(neck, t.fret)
     const end = norm(sub(tip, dip))
     if (t.kind === 'press') {
-      push3(tip, [x, neck.stringY(t.string) - 1.5, PRESS_Z], 1.2)
+      // Anywhere in the back part of the fret space is fine: fingers sharing a fret stagger
+      // along it, like the three fingers of an A chord
+      const lo = neck.fretX(t.fret - 1)
+      const hi = neck.fretX(t.fret)
+      hinge(lo + (hi - lo) * 0.3 - tip[0], 1.2)
+      hinge(tip[0] - (hi - 2), 1.2)
+      out.push((tip[0] - x) * 0.3, (tip[1] - (neck.stringY(t.string) - 1.5)) * 1.2, (tip[2] - PRESS_Z) * 1.2)
       // Fingertip comes down almost straight onto the string, so it doesn't touch the next string
       hinge(end[2] + 0.82, 25)
       // Stay on this fret: the finger's middle joints shouldn't drift across the fret wires
@@ -135,10 +144,19 @@ function residuals(rig: HandRig, neck: Neck, task: HandTask, p: Float64Array, ou
       const y = neck.stringY(t.string ?? Math.min(neck.strings, 3 + (i === 3 ? 0 : 1)))
       push3(tip, [x, y, FREE_Z], 0.18)
     }
+    // Arched over the strings: the knuckles of the finger (and the tip of a finger that isn't
+    // pressing) stay off the strings it doesn't play, so they can ring
+    if (t.kind !== 'barre') {
+      const over = (q: V3) => q[1] > neck.edgeLow - 3 && q[1] < neck.edgeHigh + 3
+      if (over(pip)) hinge(STRING_CLEAR + 8 - pip[2], 1.5)
+      if (over(dip)) hinge(STRING_CLEAR + 7 - dip[2], 1.5)
+      if (t.kind !== 'press' && over(tip)) hinge(STRING_CLEAR + 6 - tip[2], 1.5)
+    }
     // Natural joint coupling: the end joint follows the middle joint
     if (t.kind !== 'barre') out.push((p[o + 3] - 0.65 * p[o + 2]) * 6)
-    // Comfort: stay near a relaxed hand
-    for (let k = 0; k < 4; k++) out.push((p[o + k] - RELAXED[k]) * (k === 0 ? 7 : 2.5))
+    // Comfort: stay near a relaxed hand; a finger with nothing to do curls in, it doesn't stick out
+    const rest = t.kind === 'free' ? CURLED : RELAXED
+    for (let k = 0; k < 4; k++) out.push((p[o + k] - rest[k]) * (k === 0 ? 7 : t.kind === 'free' ? 4 : 2.5))
     for (let k = 0; k < 4; k++) {
       const [lo, hi] = LIMITS[k]
       hinge(lo - p[o + k], 120)
@@ -154,9 +172,12 @@ function residuals(rig: HandRig, neck: Neck, task: HandTask, p: Float64Array, ou
   for (let i = 0; i < 3; i++) {
     const a = pose.finger[i]
     const b = pose.finger[i + 1]
-    hinge(13 - dist(a[1], b[1]), 1.5)
-    hinge(11 - dist(a[2], b[2]), 1.5)
-    hinge(8 - dist(a[3], b[3]), 1.5)
+    hinge(14 - dist(a[1], b[1]), 2)
+    hinge(13 - dist(a[2], b[2]), 2)
+    hinge(12 - dist(a[3], b[3]), 2)
+    // and between the joints, where fingers would otherwise pass through each other
+    hinge(13 - dist(mid(a[1], a[2]), mid(b[1], b[2])), 2)
+    hinge(12 - dist(mid(a[2], a[3]), mid(b[2], b[3])), 2)
     hinge(a[3][0] - b[3][0] + 6, 0.8)
   }
 
@@ -286,16 +307,22 @@ function rowIsZero(J: Float64Array, i: number, n: number) {
   return true
 }
 
+const mid = (a: V3, b: V3): V3 => [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2, (a[2] + b[2]) / 2]
+
 const sumSq = (r: number[]) => r.reduce((s, v) => s + v * v, 0)
 
-/** How far each pressing fingertip is from its string (mm), the largest one. */
+/** How far each pressing fingertip is from where it should be (mm), the largest one. */
 export function pressError(rig: HandRig, neck: Neck, task: HandTask, p: Float64Array): number {
   const pose = forward(rig, p, 1000, false)
   let worst = 0
   task.fingers.forEach((t, i) => {
     if (t.kind !== 'press') return
     const tip = pose.finger[i][3]
-    worst = Math.max(worst, dist(tip, [pressX(neck, t.fret), neck.stringY(t.string) - 1.5, PRESS_Z]))
+    // Across the string and height; along the neck anywhere in the back part of the fret space
+    const lo = neck.fretX(t.fret - 1)
+    const hi = neck.fretX(t.fret)
+    const along = Math.max(0, lo + (hi - lo) * 0.25 - tip[0], tip[0] - (hi - 1))
+    worst = Math.max(worst, Math.hypot(along, tip[1] - (neck.stringY(t.string) - 1.5), tip[2] - PRESS_Z))
   })
   return worst
 }

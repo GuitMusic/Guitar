@@ -35,7 +35,8 @@ export function applyFingering(
   })
 
   const fretted = withOverrides.filter((n) => n.tabFret > 0 && !n.isDead)
-  const { fingers, position } = chooseFingers(fretted, previousPosition)
+  const open = withOverrides.filter((n) => n.tabFret === 0 && !n.isDead).map((n) => n.string)
+  const { fingers, position } = chooseFingers(fretted, previousPosition, open)
   const bassFrom = numStrings >= 6 ? 4 : Math.max(2, numStrings - 2)
 
   const result = withOverrides.map((n): FretNote => {
@@ -71,7 +72,7 @@ function clampFinger(f: number): FretFinger {
  *
  * Fingers already known (from the file or the player) are kept and shape the choice.
  */
-export function chooseFingers(fretted: FretNote[], previous: number | null): { fingers: Map<FretNote, FretFinger>; position: number | null } {
+export function chooseFingers(fretted: FretNote[], previous: number | null, open: number[] = []): { fingers: Map<FretNote, FretFinger>; position: number | null } {
   const fingers = new Map<FretNote, FretFinger>()
   const pinned = fretted.filter((n) => n.lh !== null && n.lh > 0)
   const free = fretted.filter((n) => n.lh === null)
@@ -90,7 +91,7 @@ export function chooseFingers(fretted: FretNote[], previous: number | null): { f
 
   const minFret = Math.min(...fretted.map((n) => n.fret))
   // The same chord comes back again and again in a song, so remember the answers
-  const cacheKey = `${previous}|${pinned.map((n) => `${n.string}.${n.fret}.${n.lh}`).join(',')}|${free.map((n) => `${n.string}.${n.fret}`).join(',')}`
+  const cacheKey = `${previous}|${open.join('.')}|${pinned.map((n) => `${n.string}.${n.fret}.${n.lh}`).join(',')}|${free.map((n) => `${n.string}.${n.fret}`).join(',')}`
   let solved = chordCache.get(cacheKey)
   if (!solved) {
     solved = searchFingers(
@@ -98,6 +99,7 @@ export function chooseFingers(fretted: FretNote[], previous: number | null): { f
       free.map((n) => ({ string: n.string, fret: n.fret, f: 1 })),
       previous,
       minFret,
+      open,
     )
     if (chordCache.size > 2000) chordCache.clear()
     chordCache.set(cacheKey, solved)
@@ -119,7 +121,7 @@ const chordCache = new Map<string, { best: number[]; cost: number; position: num
  * Tries the fingers note by note and stops early on anything unplayable (one finger on two
  * frets, crossed fingers, too wide a stretch), so only playable fingerings get scored.
  */
-function searchFingers(known: Placed[], free: Placed[], previous: number | null, minFret: number) {
+function searchFingers(known: Placed[], free: Placed[], previous: number | null, minFret: number, open: number[]) {
   const all = known.concat(free)
   const k = known.length
   let best: number[] = []
@@ -139,7 +141,7 @@ function searchFingers(known: Placed[], free: Placed[], previous: number | null,
   for (let i = 1; i < k; i++) if (!fits(i)) return { best, cost, position }
   const step = (i: number) => {
     if (i === all.length) {
-      const scored = scoreFingering(all, previous, minFret)
+      const scored = scoreFingering(all, previous, minFret, open)
       if (scored.cost < cost) {
         cost = scored.cost
         best = free.map((n) => n.f)
@@ -162,7 +164,7 @@ interface Placed {
   f: number
 }
 
-function scoreFingering(notes: Placed[], previous: number | null, minFret: number): { cost: number; position: number } {
+function scoreFingering(notes: Placed[], previous: number | null, minFret: number, open: number[] = []): { cost: number; position: number } {
   let cost = 0
   // The hand sits where the index finger is; without the index, where it would be
   const index = notes.find((n) => n.f === 1)
@@ -184,6 +186,8 @@ function scoreFingering(notes: Placed[], previous: number | null, minFret: numbe
     // One finger on several strings: a barre
     const strings = list.map((n) => n.string)
     const spread = Math.max(...strings) - Math.min(...strings) + 1
+    // A finger lying across the strings would stop an open string ringing in between
+    if (open.some((s) => s > Math.min(...strings) && s < Math.max(...strings))) return { cost: Infinity, position }
     // Short index barres compete with separate fingers; long ones are the only way
     if (f === 1) cost += spread <= 3 ? 2.8 : 1.8
     else if (spread === list.length && list.length <= 3) cost += 1.6 * (list.length - 1)
