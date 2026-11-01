@@ -3007,3 +3007,11 @@ button.chip.active {
     font-size: 0.78rem;
   }
 }
+
+.install-hint {
+  margin: 0;
+  max-width: 240px;
+  font-size: 0.85rem;
+  line-height: 1.4;
+  color: var(--text-2);
+}

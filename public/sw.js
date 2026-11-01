@@ -1,8 +1,8 @@
 // Offline support: the app shell is fetched fresh when online and served from the
 // cache when offline. Everything else (scripts, fonts, the guitar sound) is cached
 // the first time it is loaded.
-const CACHE = 'fingerstyle-v2'
-const SHELL = ['./', './index.html', './manifest.webmanifest', './icon.svg']
+const CACHE = 'fingerstyle-v3'
+const SHELL = ['./', './index.html', './manifest.webmanifest', './icon.svg', './icon-192.png', './icon-512.png', './apple-touch-icon.png']
 
 self.addEventListener('install', (event) => {
   event.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting()))
