@@ -1,8 +1,9 @@
 import * as alphaTab from '@coderline/alphatab'
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { applyFingering } from '../music/fingering'
+import { fingerSong } from '../music/songFingering'
 import { noteName } from '../music/notes'
-import type { FingeringOverride, FingeringOverrides, FretNote } from '../music/types'
+import type { FingeringOverride, FretNote } from '../music/types'
 import { loadSettings, newId, saveSettings, type SongSettings } from '../library/db'
 import type { OpenSong } from '../library/songs'
 import { beatToFretNotes, nextSoundingBeat } from '../player/alphaTabAdapter'
@@ -64,58 +65,6 @@ function formatTime(ms: number): string {
 
 interface Props {
   song: OpenSong
-}
-
-/**
- * Fretted notes played earlier in the same bar on strings that are not sounding now.
- * In fingerstyle the hand usually keeps holding the chord shape, so these show it.
- */
-function heldNotes(active: Beat[], soundingStrings: Set<number>): FretNote[] {
-  const byString = new Map<number, FretNote>()
-  for (const beat of active) {
-    const bar = beat.voice.bar
-    const before = bar.voices
-      .flatMap((v) => v.beats)
-      .filter((b) => b.playbackStart < beat.playbackStart)
-      .sort((a, b) => a.playbackStart - b.playbackStart)
-    for (const b of before) {
-      for (const n of beatToFretNotes(b)) {
-        if (soundingStrings.has(n.string)) continue
-        if (n.tabFret > 0 && !n.isDead) byString.set(n.string, { ...n, isHeld: true })
-        else byString.delete(n.string)
-      }
-    }
-  }
-  return [...byString.values()]
-}
-
-/**
- * Fingers new notes together with the notes still held from earlier in the bar, as one
- * chord shape. Held notes that don't fit a playable shape with the new notes must have
- * been let go, so they are dropped, the farthest from the new notes first.
- */
-function fingerWithHeld(raw: FretNote[], held: FretNote[], strings: number, before: number | null, overrides: FingeringOverrides | undefined) {
-  const frets = raw.filter((n) => n.tabFret > 0).map((n) => n.fret)
-  const centre = frets.length ? frets.reduce((a, b) => a + b, 0) / frets.length : before ?? 0
-  let keep = [...held].sort((a, b) => Math.abs(a.fret - centre) - Math.abs(b.fret - centre))
-  while (keep.length > 0) {
-    const joint = applyFingering([...keep, ...raw], strings, before, overrides)
-    if (playable(joint.notes)) return joint
-    keep = keep.slice(0, -1)
-  }
-  return applyFingering(raw, strings, before, overrides)
-}
-
-function playable(notes: FretNote[]): boolean {
-  const fretted = notes.filter((n) => n.tabFret > 0 && !n.isDead)
-  if (fretted.length === 0) return true
-  const frets = fretted.map((n) => n.fret)
-  if (Math.max(...frets) - Math.min(...frets) > 5) return false
-  for (let f = 1; f <= 4; f++) {
-    const at = new Set(fretted.filter((n) => n.lh === f).map((n) => n.fret))
-    if (at.size > 1) return false
-  }
-  return true
 }
 
 export function Practice({ song }: Props) {
@@ -362,7 +311,23 @@ export function Practice({ song }: Props) {
 
   // What to show on the fretboard
   const overrides = settings?.fingering
-  const { notes, ghosts, shape, position } = useMemo(() => {
+  // The whole track fingered once, in hand shapes ("grips"), the way a player would plan it
+  const songFingering = useMemo(() => {
+    if (!staff) return null
+    const beats = staff.bars.flatMap((bar) =>
+      bar.voices
+        .flatMap((v) => v.beats)
+        .filter((b) => b.notes.length > 0)
+        .sort((a, b) => a.playbackStart - b.playbackStart),
+    )
+    const eventOf = new Map<Beat, number>()
+    beats.forEach((b, i) => eventOf.set(b, i))
+    const events = beats.map((b) => ({ bar: b.voice.bar.index, notes: beatToFretNotes(b) }))
+    return { beats, events, eventOf, ...fingerSong(events, overrides) }
+  }, [staff, overrides])
+
+  const { notes, ghosts, shape, grip, position } = useMemo(() => {
+    const empty = { notes: [] as FretNote[], ghosts: [] as FretNote[], shape: [] as FretNote[], grip: [] as FretNote[], position: null as number | null }
     let beats = activeBeats.filter((b) => !track || b.voice.bar.staff.track === track)
     // Before Play (or after Stop) show the first note and hand shape of the bar playback starts from
     if (beats.length === 0 && staff) {
@@ -373,48 +338,53 @@ export function Practice({ song }: Props) {
         .sort((a, b) => a.playbackStart - b.playbackStart)[0]
       if (first) beats = [first]
     }
-    const raw = beats.flatMap(beatToFretNotes)
+    if (!songFingering || beats.length === 0) return empty
+    const { events, eventOf, fingers, grips, gripOf } = songFingering
     const stringCount = staff?.tuning.length ?? 6
-    // Where the hand was on the previous beat, so the suggestion doesn't jump around
-    const previous = beats
-      .map((b) => b.previousBeat)
-      .filter((b): b is Beat => b !== null && b.notes.length > 0)
-      .flatMap(beatToFretNotes)
-    const before = applyFingering(previous, stringCount, null, overrides).position
-    // Notes still held from earlier in the bar are part of the chord shape, so they are
-    // fingered together with the new notes (a finger can't be in two places at once)
-    const held = heldNotes(beats, new Set(raw.map((n) => n.string)))
-    const result = fingerWithHeld(raw, held, stringCount, before, overrides)
+    const withFinger = (n: FretNote): FretNote => {
+      const lh = n.lh ?? fingers.get(n.key) ?? null
+      return lh === n.lh ? n : { ...n, lh, lhInferred: true }
+    }
+    const raw = beats.flatMap(beatToFretNotes).map(withFinger)
+    const at = Math.max(...beats.map((b) => eventOf.get(b) ?? -1))
+    if (at < 0) return { ...empty, notes: applyFingering(raw, stringCount, null, overrides).notes }
+    const g = grips[gripOf[at]]
+    // Notes played earlier from the same grip stay held down (fingerstyle lets the chord ring)
+    const sounding = new Set(raw.map((n) => n.string))
+    const held = new Map<number, FretNote>()
+    for (let i = g.start; i < at; i++)
+      for (const n of events[i].notes) {
+        if (sounding.has(n.string)) continue
+        if (n.tabFret > 0 && !n.isDead) held.set(n.string, { ...withFinger(n), isHeld: true })
+        else held.delete(n.string)
+      }
+    const result = applyFingering([...held.values(), ...raw], stringCount, g.position, overrides)
     const nextRaw = beats
       .map(nextSoundingBeat)
       .filter((b): b is Beat => b !== null)
       .flatMap(beatToFretNotes)
+      .map(withFinger)
     const current = new Set(result.notes.map((n) => `${n.string}:${n.fret}`))
-    // The whole fretting-hand shape for this bar: every fretted note, fingered beat by beat
+    // The rest of the bar's notes, with the fingers they'll be played with
     const shapeNotes: FretNote[] = []
-    const seen = new Set(result.notes.map((n) => `${n.string}:${n.fret}`))
-    for (const bar of new Set(beats.map((b) => b.voice.bar))) {
-      let pos: number | null = null
-      const barBeats = bar.voices.flatMap((v) => v.beats).sort((a, b) => a.playbackStart - b.playbackStart)
-      for (const b of barBeats) {
-        const own = beatToFretNotes(b)
-        const fingered = fingerWithHeld(own, heldNotes([b], new Set(own.map((n) => n.string))), stringCount, pos, overrides)
-        pos = fingered.position
-        for (const n of fingered.notes) {
+    const seen = new Set(current)
+    for (const bar of new Set(beats.map((b) => b.voice.bar)))
+      for (const b of bar.voices.flatMap((v) => v.beats).sort((a, b) => a.playbackStart - b.playbackStart))
+        for (const n of beatToFretNotes(b).map(withFinger)) {
           const id = `${n.string}:${n.fret}`
           if (n.tabFret <= 0 || n.isDead || n.isTieContinuation || seen.has(id)) continue
           seen.add(id)
           shapeNotes.push(n)
         }
-      }
-    }
     return {
       notes: result.notes,
       ghosts: nextRaw.filter((n) => !current.has(`${n.string}:${n.fret}`)),
       shape: shapeNotes,
-      position: result.position,
+      // The rest of this grip: the fingers the hand already has in place for what comes next
+      grip: g.notes.filter((n) => !current.has(`${n.string}:${n.fret}`)),
+      position: g.position,
     }
-  }, [activeBeats, track, staff, overrides, loop.on, loop.start])
+  }, [activeBeats, track, staff, overrides, loop.on, loop.start, songFingering])
 
   const setOverride = (note: FretNote, override: FingeringOverride | null) => {
     updateSettings((s) => {
@@ -601,7 +571,7 @@ export function Practice({ song }: Props) {
           <Suspense fallback={<div className="hand-panel" />}>
             <HandPanel
               notes={notes}
-              shape={view.showShape === false ? [] : shape}
+              shape={grip}
               handPosition={position}
               layout={{ strings: tuning.length, leftHanded: view.leftHanded, stringOrder: view.stringOrder }}
             />

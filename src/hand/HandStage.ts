@@ -22,7 +22,7 @@ import {
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import { RIGHT_HAND_BIND } from './bindPose'
-import { forward, makeRig, PARAMS, type HandRig } from './rig'
+import { fingerParam, forward, makeRig, PARAMS, type HandRig } from './rig'
 import { pressX, solveHandBest, type HandTask, type Neck } from './solve'
 import { taskKey } from './targets'
 
@@ -97,6 +97,11 @@ export class HandStage {
   private task: HandTask | null = null
   private current = new Float64Array(PARAMS)
   private target = new Float64Array(PARAMS)
+  /** A move from one hand shape to the next: where it started, how far the fingers lift on the way, progress 0-1. */
+  private from = new Float64Array(PARAMS)
+  private lift = new Float64Array(PARAMS)
+  private progress = 1
+  private duration = 0.15
   private hasPose = false
   private focus = new Vector3()
   private focusTarget = new Vector3()
@@ -346,6 +351,7 @@ export class HandStage {
       solved = solveHandBest(rig, this.neck, task).params
       this.cache.set(key, solved)
     }
+    this.planMove(solved)
     this.target.set(solved)
     const weight = { press: 1, barre: 1, hover: 0.8, free: 0.55 }
     this.alphaTarget = [1, ...task.fingers.map((f) => weight[f.kind]), 1]
@@ -367,6 +373,34 @@ export class HandStage {
     this.kick()
   }
 
+  /**
+   * Plans the move to a new shape like a player makes it: fingers that stay on their note
+   * stay put, fingers going somewhere else lift off the strings, travel and land, and a
+   * longer shift along the neck takes a little longer.
+   */
+  private planMove(to: Float64Array) {
+    this.from.set(this.current)
+    this.lift.fill(0)
+    if (!this.hasPose || this.reduceMotion) return
+    const a = forward(rig, this.current, 1000, false)
+    const b = forward(rig, to, 1000, false)
+    const shift = Math.hypot(b.wrist[0] - a.wrist[0], b.wrist[1] - a.wrist[1], b.wrist[2] - a.wrist[2])
+    for (let f = 0; f < 4; f++) {
+      const ta = a.finger[f][3]
+      const tb = b.finger[f][3]
+      const d = Math.hypot(tb[0] - ta[0], tb[1] - ta[1], tb[2] - ta[2])
+      if (d < 3) continue
+      // Opening the finger joints lifts the fingertip away from the fingerboard
+      const k = Math.min(1, d / 18)
+      const o = fingerParam(f + 1)
+      this.lift[o + 1] = -0.38 * k
+      this.lift[o + 2] = -0.3 * k
+      this.lift[o + 3] = -0.18 * k
+    }
+    this.duration = Math.min(0.28, 0.11 + shift * 0.004)
+    this.progress = 0
+  }
+
   private kick() {
     if (this.raf || this.disposed) return
     this.last = performance.now()
@@ -380,12 +414,15 @@ export class HandStage {
     let moving = false
     if (this.hasPose) {
       const a = 1 - Math.exp(-dt / 0.07)
-      for (let i = 0; i < PARAMS; i++) {
-        const d = this.target[i] - this.current[i]
-        if (Math.abs(d) > (i < 3 ? 0.05 : 0.0005)) moving = true
-        this.current[i] += d * a
-      }
-      if (!moving) this.current.set(this.target)
+      if (this.progress < 1) {
+        this.progress = Math.min(1, this.progress + dt / this.duration)
+        const t = this.progress
+        // Ease in and out; the lift peaks halfway
+        const e = t * t * (3 - 2 * t)
+        const arc = Math.sin(Math.PI * t)
+        for (let i = 0; i < PARAMS; i++) this.current[i] = this.from[i] + (this.target[i] - this.from[i]) * e + this.lift[i] * arc
+        moving = true
+      } else this.current.set(this.target)
       const alpha = this.uniforms.uFingerAlpha.value
       for (let i = 0; i < 6; i++) {
         const d = this.alphaTarget[i] - alpha[i]
