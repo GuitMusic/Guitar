@@ -44,7 +44,8 @@ function songFacts(song: OpenSong): string[] {
   if (typeof song.data !== 'string') return []
   const tempo = /\\tempo\s+(\d+)/.exec(song.data)?.[1]
   const sigs = [...song.data.matchAll(/\\ts\s+(\d+)\s+(\d+)/g)].map((m) => `${m[1]}/${m[2]}`)
-  const ts = sigs.find((s) => s !== '1/4') ?? sigs[0]
+  // A pickup bar is written as 1/4 or 1/8, so skip those
+  const ts = sigs.find((s) => !s.startsWith('1/')) ?? sigs[0]
   return [tempo && `${tempo} BPM`, ts].filter((x): x is string => !!x)
 }
 
@@ -58,7 +59,7 @@ export function SongCover({ id, big = false, dots: showDots = true }: { id: stri
   const hue2 = (hue + 40 + ((h >>> 9) % 60)) % 360
   const dots = Array.from({ length: 3 + ((h >>> 4) % 3) }, (_, i) => {
     const r = hash(`${id}:${i}`)
-    return { x: (big ? 170 : 70) + (r % (big ? 120 : 190)), s: (r >>> 8) % 6, f: (r >>> 16) % 4 }
+    return { x: (big ? 170 : 70) + (r % (big ? 120 : 190)), s: big ? 2 + ((r >>> 8) % 4) : (r >>> 8) % 6, f: (r >>> 16) % 4 }
   })
   const gid = `g-${id}`
   return (
