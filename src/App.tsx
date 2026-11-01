@@ -9,6 +9,7 @@ import { NoteQuiz } from './quiz/NoteQuiz'
 import { Icon, Menu } from './components/PlayerBar'
 import { setTheme, useTheme } from './components/theme'
 import { Progress } from './progress/Progress'
+import { promptInstall, useInstall } from './components/install'
 
 type Page = 'library' | 'practice' | 'quiz' | 'progress' | 'tools'
 
@@ -26,6 +27,7 @@ export default function App() {
   const [song, setSong] = useState<OpenSong | null>(null)
   const { leftHanded } = useFretboardView()
   const { theme } = useTheme()
+  const install = useInstall()
   useEffect(() => {
     window.scrollTo(0, 0)
   }, [page])
@@ -98,6 +100,24 @@ export default function App() {
               ))}
             </div>
           </div>
+          {install !== 'installed' && (
+            <div className="settings-row">
+              <span className="settings-label">Install on this device</span>
+              {install === 'prompt' ? (
+                <button className="primary" onClick={() => void promptInstall()}>
+                  Install app
+                </button>
+              ) : install === 'ios' ? (
+                <p className="install-hint">
+                  In Safari, tap the Share button, then <b>Add to Home Screen</b>.
+                </p>
+              ) : (
+                <p className="install-hint">
+                  Open your browser menu and choose <b>Install app</b> or <b>Add to Home screen</b>.
+                </p>
+              )}
+            </div>
+          )}
         </Menu>
       </header>
       <main className={page === 'practice' ? 'on-practice' : ''}>

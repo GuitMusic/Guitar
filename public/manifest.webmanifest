@@ -1,11 +1,18 @@
 {
+  "id": "./",
   "name": "Fingerstyle Trainer",
   "short_name": "Fingerstyle",
-  "start_url": ".",
-  "scope": ".",
+  "description": "Learn fingerstyle guitar songs with a live fretboard, tab and mic feedback.",
+  "start_url": "./",
+  "scope": "./",
   "display": "standalone",
   "orientation": "any",
-  "background_color": "#f6f4ef",
-  "theme_color": "#b5562a",
-  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }]
+  "background_color": "#08080a",
+  "theme_color": "#08080a",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
 }
