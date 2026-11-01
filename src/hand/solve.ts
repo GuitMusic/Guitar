@@ -154,9 +154,9 @@ function residuals(rig: HandRig, neck: Neck, task: HandTask, p: Float64Array, ou
   for (let i = 0; i < 3; i++) {
     const a = pose.finger[i]
     const b = pose.finger[i + 1]
-    hinge(15 - dist(a[1], b[1]), 1.5)
-    hinge(14 - dist(a[2], b[2]), 1.5)
-    hinge(13 - dist(a[3], b[3]), 1.5)
+    hinge(13 - dist(a[1], b[1]), 1.5)
+    hinge(11 - dist(a[2], b[2]), 1.5)
+    hinge(8 - dist(a[3], b[3]), 1.5)
     hinge(a[3][0] - b[3][0] + 6, 0.8)
   }
 
@@ -194,6 +194,28 @@ export interface SolveResult {
   params: Float64Array
   /** Largest distance (mm) between a pressing fingertip and its target. */
   error: number
+  /** Total weighted error the solver minimised. */
+  cost: number
+}
+
+/**
+ * Solves from the standard starting pose, plus a few others when the thumb has to reach
+ * over the neck (the hand must move round the neck for that), and keeps the best.
+ */
+export function solveHandBest(rig: HandRig, neck: Neck, task: HandTask): SolveResult {
+  let best = solveHand(rig, neck, task)
+  if (task.thumb.kind !== 'over') return best
+  const base = initialPose(rig, neck, task)
+  for (const [dy, dz, a, b] of [[30, -10, 0.8, 0], [30, -10, -0.8, 0], [45, -20, 0, 0.8], [45, -20, 0, -0.8], [20, 0, 1.2, 0.6]]) {
+    const start = Float64Array.from(base)
+    start[1] += dy
+    start[2] += dz
+    start[P_THUMB] = a
+    start[P_THUMB + 1] = b
+    const r = solveHand(rig, neck, task, start)
+    if (r.cost < best.cost) best = r
+  }
+  return best
 }
 
 /** Fits the hand to the task with Levenberg-Marquardt, starting from `start`. */
@@ -256,7 +278,7 @@ export function solveHand(rig: HandRig, neck: Neck, task: HandTask, start?: Floa
     }
     if (!improved) break
   }
-  return { params: p, error: pressError(rig, neck, task, p) }
+  return { params: p, error: pressError(rig, neck, task, p), cost }
 }
 
 function rowIsZero(J: Float64Array, i: number, n: number) {

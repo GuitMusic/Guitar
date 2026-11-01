@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useId, useMemo, useState } from 'react'
+import { useEffect, useId, useMemo, useState } from 'react'
 import { fretFingerLabel } from '../music/fingering'
 import { noteName, pitchClassName } from '../music/notes'
 import type { FretNote } from '../music/types'
@@ -21,7 +21,7 @@ export interface FretboardOptions {
   sound?: GuitarSound
   /** Show every fretted note of the current bar, and where the hand sits. Default true. */
   showShape?: boolean
-  /** Show the see-through 3D fretting hand over the fretboard. Default true. */
+  /** Show the 3D view of the fretting hand under the fretboard. Default true. */
   hand3d?: boolean
 }
 
@@ -55,12 +55,7 @@ interface Props {
   shape?: FretNote[]
   /** Fret under the index finger, drawn as the four-fret box the hand covers. */
   handPosition?: number | null
-  /** Draw the 3D fretting hand (when options.hand3d isn't false). */
-  hand?: boolean
 }
-
-// three.js is big, so the hand loads only when it's shown
-const HandOverlay = lazy(() => import('../hand/HandOverlay'))
 
 const NOTE_R = 17
 const CHIP_X = 20
@@ -68,7 +63,7 @@ const OPEN_X = NUT_X - 34
 
 const SINGLE_INLAYS = [3, 5, 7, 9, 15, 17, 19, 21]
 
-export function Fretboard({ notes, ghosts, tuning, capo, options, onNoteClick, onFretClick, highlightStrings = [], maxFret, showPickZone = true, marks = [], shape = [], handPosition = null, hand = false }: Props) {
+export function Fretboard({ notes, ghosts, tuning, capo, options, onNoteClick, onFretClick, highlightStrings = [], maxFret, showPickZone = true, marks = [], shape = [], handPosition = null }: Props) {
   // Unique ids for the SVG gradients, in case two fretboards share a page
   const uid = useId().replace(/[^a-zA-Z0-9]/g, '')
   const ref = (name: string) => `url(#${name}-${uid})`
@@ -127,8 +122,7 @@ export function Fretboard({ notes, ghosts, tuning, capo, options, onNoteClick, o
     onNoteClick?.(n, { x: e.clientX, y: e.clientY })
   }
 
-  const showHand3d = hand && options.hand3d !== false
-  const svg = (
+  return (
     <svg
       className="fretboard"
       viewBox={`0 0 ${W} ${H}`}
@@ -421,19 +415,5 @@ export function Fretboard({ notes, ghosts, tuning, capo, options, onNoteClick, o
           )
         })}
     </svg>
-  )
-  if (!showHand3d) return svg
-  return (
-    <div className="fretboard-stack">
-      {svg}
-      <Suspense fallback={null}>
-        <HandOverlay
-          notes={notes}
-          shape={shape}
-          handPosition={handPosition}
-          layout={{ frets, strings: stringCount, height: H, leftHanded: options.leftHanded, stringOrder: options.stringOrder }}
-        />
-      </Suspense>
-    </div>
   )
 }

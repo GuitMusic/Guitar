@@ -29,7 +29,7 @@ import { taskKey } from './targets'
 
 /** Finger colours, the same as the numbered dots (thumb, index … little). */
 export const FINGER_COLORS = ['#a0a0a0', '#3b8ee6', '#2fae66', '#ec9440', '#a964e0']
-const SKIN = '#f3d9c4'
+const SKIN = '#f6dcc8'
 
 export interface StageLayout {
   strings: number
@@ -70,7 +70,7 @@ const INLAYS = [3, 5, 7, 9, 15, 17]
 /** Where the camera sits relative to the hand, before mirroring (mm). */
 export const VIEWS = {
   /** In front of the guitar, a little from below: the whole back of the hand and the wrist. */
-  front: new Vector3(80, -170, 360),
+  front: new Vector3(40, -150, 300),
   /** Like looking down at your own guitar from above the bass strings. */
   player: new Vector3(60, 330, 250),
   /** From the body end of the neck, along the strings: how the fingers arch. */
@@ -268,7 +268,7 @@ export class HandStage {
     depth.frustumCulled = false
     depth.castShadow = true
 
-    skinned.material = tinted('0.72 + rim * 0.25', 0.18)
+    skinned.material = tinted('0.8 + rim * 0.2', 0.12)
     skinned.renderOrder = 3
     skinned.frustumCulled = false
     skinned.parent?.add(ghost, depth)

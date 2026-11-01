@@ -1,5 +1,5 @@
 import * as alphaTab from '@coderline/alphatab'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { applyFingering } from '../music/fingering'
 import { noteName } from '../music/notes'
 import type { FingeringOverride, FingeringOverrides, FretNote } from '../music/types'
@@ -54,6 +54,8 @@ function setGuitarSound(score: alphaTab.model.Score, sound: GuitarSound = 'steel
 type Score = alphaTab.model.Score
 
 const BASE = import.meta.env.BASE_URL
+// three.js is big, so the 3D hand loads only when it's shown
+const HandPanel = lazy(() => import('../hand/HandPanel'))
 
 function formatTime(ms: number): string {
   const s = Math.max(0, Math.floor(ms / 1000))
@@ -593,8 +595,17 @@ export function Practice({ song }: Props) {
           maxFret={fretsShown}
           shape={view.showShape === false ? [] : shape}
           handPosition={view.showShape === false ? null : position}
-          hand
         />
+        {view.hand3d !== false && (
+          <Suspense fallback={<div className="hand-panel" />}>
+            <HandPanel
+              notes={notes}
+              shape={view.showShape === false ? [] : shape}
+              handPosition={position}
+              layout={{ strings: tuning.length, leftHanded: view.leftHanded, stringOrder: view.stringOrder }}
+            />
+          </Suspense>
+        )}
         <div className="rotate-hint">Turn your phone sideways for a bigger fretboard.</div>
         <div className="legend-row">
           <span className="legend-hint">
