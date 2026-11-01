@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { applyFingering } from './fingering'
+import { applyFingering, chooseFingers } from './fingering'
 import type { FretNote } from './types'
 
 function note(string: number, tabFret: number, extra: Partial<FretNote> = {}, capo = 0): FretNote {
@@ -98,5 +98,16 @@ describe('applyFingering', () => {
       const fingers = chord([6, 3], [5, 2], [1, 3])
       expect(new Set(fingers).size).toBe(3)
     })
+  })
+})
+
+describe('chooseFingers with open strings', () => {
+  it('never lays a barre across a string that rings open (D/F#)', () => {
+    const mk = (string: number, fret: number): FretNote => ({ key: `${string}`, string, tabFret: fret, fret, midi: 0, lh: null, rh: null, lhInferred: true, rhInferred: true })
+    const fretted = [mk(6, 2), mk(3, 2), mk(2, 3), mk(1, 2)]
+    const { fingers } = chooseFingers(fretted, null, [5, 4])
+    const index = fretted.filter((n) => fingers.get(n) === 1)
+    // The index finger can't be on both the low E and the treble strings with A and D open between
+    expect(index.some((n) => n.string === 6) && index.some((n) => n.string <= 3)).toBe(false)
   })
 })

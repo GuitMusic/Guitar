@@ -51,10 +51,10 @@ export function buildHandTask(current: FretNote[], later: FretNote[], handPositi
   // Every finger with a job pins where the others can be: frets never go backwards from index to little
   for (let f = 1; f <= 4; f++) {
     if (tasks[f - 1]) continue
-    const before = tasks.slice(0, f - 1).filter((t): t is FingerTask => t !== null).map((t) => t.fret)
+    const before = tasks.slice(0, f - 1).filter((t): t is FingerTask => t !== null && t.kind !== 'free').map((t) => t.fret)
     const after = tasks.slice(f).filter((t): t is FingerTask => t !== null).map((t) => t.fret)
     let fret = base + f - 1
-    if (before.length) fret = Math.max(fret, Math.max(...before))
+    if (before.length) fret = Math.max(Math.min(fret, Math.max(...before) + 1), Math.max(...before))
     if (after.length) fret = Math.min(fret, Math.min(...after))
     fret = Math.max(1, fret)
     // Next to a finger on the same fret, rest on the string beside it instead of crossing it:

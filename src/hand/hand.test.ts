@@ -35,7 +35,9 @@ describe('hand solver', () => {
           // The arch stays above the strings
           expect(pip[2]).toBeGreaterThan(5)
           expect(dip[2]).toBeGreaterThan(5)
-          expect(Math.abs(tip[0] - pressX(neck, t.fret))).toBeLessThan(4)
+          // Behind the fret wire, in the back part of the fret space
+          expect(tip[0]).toBeLessThan(neck.fretX(t.fret) - 1)
+          expect(tip[0]).toBeGreaterThan(neck.fretX(t.fret - 1) + (neck.fretX(t.fret) - neck.fretX(t.fret - 1)) * 0.25)
         }
         if (t.kind === 'barre') {
           // A barre finger lies flat along the fret
@@ -71,11 +73,12 @@ describe('buildHandTask', () => {
     expect(t.fingers[2]).toEqual({ kind: 'press', string: 5, fret: 3 })
   })
 
-  it('lets fingers hover over notes coming later in the bar and rest one per fret otherwise', () => {
+  it('lets fingers hover over notes coming later in the bar; idle fingers curl in next to the busy ones', () => {
     const t = buildHandTask([n(2, 1, 1)], [n(4, 2, 2)], 1, 6)!
     expect(t.fingers[1]).toEqual({ kind: 'hover', string: 4, fret: 2 })
     expect(t.fingers[2]).toMatchObject({ kind: 'free', fret: 3 })
-    expect(t.fingers[3]).toMatchObject({ kind: 'free', fret: 4 })
+    // No further than one fret past the last finger with a job, not stretched out to fret 4
+    expect(t.fingers[3]).toMatchObject({ kind: 'free', fret: 3 })
   })
 
   it('a free finger next to one on the same fret rests beside it, not across it', () => {
