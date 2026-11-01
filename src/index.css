@@ -3015,3 +3015,302 @@ button.chip.active {
   line-height: 1.4;
   color: var(--text-2);
 }
+
+/* Note finder: path, rounds, neck map */
+.quiz-head {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+}
+.quiz-head h1 {
+  margin-right: auto;
+}
+.quiz-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--text-2);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+.quiz-pill svg {
+  color: var(--accent);
+}
+.quiz-pill.hot {
+  background: color-mix(in srgb, var(--accent) 18%, var(--surface));
+  color: var(--text);
+  animation: quiz-pop 300ms ease-out;
+}
+@keyframes quiz-pop {
+  from {
+    transform: scale(0.8);
+  }
+}
+.quiz-tabs {
+  margin: 8px 0 4px;
+}
+.quiz-group {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-2);
+  margin: 22px 0 10px;
+}
+.level-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 10px;
+}
+.level-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  text-align: left;
+  padding: 14px 16px 12px;
+  border-radius: 18px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+  transition: transform 150ms ease, border-color 150ms ease;
+}
+.level-card:hover:not(:disabled) {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--accent) 60%, transparent);
+}
+.level-card.next {
+  border-color: color-mix(in srgb, var(--accent) 70%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);
+}
+.level-card.locked {
+  opacity: 0.5;
+}
+.level-num {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 0.8rem;
+  font-weight: 700;
+  background: var(--surface-2);
+}
+.level-card.next .level-num {
+  background: var(--grad);
+  color: #fff;
+}
+.level-title {
+  font-weight: 700;
+  font-size: 1.02rem;
+}
+.level-blurb {
+  color: var(--text-2);
+  font-size: 0.85rem;
+  line-height: 1.35;
+  flex: 1;
+}
+.level-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin-top: 6px;
+}
+.level-tag {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--accent);
+}
+.stars {
+  display: inline-flex;
+  gap: 2px;
+}
+.star path {
+  fill: var(--surface-2);
+  stroke: var(--border);
+}
+.star.on path {
+  fill: #fbbf24;
+  stroke: #f59e0b;
+}
+.quiz-summary .stars svg {
+  width: 30px;
+  height: 30px;
+}
+.quiz-round {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+  margin-top: 8px;
+}
+.quiz-round-title {
+  font-weight: 700;
+}
+.quiz-dots {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+.quiz-dots i {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--surface-2);
+  transition: background 200ms ease, transform 200ms ease;
+}
+.quiz-dots i.now {
+  box-shadow: 0 0 0 2px var(--accent);
+}
+.quiz-dots i.ok {
+  background: var(--m);
+}
+.quiz-dots i.bad {
+  background: var(--p);
+}
+.quiz-card.is-right .quiz-prompt {
+  animation: quiz-pop 300ms ease-out;
+}
+.quiz-targets {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 10px 0 2px;
+}
+.quiz-targets span {
+  min-width: 44px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px dashed var(--border);
+  color: var(--text-2);
+  font-weight: 600;
+}
+.quiz-targets span.found {
+  border: 1px solid var(--m);
+  background: color-mix(in srgb, var(--m) 20%, transparent);
+  color: var(--text);
+  animation: quiz-pop 250ms ease-out;
+}
+.quiz-targets span.missed {
+  border-style: solid;
+  border-color: var(--p);
+  color: var(--text);
+}
+.quiz-live {
+  margin: 4px 0 10px;
+  font-size: 0.85rem;
+}
+.quiz-live span {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  color: var(--text-2);
+  background: var(--surface-2);
+}
+.quiz-live span.on {
+  color: var(--text);
+  background: color-mix(in srgb, var(--accent) 22%, var(--surface));
+}
+.quiz-summary {
+  position: relative;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 22px;
+  padding: 24px 22px;
+  margin: 14px 0;
+  text-align: center;
+}
+.quiz-summary.passed {
+  border-color: color-mix(in srgb, var(--accent) 60%, transparent);
+}
+.quiz-score {
+  font-size: 3.4rem;
+  font-weight: 800;
+  line-height: 1.1;
+}
+.quiz-score span {
+  font-size: 1.6rem;
+  color: var(--text-2);
+}
+.neck-legend {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.neck-legend .lg {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 3px solid;
+  margin-left: 6px;
+}
+.lg.hit {
+  border-color: #3ddc84;
+}
+.lg.late {
+  border-color: #ffb347;
+}
+.lg.miss {
+  border-color: #ff5a4f;
+}
+.note-tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+  gap: 8px;
+}
+.note-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 4px;
+  border-radius: 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  font-size: 0.8rem;
+  color: var(--text-2);
+}
+.note-tile strong {
+  font-size: 1.15rem;
+  color: var(--text);
+}
+.note-tile.good {
+  border-color: color-mix(in srgb, #3ddc84 70%, transparent);
+}
+.note-tile.mid {
+  border-color: color-mix(in srgb, #ffb347 70%, transparent);
+}
+.note-tile.bad {
+  border-color: color-mix(in srgb, #ff5a4f 70%, transparent);
+}
+@media (prefers-reduced-motion: reduce) {
+  .quiz-pill.hot,
+  .quiz-targets span.found,
+  .quiz-card.is-right .quiz-prompt {
+    animation: none;
+  }
+}
+@media (max-width: 640px) {
+  .level-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+  .level-card {
+    padding: 12px;
+  }
+  .level-card.locked .level-blurb {
+    display: none;
+  }
+  .level-blurb {
+    font-size: 0.8rem;
+  }
+  .quiz-prompt {
+    font-size: 1.7rem;
+  }
+}
