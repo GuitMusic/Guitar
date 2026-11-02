@@ -1,0 +1,8 @@
+{
+  "carcassi3": { "file": "$MUTOPIA/CarcassiM/O60/carcassi-op60-03/carcassi-op60-03.ly", "source": "Mutopia Project, typeset by its contributor and placed in the public domain" },
+  "carcassi15": { "file": "$MUTOPIA/CarcassiM/O60/carcassi-op60-15/carcassi-op60-15.ly", "source": "Mutopia Project, public domain typesetting" },
+  "sor35-14": { "file": "$MUTOPIA/SorF/O35/Sor_Etude_Opus35_14/Sor_Etude_Opus35_14.ly", "pickup": "1", "source": "Mutopia Project, public domain typesetting" },
+  "mertz": { "file": "$MUTOPIA/MertzJK/mertz_etude/mertz_etude.ly", "source": "Mutopia Project, public domain typesetting" },
+  "bwv999": { "file": "$MUTOPIA/BachJS/BWV999/Bach_Prelude_BWV999/Bach_Prelude_BWV999.ly", "source": "Mutopia Project, public domain typesetting" },
+  "claro": { "file": "$MUTOPIA/TarregaF/claro-de-luna/claro-de-luna.ly", "tuning": [64, 59, 55, 50, 45, 38], "max_fret": 15, "source": "Mutopia Project, public domain typesetting" }
+}

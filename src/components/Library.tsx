@@ -20,7 +20,7 @@ D|---------------|---------------|
 A|-3-------------|---------------|
 E|---------------|-3-------------|`
 
-const LEVELS = { 1: 'Beginner', 2: 'Easy', 3: 'Intermediate' } as const
+const LEVELS = { 1: 'Beginner', 2: 'Easy', 3: 'Intermediate', 4: 'Intermediate+' } as const
 
 /** The song to suggest when nothing has been played yet. */
 // Pitched at an intermediate fingerstyle player, who already knows the beginner pieces
@@ -140,7 +140,7 @@ function SongTile({ song, p, onOpen, onRemove }: { song: OpenSong; p?: SongProgr
 type Kind = 'all' | 'song' | 'study' | 'mine'
 interface Filter {
   kind: Kind
-  level: 0 | 1 | 2 | 3
+  level: 0 | 1 | 2 | 3 | 4
 }
 const KINDS: { id: Kind; label: string }[] = [
   { id: 'all', label: 'All' },
@@ -152,7 +152,7 @@ const FILTER_KEY = 'home-filter-v1'
 function loadFilter(): Filter {
   try {
     const f = JSON.parse(localStorage.getItem(FILTER_KEY) ?? '') as Filter
-    if (KINDS.some((k) => k.id === f.kind) && [0, 1, 2, 3].includes(f.level)) return f
+    if (KINDS.some((k) => k.id === f.kind) && [0, 1, 2, 3, 4].includes(f.level)) return f
   } catch {
     // No saved filter yet
   }
@@ -353,7 +353,7 @@ export function Library({ onOpen, onGo }: Props) {
             ))}
           </div>
           <div className="seg" role="group" aria-label="Level">
-            {([0, 1, 2, 3] as const).map((l) => (
+            {([0, 1, 2, 3, 4] as const).map((l) => (
               <button
                 key={l}
                 className={`${level === l ? 'on' : ''}${l ? ` level-${l}` : ''}`}

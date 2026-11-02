@@ -9,7 +9,7 @@ export interface OpenSong {
   builtIn: boolean
   description?: string
   kind?: 'study' | 'song'
-  level?: 1 | 2 | 3
+  level?: 1 | 2 | 3 | 4
 }
 
 export const BUILT_IN_SONGS: OpenSong[] = [...SONGS, ...STUDIES].map((s) => ({
