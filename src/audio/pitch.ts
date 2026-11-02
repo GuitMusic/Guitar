@@ -1,7 +1,7 @@
 import { PitchDetector } from 'pitchy'
 import { frequencyToMidi, midiToFrequency } from '../music/notes'
 import { correctOctave } from './octave'
-import { sharedAudioContext } from './unlock'
+import { registerAudioContext, sharedAudioContext } from './unlock'
 
 export interface PitchReading {
   freq: number
@@ -24,6 +24,9 @@ export async function listenForPitch(onReading: (r: PitchReading | null, level: 
     audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false },
   })
   const ctx = new AudioContext()
+  // Made after the microphone prompt, so outside the click: Safari can start it suspended
+  const unregister = registerAudioContext(ctx)
+  void ctx.resume().catch(() => {})
   const source = ctx.createMediaStreamSource(stream)
   const analyser = ctx.createAnalyser()
   analyser.fftSize = 4096
@@ -57,6 +60,7 @@ export async function listenForPitch(onReading: (r: PitchReading | null, level: 
   return {
     stop: () => {
       cancelAnimationFrame(frame)
+      unregister()
       stream.getTracks().forEach((t) => t.stop())
       void ctx.close()
     },

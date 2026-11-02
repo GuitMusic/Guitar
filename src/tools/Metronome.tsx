@@ -28,7 +28,8 @@ export function Metronome() {
     void ctx.resume().catch(() => {})
     let next = ctx.currentTime + 0.1
     let step = 0
-    const timers: number[] = []
+    // Light timers still waiting (removed once they fire, so a long session doesn't pile them up)
+    const timers = new Set<number>()
     const click = (time: number, level: 0 | 1 | 2) => {
       const osc = ctx.createOscillator()
       const gain = ctx.createGain()
@@ -49,7 +50,11 @@ export function Metronome() {
         click(next, pos === 0 ? 2 : onBeat ? 1 : 0)
         if (onBeat) {
           const b = pos / subdivision
-          timers.push(window.setTimeout(() => setBeat(b), Math.max(0, (next - ctx.currentTime) * 1000)))
+          const id = window.setTimeout(() => {
+            timers.delete(id)
+            setBeat(b)
+          }, Math.max(0, (next - ctx.currentTime) * 1000))
+          timers.add(id)
         }
         next += stepLength
         step = (pos + 1) % stepsPerBar
