@@ -73,4 +73,15 @@ describe('fingerSong: no barre where two fingers fit', () => {
     const [mel, bass] = events[3].notes
     expect(fingers.get(mel.key)).not.toBe(fingers.get(bass.key))
   })
+
+  it('starts a new grip when the file moves a held note to another finger (a shift)', () => {
+    const events: FingerEvent[] = [
+      { bar: 0, notes: [n(1, 7, 4)] },
+      { bar: 0, notes: [n(1, 7, 1)] },
+      { bar: 0, notes: [n(2, 9, 3)] },
+    ]
+    const { grips, gripOf } = fingerSong(events)
+    expect(gripOf[1]).not.toBe(gripOf[0])
+    expect(grips[gripOf[1]].position).toBe(7)
+  })
 })

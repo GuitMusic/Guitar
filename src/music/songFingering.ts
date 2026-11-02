@@ -89,13 +89,17 @@ export function fingerSong(events: FingerEvent[], overrides: FingeringOverrides 
   evs.forEach((ev, i) => {
     const newSpots = new Map(spots)
     const newOpen = new Set(open)
+    // The file (or the player) asks for another finger on a note the grip already holds: a shift
+    let shifts = false
     for (const n of ev.notes) {
       if (n.isDead) continue
+      const had = spots.get(spot(n))
+      if (n.lh !== null && had?.lh != null && had.lh !== n.lh) shifts = true
       if (n.tabFret === 0) newOpen.add(n.string)
       else if (!newSpots.has(spot(n)) || (n.lh !== null && newSpots.get(spot(n))!.lh === null)) newSpots.set(spot(n), n)
     }
     const startsBar = i > start && ev.bar !== evs[i - 1].bar
-    let fits = !startsBar && i > start && newSpots.size <= MAX_GRIP_NOTES
+    let fits = !startsBar && !shifts && i > start && newSpots.size <= MAX_GRIP_NOTES
     let next: ReturnType<typeof chooseFingers> | null = null
     if (fits) {
       next = newSpots.size === spots.size && newOpen.size === open.size ? solved : solve(newSpots, newOpen)

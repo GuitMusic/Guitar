@@ -65,9 +65,11 @@ function formatTime(ms: number): string {
 
 interface Props {
   song: OpenSong
+  /** False while another page is on screen: the song pauses and the microphone stops. */
+  active: boolean
 }
 
-export function Practice({ song }: Props) {
+export function Practice({ song, active }: Props) {
   const scoreEl = useRef<HTMLDivElement>(null)
   const scrollEl = useRef<HTMLDivElement>(null)
   const apiRef = useRef<alphaTab.AlphaTabApi | null>(null)
@@ -424,6 +426,14 @@ export function Practice({ song }: Props) {
   const fretsShown = view.zoom === 'neck' || !staff ? undefined : Math.min(15, Math.max(7, songMaxFret + 2))
 
   const check = usePracticeCheck({ api, track, mode: checkMode, muteSong })
+
+  // Leaving Practice (a tab, or the back gesture to Home) pauses the song and stops listening,
+  // since the other pages have no player to stop it from
+  useEffect(() => {
+    if (active) return
+    apiRef.current?.pause()
+    setCheckMode('off')
+  }, [active])
 
   // Speed trainer: after each loop pass, speed up if the pass was clean
   useEffect(() => {
