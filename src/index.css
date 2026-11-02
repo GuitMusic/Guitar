@@ -2483,6 +2483,9 @@ textarea {
 .seg button.on.level-3 {
   color: #ffb057;
 }
+.seg button.on.level-4 {
+  color: #ff7a9c;
+}
 .browse-empty {
   padding: 28px;
   text-align: center;
@@ -2553,6 +2556,9 @@ textarea {
 }
 .level-3 {
   color: #ffb057;
+}
+.level-4 {
+  color: #ff7a9c;
 }
 .tile-play {
   position: absolute;
@@ -2787,6 +2793,9 @@ textarea {
   }
   .tile-facts .tile-level.level-3 {
     color: #ffb057;
+  }
+  .tile-facts .tile-level.level-4 {
+    color: #ff7a9c;
   }
   .tile-play {
     width: 34px;

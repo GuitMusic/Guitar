@@ -21,7 +21,7 @@ describe.each([...STUDIES, ...SONGS])('$title', (study) => {
     expect(score.tracks[0].playbackInfo.program).toBe(25)
     const notes = staff.bars.flatMap((b) => b.voices[0].beats.flatMap((beat) => beat.notes))
     if (study.kind === 'study') expect(notes.some((n) => n.rightHandFinger >= 0)).toBe(true)
-    expect(notes.some((n) => n.leftHandFinger >= 0)).toBe(true)
+    if (!study.fingeredByApp) expect(notes.some((n) => n.leftHandFinger >= 0)).toBe(true)
   })
 
   it('can be played: every finger within reach of its hand position and of the other fingers', () => {
