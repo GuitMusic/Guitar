@@ -8,14 +8,28 @@ self.addEventListener('install', (event) => {
   event.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting()))
 })
 
+// Hashed build files of this version (filled in by the build; undefined in development)
+const ASSETS = self.__ASSETS__
+
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches
       .keys()
       .then((keys) => Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k))))
+      .then(() => pruneOldAssets())
       .then(() => self.clients.claim()),
   )
 })
+
+// Drop scripts and styles from earlier versions: their hashed names never come back
+async function pruneOldAssets() {
+  if (!Array.isArray(ASSETS)) return
+  const keep = new Set(ASSETS.map((f) => new URL(f, self.registration.scope).href))
+  const cache = await caches.open(CACHE)
+  for (const req of await cache.keys()) {
+    if (new URL(req.url).pathname.includes('/assets/') && !keep.has(req.url)) await cache.delete(req)
+  }
+}
 
 self.addEventListener('fetch', (event) => {
   const req = event.request

@@ -391,7 +391,8 @@ main {
 
 .hand-panel-views {
   position: absolute;
-  top: 8px;
+  /* Bottom corner: at the top the buttons would cover the neck */
+  bottom: 8px;
   left: 8px;
   display: flex;
   gap: 2px;
@@ -1045,10 +1046,17 @@ input.wide {
 @media (max-width: 700px) and (orientation: portrait) {
   .rotate-hint {
     display: block;
-    text-align: center;
-    font-size: 0.85rem;
+    flex: 1;
+    font-size: 0.8rem;
     color: var(--text-2);
-    padding: 4px 0;
+  }
+  /* The tap hint lives in the "?" legend on phones, so this row stays one line */
+  .legend-row .legend-hint {
+    display: none;
+  }
+  .hand-below .hand-panel {
+    height: clamp(200px, 62vw, 280px);
+    margin: 0 0 12px;
   }
 }
 
@@ -2157,7 +2165,8 @@ textarea {
 
 /* Header */
 .topbar {
-  background: color-mix(in srgb, var(--bg) 72%, transparent);
+  /* Nearly solid: buttons and tab scrolling underneath stayed readable through 72% */
+  background: color-mix(in srgb, var(--bg) 94%, transparent);
   backdrop-filter: saturate(160%) blur(16px);
   -webkit-backdrop-filter: saturate(160%) blur(16px);
   border-bottom: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
@@ -3455,4 +3464,10 @@ button.chip.active {
 .practice .song-meta span {
   padding: 2px 8px;
   font-size: 0.75rem;
+}
+
+.practice-loading {
+  padding: 48px 16px;
+  text-align: center;
+  color: var(--text-2);
 }
