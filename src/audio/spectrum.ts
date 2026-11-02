@@ -1,4 +1,5 @@
 import type { SpectrumFrame, SpectrumInfo } from '../check/noteCheck'
+import { registerAudioContext } from './unlock'
 
 export interface SpectrumListener {
   info: SpectrumInfo
@@ -20,6 +21,9 @@ export async function listenToSpectrum(): Promise<SpectrumListener> {
     audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false },
   })
   const ctx = new AudioContext()
+  // Made after the microphone prompt, so outside the click: Safari can start it suspended
+  const unregister = registerAudioContext(ctx)
+  void ctx.resume().catch(() => {})
   const source = ctx.createMediaStreamSource(stream)
   const analyser = ctx.createAnalyser()
   analyser.fftSize = 8192
@@ -49,6 +53,7 @@ export async function listenToSpectrum(): Promise<SpectrumListener> {
     },
     stop: () => {
       cancelAnimationFrame(raf)
+      unregister()
       stream.getTracks().forEach((t) => t.stop())
       void ctx.close()
     },

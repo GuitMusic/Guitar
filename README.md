@@ -10,7 +10,7 @@ fretboard shows every note as it sounds: where each fretting finger goes, which 
 - **Fingering**: finger numbers and p-i-m-a marks come from the file when it has them. When it
   doesn't, the app suggests them (shown with a dashed outline). Click any note to change it, and
   your edits are saved per song.
-- **Practice tools**: 25% to 150% speed, bar loops you can name and save, click track, count-in.
+- **Practice tools**: 25% to 150% speed, bar loops you can name and save, metronome, count-in.
 - **Listen while I play** (microphone):
   - *Check me* marks every note on time, late or missed, with a colour per bar (click a bar to loop it).
   - *Wait for me* pauses on each note until you play it.
@@ -21,8 +21,10 @@ fretboard shows every note as it sounds: where each fretting finger goes, which 
   microphone checks it. Notes you miss come up more often.
 - **Tuner and metronome**.
 - **Library**: import Guitar Pro (.gp, .gpx, .gp5, .gp4, .gp3), MusicXML or a plain text tab.
-  Songs are stored in your browser (IndexedDB) and never uploaded. The app ships only with
-  original exercises; bring tabs you own for copyrighted songs.
+  Songs are stored in your browser (IndexedDB) and never uploaded. The app ships with original
+  studies and public-domain songs arranged for guitar (see `scripts/arrange/`); bring tabs you own
+  for copyrighted songs.
+- **3D fretting hand**: a 3D hand on a guitar neck shows each grip, in front, player or side view.
 
 ## Running it
 

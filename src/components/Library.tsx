@@ -41,11 +41,19 @@ function greeting(): string {
 
 /** Tempo and time signature, read from an alphaTex header. */
 function songFacts(song: OpenSong): string[] {
-  if (typeof song.data !== 'string') return []
-  const tempo = /\\tempo\s+(\d+)/.exec(song.data)?.[1]
-  const sigs = [...song.data.matchAll(/\\ts\s+(\d+)\s+(\d+)/g)].map((m) => `${m[1]}/${m[2]}`)
-  // A pickup bar is written as 1/4 or 1/8, so skip those
-  const ts = sigs.find((s) => !s.startsWith('1/')) ?? sigs[0]
+  const tex = song.data
+  if (typeof tex !== 'string') return []
+  const tempo = /\\tempo\s+(\d+)/.exec(tex)?.[1]
+  // The signature that covers the most bars (a signature holds until the next \ts), so a
+  // pickup bar (1/4, 3/16 …) or one odd bar in the middle is not taken for the song's metre
+  const sigs = [...tex.matchAll(/\\ts\s+(\d+)\s+(\d+)/g)]
+  const bars = new Map<string, number>()
+  sigs.forEach((m, k) => {
+    const sig = `${m[1]}/${m[2]}`
+    const text = tex.slice(m.index, sigs[k + 1]?.index ?? tex.length)
+    bars.set(sig, (bars.get(sig) ?? 0) + (text.match(/\|/g)?.length ?? 0) + 1)
+  })
+  const ts = [...bars.entries()].reduce<[string, number] | null>((best, e) => (!best || e[1] > best[1] ? e : best), null)?.[0]
   return [tempo && `${tempo} BPM`, ts].filter((x): x is string => !!x)
 }
 
