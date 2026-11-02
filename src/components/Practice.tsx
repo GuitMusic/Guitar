@@ -58,6 +58,18 @@ const BASE = import.meta.env.BASE_URL
 // three.js is big, so the 3D hand loads only when it's shown
 const HandPanel = lazy(() => import('../hand/HandPanel'))
 
+function useMediaQuery(query: string): boolean {
+  const [matches, setMatches] = useState(() => typeof window !== 'undefined' && window.matchMedia(query).matches)
+  useEffect(() => {
+    const mq = window.matchMedia(query)
+    const update = () => setMatches(mq.matches)
+    update()
+    mq.addEventListener('change', update)
+    return () => mq.removeEventListener('change', update)
+  }, [query])
+  return matches
+}
+
 function formatTime(ms: number): string {
   const s = Math.max(0, Math.floor(ms / 1000))
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`
@@ -512,6 +524,21 @@ export function Practice({ song, active }: Props) {
   }
 
   // Coloured rings on the fretboard for notes just judged, or played while waiting
+  // On an upright phone the screen is too short for the fretboard and the 3D hand to both stay
+  // pinned above the tab: the fretboard stays, and the hand sits under the player bar instead
+  const handBelow = useMediaQuery('(max-width: 700px) and (orientation: portrait)')
+  const showHand = view.hand3d !== false
+  const handPanel = (
+    <Suspense fallback={<div className="hand-panel" />}>
+      <HandPanel
+        notes={notes}
+        shape={grip}
+        handPosition={position}
+        layout={{ strings: tuning.length, leftHanded: view.leftHanded, stringOrder: view.stringOrder }}
+      />
+    </Suspense>
+  )
+
   const marks: FretMark[] = check.waiting
     ? check.waiting.notes.map((n) => ({
         key: `w-${n.string}-${n.fret}`,
@@ -563,7 +590,7 @@ export function Practice({ song, active }: Props) {
       </div>
 
       <div className="fretboard-wrap" ref={fretboardWrapEl}>
-        <div className={`fretboard-row${view.hand3d !== false ? ' with-hand' : ''}`}>
+        <div className={`fretboard-row${showHand && !handBelow ? ' with-hand' : ''}`}>
         <Fretboard
           notes={notes}
           ghosts={ghosts}
@@ -577,39 +604,31 @@ export function Practice({ song, active }: Props) {
           shape={view.showShape === false ? [] : shape}
           handPosition={view.showShape === false ? null : position}
         />
-        {view.hand3d !== false && (
-          <Suspense fallback={<div className="hand-panel" />}>
-            <HandPanel
-              notes={notes}
-              shape={grip}
-              handPosition={position}
-              layout={{ strings: tuning.length, leftHanded: view.leftHanded, stringOrder: view.stringOrder }}
-            />
-          </Suspense>
-        )}
+        {showHand && !handBelow && handPanel}
         </div>
-        <div className="rotate-hint">Turn your phone sideways for a bigger fretboard.</div>
-        <div className="legend-row">
-          <span className="legend-hint">
-            <span className="tap-word">Tap</span><span className="click-word">Click</span> a note to change its fingering, or an empty fret to hear it. <span className="keys">Keys: Space play, ↑↓ speed, L loop</span>
-          </span>
-          <button className="legend-toggle" aria-label="What the colours mean" aria-expanded={showLegend} onClick={() => setShowLegend(!showLegend)} title="What the colours mean">
-            ?
-          </button>
-        </div>
-        {showLegend && (
-          <div className="legend">
-            <span className="legend-item"><i className="dot fb-finger-1" />1 index</span>
-            <span className="legend-item"><i className="dot fb-finger-2" />2 middle</span>
-            <span className="legend-item"><i className="dot fb-finger-3" />3 ring</span>
-            <span className="legend-item"><i className="dot fb-finger-4" />4 little</span>
-            <span className="legend-item"><i className="dot dashed" />suggested by the app</span>
-            <span className="legend-item"><i className="dot ghost" />coming next</span>
-            <span className="legend-item"><i className="dot shape" />rest of the bar's hand shape</span>
-            <span className="legend-item">Picking hand: p thumb, i index, m middle, a ring</span>
-          </div>
-        )}
       </div>
+      <div className="legend-row">
+        <span className="rotate-hint">Turn your phone sideways to see the fretboard and the 3D hand side by side.</span>
+        <span className="legend-hint">
+          <span className="tap-word">Tap</span><span className="click-word">Click</span> a note to change its fingering, or an empty fret to hear it. <span className="keys">Keys: Space play, ↑↓ speed, L loop</span>
+        </span>
+        <button className="legend-toggle" aria-label="What the colours mean" aria-expanded={showLegend} onClick={() => setShowLegend(!showLegend)} title="What the colours mean">
+          ?
+        </button>
+      </div>
+      {showLegend && (
+        <div className="legend">
+          <span className="legend-item"><i className="dot fb-finger-1" />1 index</span>
+          <span className="legend-item"><i className="dot fb-finger-2" />2 middle</span>
+          <span className="legend-item"><i className="dot fb-finger-3" />3 ring</span>
+          <span className="legend-item"><i className="dot fb-finger-4" />4 little</span>
+          <span className="legend-item"><i className="dot dashed" />suggested by the app</span>
+          <span className="legend-item"><i className="dot ghost" />coming next</span>
+          <span className="legend-item"><i className="dot shape" />rest of the bar's hand shape</span>
+          <span className="legend-item">Picking hand: p thumb, i index, m middle, a ring</span>
+          <span className="legend-item legend-tap">Tap a note to change its fingering, or an empty fret to hear it.</span>
+        </div>
+      )}
 
       <div className="player-bar" ref={playerBarEl}>
         <button
@@ -762,6 +781,8 @@ export function Practice({ song, active }: Props) {
           </Menu>
         </div>
       </div>
+
+      {showHand && handBelow && <div className="hand-below">{handPanel}</div>}
 
       <CheckPanel
         mode={checkMode}

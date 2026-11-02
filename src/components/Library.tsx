@@ -23,7 +23,8 @@ E|---------------|-3-------------|`
 const LEVELS = { 1: 'Beginner', 2: 'Easy', 3: 'Intermediate' } as const
 
 /** The song to suggest when nothing has been played yet. */
-const FIRST_SONG = 'song-ode-to-joy'
+// Pitched at an intermediate fingerstyle player, who already knows the beginner pieces
+const FIRST_SONG = 'song-spanish-romance'
 
 function hash(s: string): number {
   let h = 2166136261
@@ -262,7 +263,7 @@ export function Library({ onOpen, onGo }: Props) {
       <header className="home-head">
         <div>
           <p className="eyebrow">{greeting()}</p>
-          <h1 className="display">{last ? 'Ready to play?' : 'Let’s learn your first song'}</h1>
+          <h1 className="display">{last ? 'Ready to play?' : 'What will you learn today?'}</h1>
         </div>
         <div className="stat-pills">
           <span className={`stat-pill${days > 0 ? ' hot' : ''}`} title="Days in a row with practice">
@@ -282,7 +283,7 @@ export function Library({ onOpen, onGo }: Props) {
           <SongCover id={featuredId} big />
           <div className="hero-shade" />
           <div className="hero-body">
-            <span className="eyebrow">{last ? 'Pick up where you left off' : 'Start here'}</span>
+            <span className="eyebrow">{last ? 'Pick up where you left off' : 'A classic to start with'}</span>
             <strong className="hero-title">{featuredTitle}</strong>
             <span className="hero-sub">
               {last

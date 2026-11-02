@@ -1,6 +1,5 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react'
 import { Library } from './components/Library'
-import { Practice } from './components/Practice'
 import type { OpenSong } from './library/songs'
 import { setView, useFretboardView } from './components/fretboardView'
 import { Metronome } from './tools/Metronome'
@@ -10,6 +9,11 @@ import { Icon, Menu } from './components/PlayerBar'
 import { setTheme, useTheme } from './components/theme'
 import { Progress } from './progress/Progress'
 import { promptInstall, useInstall } from './components/install'
+
+// The score engine (alphaTab) is most of the app's code and only Practice needs it, so Home
+// opens without it and the Practice code is fetched in the background once Home is up
+const loadPractice = () => import('./components/Practice')
+const Practice = lazy(() => loadPractice().then((m) => ({ default: m.Practice })))
 
 type Page = 'library' | 'practice' | 'quiz' | 'progress' | 'tools'
 
@@ -55,6 +59,12 @@ export default function App() {
     return () => window.removeEventListener('popstate', onPop)
   }, [])
   const [song, setSong] = useState<OpenSong | null>(null)
+  useEffect(() => {
+    const preload = () => void loadPractice().catch(() => {})
+    const w = window as Window & { requestIdleCallback?: (cb: () => void) => number }
+    if (w.requestIdleCallback) w.requestIdleCallback(preload)
+    else window.setTimeout(preload, 1500)
+  }, [])
   const { leftHanded } = useFretboardView()
   const { theme } = useTheme()
   const install = useInstall()
@@ -166,7 +176,13 @@ export default function App() {
             onGo={setPage}
           />
         </div>
-        {song && <div hidden={page !== 'practice'}><Practice key={song.id} song={song} active={page === 'practice'} /></div>}
+        {song && (
+          <div hidden={page !== 'practice'}>
+            <Suspense fallback={<div className="practice-loading">Loading the song…</div>}>
+              <Practice key={song.id} song={song} active={page === 'practice'} />
+            </Suspense>
+          </div>
+        )}
         {page === 'quiz' && <NoteQuiz />}
         {page === 'progress' && (
           <Progress
