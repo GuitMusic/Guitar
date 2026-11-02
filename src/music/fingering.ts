@@ -211,7 +211,7 @@ function searchFingers(known: Placed[], free: Placed[], previous: number | null,
       if (a.f === b.f && a.fret !== b.fret) return false
       if (a.f < b.f && a.fret > b.fret) return false
       if (a.f > b.f && a.fret < b.fret) return false
-      if (Math.abs(a.fret - b.fret) > 5) return false
+      if (Math.abs(a.fret - b.fret) > 5 || tooWide(a, b)) return false
     }
     return true
   }
@@ -233,6 +233,18 @@ function searchFingers(known: Placed[], free: Placed[], previous: number | null,
   }
   step(k)
   return { best, cost, position }
+}
+
+/**
+ * Farther apart than a hand can reach: neighbouring fingers span at most 2 frets, fingers two
+ * apart 3, index to little finger 4 (5 above the 7th fret, where the frets are narrower).
+ */
+function tooWide(a: Placed, b: Placed): boolean {
+  const [lo, hi] = a.f < b.f ? [a, b] : [b, a]
+  const fingers = hi.f - lo.f
+  if (fingers <= 0) return false
+  const reach = fingers + 1 + (fingers === 3 && lo.fret >= 7 ? 1 : 0)
+  return hi.fret - lo.fret > reach
 }
 
 interface Placed {
@@ -287,7 +299,7 @@ function scoreFingering(notes: Placed[], previous: number | null, minFret: numbe
     for (let j = 0; j < notes.length; j++) {
       const b = notes[j]
       if (a.f >= b.f) continue
-      if (a.fret > b.fret) return { cost: Infinity, position }
+      if (a.fret > b.fret || tooWide(a, b)) return { cost: Infinity, position }
       const stretch = b.fret - a.fret - (b.f - a.f)
       if (stretch > 0) cost += stretch * 1.5
       // Same fret: the lower finger should take the lower-pitched (higher-numbered) string

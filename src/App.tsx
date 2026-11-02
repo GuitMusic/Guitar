@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Library } from './components/Library'
 import { Practice } from './components/Practice'
 import type { OpenSong } from './library/songs'
@@ -22,14 +22,49 @@ const ICONS: Record<Page, string> = {
   tools: 'M4 16a8 8 0 0 1 16 0M12 16l4-6',
 }
 
+const PAGES: Page[] = ['library', 'practice', 'quiz', 'progress', 'tools']
+const pageFromState = (state: unknown): Page => {
+  const p = (state as { page?: Page } | null)?.page
+  return p && PAGES.includes(p) ? p : 'library'
+}
+
 export default function App() {
-  const [page, setPage] = useState<Page>('library')
+  const [page, setPageState] = useState<Page>('library')
+  const pageRef = useRef<Page>('library')
+  // The phone's back gesture (and the browser's Back button) always leads to Home: every other
+  // page sits one history entry above Home, so going from one to another replaces that entry
+  const setPage = useCallback((next: Page) => {
+    const current = pageRef.current
+    if (next === current) return
+    if (next === 'library') {
+      // Going Home the same way the back gesture does keeps the history one entry deep
+      if (pageFromState(history.state) !== 'library') history.back()
+    } else if (current === 'library') history.pushState({ page: next }, '')
+    else history.replaceState({ page: next }, '')
+    pageRef.current = next
+    setPageState(next)
+  }, [])
+  useEffect(() => {
+    // After a reload no song is open, so the app starts from Home
+    history.replaceState({ page: 'library' }, '')
+    const onPop = (e: PopStateEvent) => {
+      pageRef.current = pageFromState(e.state)
+      setPageState(pageRef.current)
+    }
+    window.addEventListener('popstate', onPop)
+    return () => window.removeEventListener('popstate', onPop)
+  }, [])
   const [song, setSong] = useState<OpenSong | null>(null)
   const { leftHanded } = useFretboardView()
   const { theme } = useTheme()
   const install = useInstall()
+  // Coming back Home lands where the song list was left; other pages open at the top
+  const homeScroll = useRef(0)
+  const shownPage = useRef<Page>('library')
   useEffect(() => {
-    window.scrollTo(0, 0)
+    if (shownPage.current === 'library' && page !== 'library') homeScroll.current = window.scrollY
+    shownPage.current = page
+    window.scrollTo(0, page === 'library' ? homeScroll.current : 0)
   }, [page])
 
   const nav = (p: Page, label: string, disabled = false) => (
@@ -121,7 +156,8 @@ export default function App() {
         </Menu>
       </header>
       <main className={page === 'practice' ? 'on-practice' : ''}>
-        {page === 'library' && (
+        {/* Home stays mounted, so search and filters are still set when you come back */}
+        <div hidden={page !== 'library'}>
           <Library
             onOpen={(s) => {
               setSong(s)
@@ -129,8 +165,8 @@ export default function App() {
             }}
             onGo={setPage}
           />
-        )}
-        {song && <div hidden={page !== 'practice'}><Practice key={song.id} song={song} /></div>}
+        </div>
+        {song && <div hidden={page !== 'practice'}><Practice key={song.id} song={song} active={page === 'practice'} /></div>}
         {page === 'quiz' && <NoteQuiz />}
         {page === 'progress' && (
           <Progress
