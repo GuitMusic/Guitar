@@ -6,7 +6,7 @@ import { BUILT_IN_SONGS, toOpenSong, type OpenSong } from '../library/songs'
 import { localDate, minutesByDay, needsRevisit, streak, summarize, type SongProgress } from '../progress/practiceLog'
 import { findSong } from '../progress/Progress'
 
-export type ShortcutPage = 'quiz' | 'tools' | 'progress'
+export type ShortcutPage = 'tunings' | 'quiz' | 'tools' | 'progress'
 
 interface Props {
   onOpen: (song: OpenSong) => void
@@ -21,6 +21,7 @@ A|-3-------------|---------------|
 E|---------------|-3-------------|`
 
 const LEVELS = { 1: 'Beginner', 2: 'Easy', 3: 'Intermediate', 4: 'Intermediate+' } as const
+const TUNING_NAMES = { dadgad: 'DADGAD', 'open-d': 'Open D' } as const
 
 /** The song to suggest when nothing has been played yet. */
 // Pitched at an intermediate fingerstyle player, who already knows the beginner pieces
@@ -109,6 +110,7 @@ function SongTile({ song, p, onOpen, onRemove }: { song: OpenSong; p?: SongProgr
         <div className="tile-art">
           <SongCover id={song.id} />
           {song.level && <span className={`level level-${song.level}`}>{LEVELS[song.level]}</span>}
+          {song.tuning && <span className="tile-tuning">{TUNING_NAMES[song.tuning]}</span>}
           <span className="tile-play" aria-hidden="true">
             <svg viewBox="0 0 24 24" width="20" height="20"><path d="M8 5v14l11-7z" fill="currentColor" /></svg>
           </span>
@@ -138,10 +140,18 @@ function SongTile({ song, p, onOpen, onRemove }: { song: OpenSong; p?: SongProgr
 }
 
 type Kind = 'all' | 'song' | 'study' | 'mine'
+type TuningFilter = 'any' | 'standard' | 'dadgad' | 'open-d'
 interface Filter {
   kind: Kind
   level: 0 | 1 | 2 | 3 | 4
+  tuning: TuningFilter
 }
+const TUNING_FILTERS: { id: TuningFilter; label: string }[] = [
+  { id: 'any', label: 'Any tuning' },
+  { id: 'standard', label: 'Standard' },
+  { id: 'dadgad', label: 'DADGAD' },
+  { id: 'open-d', label: 'Open D' },
+]
 const KINDS: { id: Kind; label: string }[] = [
   { id: 'all', label: 'All' },
   { id: 'song', label: 'Songs' },
@@ -152,14 +162,16 @@ const FILTER_KEY = 'home-filter-v1'
 function loadFilter(): Filter {
   try {
     const f = JSON.parse(localStorage.getItem(FILTER_KEY) ?? '') as Filter
-    if (KINDS.some((k) => k.id === f.kind) && [0, 1, 2, 3, 4].includes(f.level)) return f
+    if (KINDS.some((k) => k.id === f.kind) && [0, 1, 2, 3, 4].includes(f.level))
+      return { ...f, tuning: TUNING_FILTERS.some((t) => t.id === f.tuning) ? f.tuning : 'any' }
   } catch {
     // No saved filter yet
   }
-  return { kind: 'all', level: 0 }
+  return { kind: 'all', level: 0, tuning: 'any' }
 }
 
 const SHORTCUTS: { page: ShortcutPage; title: string; sub: string; icon: string; tone: string }[] = [
+  { page: 'tunings', title: 'DADGAD & Open D', sub: 'Lessons, chords, songs', icon: 'M5 6h14M5 12h14M5 18h14M9 4v16M17 9.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5z', tone: 'rose' },
   { page: 'quiz', title: 'Note finder', sub: 'Learn the neck by ear', icon: 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8zM12 11.5v1', tone: 'violet' },
   { page: 'tools', title: 'Tune up', sub: 'Tuner and metronome', icon: 'M4 16a8 8 0 0 1 16 0M12 16l4-6', tone: 'teal' },
   { page: 'progress', title: 'Your progress', sub: 'Streak and minutes', icon: 'M4 20h16M6 16v-4M11 16V8M16 16v-6M21 16V5', tone: 'amber' },
@@ -184,7 +196,7 @@ export function Library({ onOpen, onGo }: Props) {
   const [pasteTempo, setPasteTempo] = useState('80')
   const [dragging, setDragging] = useState(false)
   const [query, setQuery] = useState('')
-  const [{ kind: savedKind, level }, setFilterState] = useState<Filter>(loadFilter)
+  const [{ kind: savedKind, level, tuning }, setFilterState] = useState<Filter>(loadFilter)
   const setFilter = (f: Filter) => {
     setFilterState(f)
     try {
@@ -201,7 +213,8 @@ export function Library({ onOpen, onGo }: Props) {
   const shown = all
     .filter((s) => (kind === 'all' ? true : kind === 'mine' ? !s.builtIn : s.builtIn && s.kind === kind))
     .filter((s) => !level || s.level === level)
-    .filter((s) => !q || `${s.title} ${s.description ?? ''}`.toLowerCase().includes(q))
+    .filter((s) => tuning === 'any' || (s.tuning ?? 'standard') === tuning)
+    .filter((s) => !q || `${s.title} ${s.description ?? ''} ${s.tuning ? TUNING_NAMES[s.tuning] : ''}`.toLowerCase().includes(q))
     .sort((a, b) => (a.builtIn === b.builtIn ? (a.level ?? 0) - (b.level ?? 0) : a.builtIn ? 1 : -1))
 
   const importFiles = async (files: FileList | File[]) => {
@@ -347,7 +360,7 @@ export function Library({ onOpen, onGo }: Props) {
           </label>
           <div className="seg" role="group" aria-label="Type">
             {KINDS.filter((k) => k.id !== 'mine' || mine.length > 0).map((k) => (
-              <button key={k.id} className={kind === k.id ? 'on' : ''} aria-pressed={kind === k.id} onClick={() => setFilter({ kind: k.id, level })}>
+              <button key={k.id} className={kind === k.id ? 'on' : ''} aria-pressed={kind === k.id} onClick={() => setFilter({ kind: k.id, level, tuning })}>
                 {k.label}
               </button>
             ))}
@@ -358,9 +371,16 @@ export function Library({ onOpen, onGo }: Props) {
                 key={l}
                 className={`${level === l ? 'on' : ''}${l ? ` level-${l}` : ''}`}
                 aria-pressed={level === l}
-                onClick={() => setFilter({ kind, level: l })}
+                onClick={() => setFilter({ kind, level: l, tuning })}
               >
                 {l ? LEVELS[l] : 'Any level'}
+              </button>
+            ))}
+          </div>
+          <div className="seg" role="group" aria-label="Tuning">
+            {TUNING_FILTERS.map((t) => (
+              <button key={t.id} className={tuning === t.id ? 'on' : ''} aria-pressed={tuning === t.id} onClick={() => setFilter({ kind, level, tuning: t.id })}>
+                {t.label}
               </button>
             ))}
           </div>
@@ -389,7 +409,7 @@ export function Library({ onOpen, onGo }: Props) {
         ) : (
           <div className="browse-empty">
             Nothing matches.{' '}
-            <button className="link" onClick={() => { setQuery(''); setFilter({ kind: 'all', level: 0 }) }}>
+            <button className="link" onClick={() => { setQuery(''); setFilter({ kind: 'all', level: 0, tuning: 'any' }) }}>
               Show everything
             </button>
           </div>

@@ -9,24 +9,27 @@ import { Icon, Menu } from './components/PlayerBar'
 import { setTheme, useTheme } from './components/theme'
 import { Progress } from './progress/Progress'
 import { promptInstall, useInstall } from './components/install'
+import { TuningsPage } from './tunings/TuningsPage'
 
 // The score engine (alphaTab) is most of the app's code and only Practice needs it, so Home
 // opens without it and the Practice code is fetched in the background once Home is up
 const loadPractice = () => import('./components/Practice')
 const Practice = lazy(() => loadPractice().then((m) => ({ default: m.Practice })))
 
-type Page = 'library' | 'practice' | 'quiz' | 'progress' | 'tools'
+type Page = 'library' | 'practice' | 'tunings' | 'quiz' | 'progress' | 'tools'
 
 // Simple line icons, shown in the bottom tab bar on phones
 const ICONS: Record<Page, string> = {
   library: 'M4 11l8-7 8 7v9a1 1 0 0 1-1 1h-4v-6h-6v6H5a1 1 0 0 1-1-1z',
   practice: 'M9 18V6l10-2v12M9 18a3 3 0 1 1-3-3 3 3 0 0 1 3 3zM19 16a3 3 0 1 1-3-3 3 3 0 0 1 3 3z',
+  // three strings and a tuning peg
+  tunings: 'M5 6h14M5 12h14M5 18h14M9 4v16M17 9.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5z',
   quiz: 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8zM12 11.5v1',
   progress: 'M4 20h16M6 16v-4M11 16V8M16 16v-6M21 16V5',
   tools: 'M4 16a8 8 0 0 1 16 0M12 16l4-6',
 }
 
-const PAGES: Page[] = ['library', 'practice', 'quiz', 'progress', 'tools']
+const PAGES: Page[] = ['library', 'practice', 'tunings', 'quiz', 'progress', 'tools']
 const pageFromState = (state: unknown): Page => {
   const p = (state as { page?: Page } | null)?.page
   return p && PAGES.includes(p) ? p : 'library'
@@ -104,6 +107,7 @@ export default function App() {
         <nav className="main-nav" aria-label="Pages">
           {nav('library', 'Home')}
           {nav('practice', 'Practice', !song)}
+          {nav('tunings', 'Tunings')}
           {nav('quiz', 'Note finder')}
           {nav('progress', 'Progress')}
           {nav('tools', 'Tools')}
@@ -182,6 +186,15 @@ export default function App() {
               <Practice key={song.id} song={song} active={page === 'practice'} />
             </Suspense>
           </div>
+        )}
+        {page === 'tunings' && (
+          <TuningsPage
+            onOpen={(s) => {
+              setSong(s)
+              setPage('practice')
+            }}
+            onGo={setPage}
+          />
         )}
         {page === 'quiz' && <NoteQuiz />}
         {page === 'progress' && (

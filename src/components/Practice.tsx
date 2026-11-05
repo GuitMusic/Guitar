@@ -1,4 +1,5 @@
 import * as alphaTab from '@coderline/alphatab'
+import { RetuneHint } from '../tunings/RetuneHint'
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { applyFingering } from '../music/fingering'
 import { fingerSong } from '../music/songFingering'
@@ -588,6 +589,8 @@ export function Practice({ song, active }: Props) {
           </label>
         )}
       </div>
+
+      {staff && <RetuneHint tuning={tuning} />}
 
       <div className="fretboard-wrap" ref={fretboardWrapEl}>
         <div className={`fretboard-row${showHand && !handBelow ? ' with-hand' : ''}`}>

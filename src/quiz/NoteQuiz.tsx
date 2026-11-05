@@ -605,7 +605,23 @@ export function NoteQuiz() {
             </div>
           )}
 
-          {prefs.tab === 'live' && <LiveNeck tuning={tuning.strings} />}
+          {prefs.tab === 'live' && (
+            <>
+              <div className="row live-tuning">
+                <label className="field">
+                  Tuning
+                  <select value={prefs.tuningId} onChange={(e) => setPrefs({ ...prefs, tuningId: e.target.value })}>
+                    {TUNINGS.map((t) => (
+                      <option key={t.id} value={t.id}>
+                        {t.name}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              </div>
+              <LiveNeck tuning={tuning.strings} />
+            </>
+          )}
 
           {prefs.tab === 'free' && (
             <div className="quiz-settings">

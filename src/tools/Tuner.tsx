@@ -12,8 +12,8 @@ interface Reading {
 }
 
 /** Mic tuner: McLeod pitch detection on the live input, compared with the chosen tuning. */
-export function Tuner() {
-  const [tuningId, setTuningId] = useState('standard')
+export function Tuner({ initialTuningId = 'standard', heading = 'Tuner' }: { initialTuningId?: string; heading?: string } = {}) {
+  const [tuningId, setTuningId] = useState(initialTuningId)
   const [listening, setListening] = useState(false)
   const [reading, setReading] = useState<Reading | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -62,7 +62,7 @@ export function Tuner() {
 
   return (
     <div className="tool">
-      <h1>Tuner</h1>
+      <h1>{heading}</h1>
       <label className="field">
         Tuning
         <select value={tuningId} onChange={(e) => setTuningId(e.target.value)}>
