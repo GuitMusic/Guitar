@@ -5,6 +5,7 @@ import { setView, useFretboardView } from '../components/fretboardView'
 import { noteName, pitchClassName, TUNINGS } from '../music/notes'
 import type { FretNote } from '../music/types'
 import { localDate } from '../progress/practiceLog'
+import { LiveNeck } from './LiveNeck'
 import {
   Attacks,
   checkAnswer,
@@ -26,7 +27,7 @@ import {
 } from './quiz'
 
 type Phase = 'idle' | 'prompt' | 'listening' | 'right' | 'timeout' | 'summary'
-type Tab = 'path' | 'free'
+type Tab = 'path' | 'free' | 'live'
 
 interface Stats {
   asked: number
@@ -564,6 +565,9 @@ export function NoteQuiz() {
             <button role="tab" aria-selected={prefs.tab === 'free'} className={prefs.tab === 'free' ? 'active' : ''} onClick={() => setPrefs({ ...prefs, tab: 'free' })}>
               Free practice
             </button>
+            <button role="tab" aria-selected={prefs.tab === 'live'} className={prefs.tab === 'live' ? 'active' : ''} onClick={() => setPrefs({ ...prefs, tab: 'live' })}>
+              Live neck
+            </button>
           </div>
 
           {prefs.tab === 'path' && (
@@ -600,6 +604,8 @@ export function NoteQuiz() {
               ))}
             </div>
           )}
+
+          {prefs.tab === 'live' && <LiveNeck tuning={tuning.strings} />}
 
           {prefs.tab === 'free' && (
             <div className="quiz-settings">
@@ -806,7 +812,7 @@ export function NoteQuiz() {
         </div>
       )}
 
-      {phase !== 'summary' && (
+      {phase !== 'summary' && !(phase === 'idle' && prefs.tab === 'live') && (
         <>
           {phase === 'idle' && <h2 className="quiz-group">Your neck map</h2>}
           <Fretboard
@@ -834,7 +840,7 @@ export function NoteQuiz() {
         </>
       )}
 
-      {phase === 'idle' && Object.keys(noteTally).length > 0 && (
+      {phase === 'idle' && prefs.tab !== 'live' && Object.keys(noteTally).length > 0 && (
         <>
           <h2 className="quiz-group">Notes</h2>
           <div className="note-tiles">

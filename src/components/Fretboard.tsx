@@ -29,7 +29,7 @@ export interface FretMark {
   key: string
   string: number
   fret: number
-  result: 'hit' | 'late' | 'miss' | 'waiting'
+  result: 'hit' | 'late' | 'miss' | 'waiting' | 'octave'
   /** Fade out after showing briefly. */
   fade?: boolean
 }
@@ -55,6 +55,8 @@ interface Props {
   shape?: FretNote[]
   /** Fret under the index finger, drawn as the four-fret box the hand covers. */
   handPosition?: number | null
+  /** Quiet note-name labels on these spots, e.g. to show every note on the neck. */
+  names?: FretNote[]
 }
 
 const NOTE_R = 17
@@ -63,7 +65,7 @@ const OPEN_X = NUT_X - 34
 
 const SINGLE_INLAYS = [3, 5, 7, 9, 15, 17, 19, 21]
 
-export function Fretboard({ notes, ghosts, tuning, capo, options, onNoteClick, onFretClick, highlightStrings = [], maxFret, showPickZone = true, marks = [], shape = [], handPosition = null }: Props) {
+export function Fretboard({ notes, ghosts, tuning, capo, options, onNoteClick, onFretClick, highlightStrings = [], maxFret, showPickZone = true, marks = [], shape = [], handPosition = null, names = [] }: Props) {
   // Unique ids for the SVG gradients, in case two fretboards share a page
   const uid = useId().replace(/[^a-zA-Z0-9]/g, '')
   const ref = (name: string) => `url(#${name}-${uid})`
@@ -330,6 +332,19 @@ export function Fretboard({ notes, ghosts, tuning, capo, options, onNoteClick, o
             />
           )
         })}
+
+      {names.length > 0 && (
+        <g className="fb-names" aria-hidden="true">
+          {names.map((n) => (
+            <g key={`n-${n.key}`} className={n.fret === 0 ? 'fb-name fb-name-open' : 'fb-name'}>
+              <circle cx={X(noteX(n))} cy={Y(n.string)} r="12" />
+              <text x={X(noteX(n))} y={Y(n.string) + 4} textAnchor="middle">
+                {pitchClassName(n.midi)}
+              </text>
+            </g>
+          ))}
+        </g>
+      )}
 
       {shape.map((n) => (
         <g key={`s-${n.key}`} className={`fb-shape fb-finger-${n.lh ?? 'x'}`} onClick={click(n)} role="button" aria-label={`${noteName(n.midi)} later in this bar, edit fingering`}>
