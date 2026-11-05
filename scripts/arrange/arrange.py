@@ -17,8 +17,18 @@ from fractions import Fraction as F
 import music21
 from music21 import corpus, converter, harmony, note, chord, key as m21key
 
-OPEN = {1: 64, 2: 59, 3: 55, 4: 50, 5: 45, 6: 40}
+TUNINGS = {
+    'standard': {1: 64, 2: 59, 3: 55, 4: 50, 5: 45, 6: 40},
+    'dadgad': {1: 62, 2: 57, 3: 55, 4: 50, 5: 45, 6: 38},
+    'open-d': {1: 62, 2: 57, 3: 54, 4: 50, 5: 45, 6: 38},
+}
+OPEN = dict(TUNINGS['standard'])
 MAXF = 14
+# Keys that suit each tuning (tonic pitch class -> penalty): the open D tunings want D, then G or A
+KEYS = {
+    'dadgad': {'major': {2: 0, 7: 0.3, 9: 0.6}, 'minor': {2: 0, 9: 0.6, 7: 0.8}},
+    'open-d': {'major': {2: 0, 9: 0.6, 7: 0.8}, 'minor': {2: 0, 11: 0.8}},
+}
 
 def frac(x): return F(x).limit_denominator(48)
 
@@ -128,7 +138,7 @@ def split_dur(d):
         else: raise ValueError(d)
     return parts
 
-def build_events(mel, bass, shift, bass_oct):
+def build_events(mel, bass, shift, bass_oct, drone=False):
     bars = []
     for (num, ln, bar, mevs), (_, _, _, bevs) in zip(mel, bass):
         ons = sorted(set([F(0)] + [e[0] for e in mevs] + [e[0] for e in bevs]))
@@ -141,9 +151,16 @@ def build_events(mel, bass, shift, bass_oct):
             if o in md: notes.append(('m', md[o][1] + shift, md[o][3]))
             if o in bd:
                 b = (bd[o][1] if bd[o][1] > 12 else bd[o][1] + 36) + shift  # pitch class -> octave 3, then transpose with the melody
-                while b > 52 + bass_oct: b -= 12
-                while b < 40: b += 12
-                if not notes or notes[0][1] - b >= 3: notes.append(('b', b, bd[o][3]))
+                low = min(OPEN.values())
+                # in the open D tunings the low D string carries the bass: keep roots near it
+                top = (52 if low == 40 else 49) + bass_oct
+                while b > top: b -= 12
+                while b < low: b += 12
+                if not notes or notes[0][1] - b >= 3:
+                    notes.append(('b', b, bd[o][3]))
+                    # an open fifth above the bass rings on as a drone (D-A, G-D): the sound of these tunings
+                    if drone and not bd[o][3] and (b + 7) in OPEN.values() and (not notes[0][0] == 'm' or notes[0][1] - (b + 7) >= 3):
+                        notes.append(('d', b + 7, False))
             evs.append((d, notes))
         bars.append((ln, evs))
     return bars
@@ -183,10 +200,11 @@ def solve(bars):
                 local = 0.0
                 for (s, f), n in zip(c, notes):
                     if f > 0 and f == H + 4: local += 1.5
-                    if n[0] == 'm' and s >= 4: local += 2.5
-                    if n[0] == 'm' and s == 3: local += 0.4
-                    if n[0] == 'b' and s <= 3: local += 4
-                    if n[0] == 'b' and f > 5: local += 0.5
+                    # in the open D tunings tunes sit an octave lower, so the melody may use the D string
+                    if n[0] == 'm' and s >= (5 if OPEN[6] == 38 else 4): local += 2.5
+                    if n[0] == 'm' and s == (4 if OPEN[6] == 38 else 3): local += 0.4
+                    if n[0] in 'bd' and s <= 3: local += 4
+                    if n[0] in 'bd' and f > 5: local += 0.5
                     if f > 0: local += 0.04 * f
                 if fretted: local += 0.06 * H
                 for (pk, (pc, _)) in prevstates.items():
@@ -229,7 +247,7 @@ def render(bars, path, rf_bars=4):
                     if tie or n[2]: fx.append('t')
                     if f > 0 and H and not tie and not n[2]: fx.append(f'lf {min(5, f - H + 2)}')
                     if bi < rf_bars and not tie and not n[2]:
-                        fx.append('rf ' + ('1' if n[0] == 'b' or s >= 4 else {1: '4', 2: '3', 3: '2'}[s]))
+                        fx.append('rf ' + ('1' if n[0] in 'bd' or s >= 4 else {1: '4', 2: '3', 3: '2'}[s]))
                     ns.append(f'{f}.{s}' + ('{' + ' '.join(fx) + '}' if fx else ''))
                 return ns[0] if len(ns) == 1 else '(' + ' '.join(ns) + ')'
             for j, (t, fx) in enumerate(parts):
@@ -244,6 +262,7 @@ def _abc_path(p):
     return p
 
 def arrange(spec):
+    OPEN.clear(); OPEN.update(TUNINGS[spec.get('tuning', 'standard')])
     s = corpus.parse(spec['src']) if spec.get('src') else None
     if spec.get('file'):
         s = converter.parse(os.path.expanduser(os.path.expandvars(spec['file'])))
@@ -253,7 +272,8 @@ def arrange(spec):
     parts = s.parts
     mr = spec['measures']
     mel = voice_events(parts[spec.get('mel', 0)], mr, 'high')
-    k = s.analyze('key')
+    # the key finder can mistake a major tune for its relative minor, so a spec can name the key
+    k = m21key.Key(*spec['key'].split()) if spec.get('key') else s.analyze('key')
     seg = F(spec.get('seg', 2))
     if spec.get('bass') == 'harm':
         bass = bass_from_chords(harmonize(mel, k, seg, spec.get('chordset')), mel, seg, spec.get('alt', True))
@@ -287,13 +307,13 @@ def arrange(spec):
     for shift in ([spec['shift']] if 'shift' in spec else range(-15, 16)):
         mins = min(e[1] for (_, _, _, ev) in mel for e in ev) + shift
         maxs = max(e[1] for (_, _, _, ev) in mel for e in ev) + shift
-        if 'shift' not in spec and (maxs > 77 or mins < 50): continue
+        if 'shift' not in spec and (maxs > (76 if spec.get('tuning') else 77) or mins < 50): continue
         tonic = (k.tonic.pitchClass + shift) % 12
-        good = {'major': {4: 0.2, 9: 0, 2: 0, 7: 0.2, 0: 0.2}, 'minor': {4: 0, 9: 0, 2: 0.6, 7: 1.5, 11: 1.5}}[k.mode]
+        good = KEYS.get(spec.get('tuning'), {'major': {4: 0.2, 9: 0, 2: 0, 7: 0.2, 0: 0.2}, 'minor': {4: 0, 9: 0, 2: 0.6, 7: 1.5, 11: 1.5}})[k.mode]
         if tonic not in good:
             if 'shift' in spec: good = {tonic: 0}
             else: continue
-        bars = build_events(mel, bass, shift, 0)
+        bars = build_events(mel, bass, shift, 0, spec.get('drone', False))
         r = solve(bars)
         if not r: continue
         cost = r[0] + good[tonic] * 10 + 0.2 * max(0, maxs - 72) * 5

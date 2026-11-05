@@ -1,3 +1,4 @@
+import { TUNING_SONGS, TUNING_STUDIES } from './tuningSongs'
 /**
  * Original fingerstyle exercises written for this app, free to bundle.
  * In alphaTex, `lf` is the fretting-hand finger (2 = index … 5 = little) and
@@ -15,6 +16,8 @@ export interface Study {
   fingeredByApp?: true
   /** 1 = beginner, 2 = easy, 3 = intermediate, 4 = intermediate+ (complete concert pieces) */
   level: 1 | 2 | 3 | 4
+  /** Alternate tuning the piece is written for (standard when left out) */
+  tuning?: 'dadgad' | 'open-d'
 }
 
 const header = (title: string, tempo: number, extra = '', subtitle = 'Original exercise') =>
@@ -221,6 +224,7 @@ export const STUDIES: Study[] = [
 5.1 6.2 3.1 5.2 1.1 3.2 0.1 1.2 |
 (3.5 2.4 0.3 1.2 0.1).1`,
   },
+  ...TUNING_STUDIES,
 ]
 
 const PD = 'Traditional, arranged for this app'
@@ -1256,4 +1260,5 @@ export const SONGS: Study[] = [
 0.5.16 2.3.16 2.2.16 0.1.16 2.2.16 2.3.16 2.2.16 0.1.16 1.1.16 3.2.16 0.2.16 4.1.16 |
 (5.1 2.2 2.3 2.4 0.5).2 {d} |`,
   },
+  ...TUNING_SONGS,
 ]

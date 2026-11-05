@@ -10,6 +10,8 @@ export interface OpenSong {
   description?: string
   kind?: 'study' | 'song'
   level?: 1 | 2 | 3 | 4
+  /** Alternate tuning of a built-in piece (standard when left out) */
+  tuning?: 'dadgad' | 'open-d'
 }
 
 export const BUILT_IN_SONGS: OpenSong[] = [...SONGS, ...STUDIES].map((s) => ({
@@ -21,6 +23,7 @@ export const BUILT_IN_SONGS: OpenSong[] = [...SONGS, ...STUDIES].map((s) => ({
   description: s.description,
   kind: s.kind,
   level: s.level,
+  tuning: s.tuning,
 }))
 
 export function toOpenSong(record: SongRecord): OpenSong {

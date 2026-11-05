@@ -262,5 +262,246 @@
    ]
   ],
   "source": "Melody from the CompMusic Arab-Andalusian corpus transcriptions (zenodo.org/record/1291776, scores-musicxml/), set AAM to that folder"
+ },
+ "alt-blindmary": {
+  "abc": "corpus:oneills1850/0626-0700.abc",
+  "title_in_src": "Blind Mary",
+  "measures": [
+   0,
+   18
+  ],
+  "bass": "harm",
+  "seg": 2,
+  "alt": false,
+  "tuning": "dadgad",
+  "drone": true
+ },
+ "alt-receipt": {
+  "abc": "corpus:oneills1850/0626-0700.abc",
+  "title_in_src": "O'Carolan's Receipt for Drinking",
+  "measures": [
+   0,
+   26
+  ],
+  "bass": "harm",
+  "seg": 2,
+  "alt": false,
+  "tuning": "dadgad",
+  "drone": true
+ },
+ "alt-eileen": {
+  "abc": "corpus:oneills1850/0351-0400.abc",
+  "title_in_src": "Eileen Aroon",
+  "measures": [
+   0,
+   18
+  ],
+  "bass": "harm",
+  "seg": 3,
+  "alt": false,
+  "tuning": "dadgad",
+  "drone": true
+ },
+ "alt-foggy": {
+  "abc": "corpus:oneills1850/0101-0200.abc",
+  "title_in_src": "The Foggy Dew",
+  "measures": [
+   0,
+   18
+  ],
+  "bass": "harm",
+  "seg": 2,
+  "alt": false,
+  "tuning": "dadgad",
+  "drone": true
+ },
+ "alt-ocean": {
+  "abc": "corpus:oneills1850/0759-0810.abc",
+  "title_in_src": "Out on the Ocean.",
+  "measures": [
+   0,
+   18
+  ],
+  "bass": "harm",
+  "seg": 3,
+  "alt": false,
+  "tuning": "dadgad",
+  "drone": true,
+  "ts_den": 8
+ },
+ "alt-arran": {
+  "abc": "corpus:oneills1850/0501-0550.abc",
+  "title_in_src": "Arran Air",
+  "measures": [
+   0,
+   19
+  ],
+  "bass": "harm",
+  "seg": 2,
+  "alt": false,
+  "tuning": "open-d",
+  "drone": true
+ },
+ "alt-parting": {
+  "abc": "corpus:oneills1850/0051-0100.abc",
+  "title_in_src": "THE PARTING GLASS",
+  "measures": [
+   0,
+   18
+  ],
+  "bass": "harm",
+  "seg": 2,
+  "alt": false,
+  "tuning": "dadgad",
+  "drone": true
+ },
+ "alt-brianboru": {
+  "abc": "corpus:oneills1850/1801-1850.abc",
+  "title_in_src": "Brian Boru's March",
+  "measures": [
+   0,
+   16
+  ],
+  "bass": "harm",
+  "seg": 3,
+  "alt": false,
+  "tuning": "dadgad",
+  "drone": true,
+  "ts_den": 8
+ },
+ "alt-johnston": {
+  "abc": "corpus:oneills1850/0626-0700.abc",
+  "title_in_src": "Planxty Johnston",
+  "measures": [
+   0,
+   8
+  ],
+  "bass": "harm",
+  "seg": 3,
+  "alt": false,
+  "tuning": "dadgad",
+  "drone": true,
+  "ts_den": 8
+ },
+ "alt-soldier": {
+  "abc": "corpus:oneills1850/1625-1700.abc",
+  "title_in_src": "The Soldier's Joy",
+  "measures": [
+   0,
+   18
+  ],
+  "bass": "harm",
+  "seg": 2,
+  "alt": true,
+  "tuning": "open-d",
+  "drone": true
+ },
+ "alt-shady": {
+  "abc": "corpus:oneills1850/0201-0300.abc",
+  "title_in_src": "Shady Groves",
+  "measures": [
+   0,
+   16
+  ],
+  "bass": "harm",
+  "seg": 2,
+  "alt": true,
+  "tuning": "open-d",
+  "drone": true
+ },
+ "alt-arkansas": {
+  "abc": "corpus:ryansMammoth/ArkansasTravellerReel.abc",
+  "title_in_src": "ARKANSAS TRAVELLER -- REEL",
+  "measures": [
+   0,
+   8
+  ],
+  "bass": "harm",
+  "seg": 1,
+  "alt": false,
+  "tuning": "open-d",
+  "drone": true
+ },
+ "alt-rakes": {
+  "abc": "corpus:oneills1850/1801-1850.abc",
+  "title_in_src": "The Rakes Of Mallow",
+  "measures": [
+   0,
+   16
+  ],
+  "bass": "harm",
+  "seg": 1,
+  "alt": false,
+  "tuning": "open-d",
+  "drone": true,
+  "shift": -5
+ },
+ "alt-harvest": {
+  "abc": "corpus:oneills1850/1577-1624.abc",
+  "title_in_src": "The Harvest Home",
+  "measures": [
+   0,
+   18
+  ],
+  "bass": "harm",
+  "seg": 2,
+  "alt": true,
+  "tuning": "open-d",
+  "drone": true
+ },
+ "alt-flowers": {
+  "abc": "corpus:oneills1850/1701-1780.abc",
+  "title_in_src": "The Flowers Of Edinburgh",
+  "measures": [
+   0,
+   8
+  ],
+  "bass": "harm",
+  "seg": 1,
+  "alt": false,
+  "tuning": "open-d",
+  "drone": true,
+  "key": "G major"
+ },
+ "alt-lark": {
+  "abc": "corpus:ryansMammoth/LarkInTheMorningJig.abc",
+  "title_in_src": "Lark in the Morning -- Jig",
+  "measures": [
+   0,
+   8
+  ],
+  "bass": "harm",
+  "seg": 3,
+  "alt": false,
+  "tuning": "dadgad",
+  "drone": true,
+  "key": "D major",
+  "ts_den": 8
+ },
+ "alt-charlie": {
+  "abc": "corpus:airdsAirs/book2.abc",
+  "title_in_src": "Over the Water to Charlie.",
+  "measures": [
+   0,
+   16
+  ],
+  "bass": "harm",
+  "seg": 3,
+  "alt": false,
+  "tuning": "dadgad",
+  "drone": true,
+  "ts_den": 8
+ },
+ "alt-grace": {
+  "file": "scripts/arrange/tunes/amazing-grace.abc",
+  "measures": [
+   0,
+   17
+  ],
+  "bass": "harm",
+  "seg": 3,
+  "alt": false,
+  "tuning": "open-d",
+  "drone": true
  }
 }
