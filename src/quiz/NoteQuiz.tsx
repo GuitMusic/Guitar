@@ -19,6 +19,7 @@ import {
   registerName,
   ROUND,
   samePitch,
+  StableNote,
   spots,
   starsFor,
   type Level,
@@ -118,7 +119,7 @@ const DEFAULT_PREFS: Prefs = {
   range: 0,
   naturalsOnly: true,
   seconds: 5,
-  roundLength: 10,
+  roundLength: 20,
   sounds: true,
 }
 
@@ -142,6 +143,8 @@ const CONFETTI = ['#ff7a45', '#ff4f7b', '#fbbf24', '#2dd4bf', '#a78bfa', '#7cc4f
 const NOTE_GAP_MS = 650
 /** A wrong note only counts if it was plucked within this many mic frames (about half a second). */
 const PLUCK_FRAMES = 40
+/** A wrong note is only shown once it has held this many mic frames (about a third of a second). */
+const WRONG_FRAMES = 20
 
 function Stars({ n, of = 3 }: { n: number; of?: number }) {
   return (
@@ -167,7 +170,11 @@ const avg = (t: Tally | undefined) => (t && t.ok ? t.ms / t.ok : 0)
 
 /** Note-finding and ear-training quiz checked with the microphone. */
 export function NoteQuiz() {
-  const [prefs, setPrefs] = useState<Prefs>(() => load('quiz-prefs', DEFAULT_PREFS))
+  const [prefs, setPrefs] = useState<Prefs>(() => {
+    const p = load('quiz-prefs', DEFAULT_PREFS)
+    // rounds doubled: 10 notes became 20
+    return p.roundLength === 10 ? { ...p, roundLength: 20 } : p
+  })
   const [stats, setStats] = useState<Stats>(() => load(`quiz-stats-${prefs.mode}`, EMPTY_STATS))
   const [pathStars, setPathStars] = useState<Record<string, number>>(() => load('quiz-path', {}))
   const [neck, setNeck] = useState<Record<string, Tally>>(() => load('quiz-neck', {}))
@@ -187,6 +194,8 @@ export function NoteQuiz() {
 
   const listener = useRef<PitchListener | null>(null)
   const events = useRef(new NoteEvents(6))
+  // Wrong notes need a longer, steadier sound than right ones, so brief noises are ignored
+  const steady = useRef(new StableNote(WRONG_FRAMES))
   const attacks = useRef(new Attacks())
   const L = useRef({
     question: null as Question | null,
@@ -197,6 +206,7 @@ export function NoteQuiz() {
     found: [] as number[],
     live: null as number | null,
     quiet: 0,
+    pendingWrong: null as number | null,
   })
   const timers = useRef<number[]>([])
   const askRef = useRef<() => void>(() => {})
@@ -254,7 +264,9 @@ export function NoteQuiz() {
     const q = L.current.question
     if (!q || (L.current.phase !== 'listening' && L.current.phase !== 'prompt')) return
     clearTimers()
-    const firstTry = correct && L.current.wrong.length === 0
+    // A right note counts even after wrong tries: on a real guitar most "wrong tries"
+    // are room noise, finger squeaks or a neighbouring string, not a wrong guess.
+    const firstTry = correct
     const ms = correct ? Math.round(performance.now() - L.current.startedAt) : null
     setAnswerMs(ms)
     const key = q.mode === 'find-note' || q.mode === 'find-all' ? q.midi % 12 : q.midi
@@ -297,7 +309,7 @@ export function NoteQuiz() {
       setRound(next)
     }
     if (soundsRef.current) {
-      if (correct) playChime(firstTry ? 'right' : 'late')
+      if (correct) playChime('right')
       else if (q.mode === 'melody') later(() => playPhrase(q.targets), 400)
       else later(() => playTone(q.midi), 300)
     }
@@ -324,6 +336,8 @@ export function NoteQuiz() {
       return
     }
     events.current.reset()
+    steady.current.reset()
+    L.current.pendingWrong = null
     L.current.question = q
     L.current.wrong = []
     L.current.found = []
@@ -365,10 +379,8 @@ export function NoteQuiz() {
       // No fresh pluck: a string ringing on from before, or the open string under a
       // lifted finger. Not a guess, so it does not count against you.
       if (!attacks.current.recently(PLUCK_FRAMES)) return
-      if (!S.wrong.includes(note)) {
-        S.wrong = [...S.wrong, note]
-        setWrongTries(S.wrong)
-      }
+      // Held long enough to be a real note? Decided by the mic callback below.
+      S.pendingWrong = note
     }
     if (q.mode === 'find-all') {
       if (!q.targets.includes(note)) return wrong()
@@ -414,8 +426,17 @@ export function NoteQuiz() {
             setLive(shown)
           }
           if (performance.now() < S.ignoreUntil) return
+          const held = steady.current.push(reading ? reading.midi : null)
           const note = events.current.push(reading ? reading.midi : null)
           if (note !== null) onNoteRef.current(note)
+          if (S.pendingWrong !== null && (!reading || Math.round(reading.midi) !== S.pendingWrong)) S.pendingWrong = null
+          else if (S.pendingWrong !== null && held === S.pendingWrong && S.phase === 'listening') {
+            S.pendingWrong = null
+            if (!S.wrong.includes(held)) {
+              S.wrong = [...S.wrong, held]
+              setWrongTries(S.wrong)
+            }
+          }
         })
       }
       ask()
@@ -530,7 +551,7 @@ export function NoteQuiz() {
     }
     if (phase === 'right') {
       const time = answerMs ? ` in ${(answerMs / 1000).toFixed(1)}s` : ''
-      const extra = wrongTries.length ? ' (not first try)' : ''
+      const extra = ''
       if (question.mode === 'melody') return `You got the melody${time}${extra}`
       if (question.mode === 'find-all') return `All ${question.targets.length} found${time}${extra}`
       return `Correct, ${noteName(question.mode === 'find-note' ? (heard ?? question.midi) : question.midi)}${time}${extra}`
@@ -593,7 +614,7 @@ export function NoteQuiz() {
           {prefs.tab === 'path' && (
             <div className="quiz-path">
               <p className="hint">
-                Short rounds of {ROUND} notes. Get 7 right on the first try to earn a star and open the next level. Uses your microphone, so play one note at a time, no capo.
+                Short rounds of {ROUND} notes. Get 14 right to earn a star and open the next level. Uses your microphone, so play one note at a time, no capo.
               </p>
               {groups.map((g) => (
                 <section key={g}>
@@ -694,8 +715,8 @@ export function NoteQuiz() {
                 <label className="field">
                   Round
                   <select value={prefs.roundLength} onChange={(e) => setPrefs({ ...prefs, roundLength: Number(e.target.value) })}>
-                    <option value={10}>10 notes</option>
                     <option value={20}>20 notes</option>
+                    <option value={40}>40 notes</option>
                     <option value={0}>Until I stop</option>
                   </select>
                 </label>
@@ -817,7 +838,7 @@ export function NoteQuiz() {
                   ? summary.next
                     ? `Star earned. Level ${LEVELS.indexOf(summary.next) + 1} is open.`
                     : 'Star earned.'
-                  : 'Seven right on the first try earns a star. Have another go.'
+                  : '14 right earns a star. Have another go.'
               : summary.passed
                 ? 'Nicely done.'
                 : 'Keep at it. The notes you miss come up more often.'}
@@ -907,7 +928,7 @@ export function NoteQuiz() {
           <div className="quiz-stats">
             <div>
               <strong>{stats.asked ? `${pct}%` : '–'}</strong>
-              <span>first-try accuracy</span>
+              <span>accuracy</span>
             </div>
             <div>
               <strong>{stats.asked}</strong>

@@ -290,7 +290,7 @@ export interface Level {
 const ALL = [1, 2, 3, 4, 5, 6]
 
 /** Notes per round on the path. */
-export const ROUND = 10
+export const ROUND = 20
 
 export const LEVELS: Level[] = [
   { id: 'open-bass', group: 'Open position', title: 'Bass strings', blurb: 'Natural notes on strings 6 and 5, frets 0 to 5. The notes your thumb plays.', settings: { mode: 'find-on-string', strings: [6, 5], minFret: 0, maxFret: 5, naturalsOnly: true, seconds: 8 } },
