@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { listenForPitch, micErrorMessage, playChime, playTone, type PitchListener } from '../audio/pitch'
 import { noteName, pitchClassName, solfegeName } from '../music/notes'
-import { HoldTimer, offTarget, RANGE_BASE, randomTarget, scaleRun, SCALES, TOLERANCE_CENTS, type ScaleKind, type VoiceRange } from './vocal'
+import { HoldTimer, offTarget, RANGE_BASE, randomTarget, scaleRun, SCALES, VOCAL_LEVELS, type ScaleKind, type VocalLevel, type VoiceRange } from './vocal'
 
 type Exercise = 'match' | 'scale' | 'free'
 
@@ -12,11 +12,12 @@ interface Prefs {
   /** Tonic of the scale, semitones above the range base (0 = Do) */
   tonic: number
   naturalsOnly: boolean
+  level: VocalLevel
   playFirst: boolean
 }
 
 const KEY = 'vocal-prefs-v1'
-const DEFAULTS: Prefs = { exercise: 'match', range: 'low', scale: 'major', tonic: 0, naturalsOnly: true, playFirst: true }
+const DEFAULTS: Prefs = { exercise: 'match', range: 'low', scale: 'major', tonic: 0, naturalsOnly: true, playFirst: true, level: 'beginner' }
 
 function loadPrefs(): Prefs {
   try {
@@ -74,6 +75,11 @@ export function VocalTrainer() {
   const done = useRef(false)
   const steady = useRef<{ midi: number; since: number } | null>(null)
   const onHit = useRef<() => void>(() => {})
+  const aimedAt = useRef(0)
+  const replayed = useRef(false)
+  const [helped, setHelped] = useState(false)
+  const levelRef = useRef(VOCAL_LEVELS[prefs.level])
+  levelRef.current = VOCAL_LEVELS[prefs.level]
 
   const run = prefs.exercise === 'scale' ? scaleRun(RANGE_BASE[prefs.range] + prefs.tonic, prefs.scale) : []
 
@@ -84,6 +90,9 @@ export function VocalTrainer() {
 
   const aim = (m: number | null, play: boolean) => {
     targetRef.current = m
+    aimedAt.current = performance.now()
+    replayed.current = false
+    setHelped(false)
     setTarget(m)
     timer.current.reset()
     setHold(0)
@@ -96,7 +105,7 @@ export function VocalTrainer() {
     setMessage(null)
     setStep(0)
     setScore({ right: 0, streak: 0 })
-    if (p.exercise === 'match') aim(randomTarget(p.range, p.naturalsOnly, null), listener.current !== null)
+    if (p.exercise === 'match') aim(randomTarget(p.range, p.naturalsOnly, null, Math.random, VOCAL_LEVELS[p.level].span), listener.current !== null)
     else if (p.exercise === 'scale') aim(scaleRun(RANGE_BASE[p.range] + p.tonic, p.scale)[0], listener.current !== null && p.playFirst)
     else aim(null, false)
   }
@@ -110,7 +119,7 @@ export function VocalTrainer() {
     setScore((s) => ({ right: s.right + 1, streak: s.streak + 1 }))
     if (prefs.exercise === 'match') {
       setMessage(`Yes, ${name(targetRef.current!)}!`)
-      const next = randomTarget(prefs.range, prefs.naturalsOnly, targetRef.current)
+      const next = randomTarget(prefs.range, prefs.naturalsOnly, targetRef.current, Math.random, VOCAL_LEVELS[prefs.level].span)
       window.setTimeout(() => aim(next, true), 700)
     } else if (prefs.exercise === 'scale') {
       const next = step + 1
@@ -146,7 +155,16 @@ export function VocalTrainer() {
           const t = targetRef.current
           if (t === null || done.current) return
           const cents = midi === null ? null : offTarget(midi, t).semitones * 100
-          const h = timer.current.push(cents, dt)
+          const lv = levelRef.current
+          const trying = now - aimedAt.current
+          // Beginners get the note played again, then a wider window, if it is taking a while
+          if (lv.helpAfterMs !== null && trying > lv.helpAfterMs * 0.6 && !replayed.current) {
+            replayed.current = true
+            playRef(t)
+          }
+          const help = lv.helpAfterMs !== null && trying > lv.helpAfterMs
+          if (help) setHelped(true)
+          const h = timer.current.push(cents, dt, help ? lv.helpTolerance : lv.tolerance, lv.holdMs)
           setHold(h)
           if (h >= 1) {
             done.current = true
@@ -180,7 +198,10 @@ export function VocalTrainer() {
 
   const off = sung !== null && target !== null ? offTarget(sung, target) : null
   const cents = off ? Math.round(off.semitones * 100) : null
-  const inTune = cents !== null && Math.abs(cents) <= TOLERANCE_CENTS
+  const level = VOCAL_LEVELS[prefs.level]
+  const tolerance = helped ? level.helpTolerance : level.tolerance
+  const inTune = cents !== null && Math.abs(cents) <= tolerance
+  const beginner = prefs.level === 'beginner'
   // The trace is drawn around the target, or around the sung note when singing freely
   const centre = target ?? (sung !== null ? Math.round(sung) : RANGE_BASE[prefs.range] + 7)
   const fold = (m: number) => (target !== null ? target + offTarget(m, target).semitones : m)
@@ -215,10 +236,20 @@ export function VocalTrainer() {
       <p className="hint">{ex.hint}</p>
       <div className="row">
         <label className="field">
+          Level
+          <select value={prefs.level} onChange={(e) => change({ ...prefs, level: e.target.value as VocalLevel })}>
+            {(Object.keys(VOCAL_LEVELS) as VocalLevel[]).map((l) => (
+              <option key={l} value={l}>
+                {VOCAL_LEVELS[l].label}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="field">
           Voice
           <select value={prefs.range} onChange={(e) => change({ ...prefs, range: e.target.value as VoiceRange })}>
-            <option value="low">Lower voice (from C3)</option>
-            <option value="high">Higher voice (from C4)</option>
+            <option value="low">Lower voice, most men (from Do3)</option>
+            <option value="high">Higher voice, most women (from Do4)</option>
           </select>
         </label>
         {prefs.exercise === 'scale' && (
@@ -304,9 +335,13 @@ export function VocalTrainer() {
                 : '…'
               : inTune
                 ? '✓'
-                : cents > 0
-                  ? `${cents}¢ high`
-                  : `${-cents}¢ low`}
+                : beginner
+                  ? cents > 0
+                    ? 'A bit lower ↓'
+                    : 'A bit higher ↑'
+                  : cents > 0
+                    ? `${cents}¢ high`
+                    : `${-cents}¢ low`}
           </span>
         </div>
       </div>
@@ -323,7 +358,7 @@ export function VocalTrainer() {
             </g>
           )
         })}
-        {target !== null && <rect x={0} width={W} y={yOf(centre + TOLERANCE_CENTS / 100)} height={yOf(centre - TOLERANCE_CENTS / 100) - yOf(centre + TOLERANCE_CENTS / 100)} className="vt-band" />}
+        {target !== null && <rect x={0} width={W} y={yOf(centre + tolerance / 100)} height={yOf(centre - tolerance / 100) - yOf(centre + tolerance / 100)} className="vt-band" />}
         <path d={path} className="vt-path" />
       </svg>
 
@@ -336,7 +371,7 @@ export function VocalTrainer() {
           </button>
         )}
         {prefs.exercise === 'match' && listening && (
-          <button className="ghost" onClick={() => aim(randomTarget(prefs.range, prefs.naturalsOnly, target), true)}>
+          <button className="ghost" onClick={() => aim(randomTarget(prefs.range, prefs.naturalsOnly, target, Math.random, VOCAL_LEVELS[prefs.level].span), true)}>
             Skip this note
           </button>
         )}
@@ -347,6 +382,7 @@ export function VocalTrainer() {
         )}
       </div>
       {off && off.octaves !== 0 && inTune && <p className="hint">Right note, sung {Math.abs(off.octaves) === 1 ? 'an octave' : `${Math.abs(off.octaves)} octaves`} {off.octaves < 0 ? 'lower' : 'higher'}. That counts.</p>}
+      {helped && target !== null && !message && <p className="hint">Taking a while? No problem: close enough counts now. Hum it softly first, then sing “la”.</p>}
       {message && <div className="notice">{message}</div>}
       {error && <div className="error">{error}</div>}
       {range && (
