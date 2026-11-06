@@ -29,10 +29,22 @@ export function offTarget(sung: number, target: number): { semitones: number; oc
   return { semitones, octaves: Math.round((d - semitones) / 12) }
 }
 
-/** In tune within this many cents. Generous on purpose: voices waver, beginners more so. */
-export const TOLERANCE_CENTS = 35
-/** How long a note must be held in tune to count. */
-export const HOLD_MS = 900
+export type VocalLevel = 'beginner' | 'normal'
+
+/**
+ * How strict the trainer is. Beginner suits people who have never trained their voice:
+ * a wide window around the note, a short hold, notes close together, and after a while
+ * of trying, anything within a semitone counts.
+ */
+export const VOCAL_LEVELS: Record<VocalLevel, { label: string; tolerance: number; holdMs: number; span: number; helpAfterMs: number | null; helpTolerance: number }> = {
+  beginner: { label: 'Beginner (forgiving)', tolerance: 80, holdMs: 450, span: 7, helpAfterMs: 8000, helpTolerance: 120 },
+  normal: { label: 'Practised', tolerance: 35, holdMs: 900, span: 12, helpAfterMs: null, helpTolerance: 35 },
+}
+
+/** In tune within this many cents on the practised level. */
+export const TOLERANCE_CENTS = VOCAL_LEVELS.normal.tolerance
+/** How long a note must be held in tune to count on the practised level. */
+export const HOLD_MS = VOCAL_LEVELS.normal.holdMs
 
 /**
  * Counts how long the singer has stayed in tune. A short wobble out of tune only
@@ -40,19 +52,20 @@ export const HOLD_MS = 900
  */
 export class HoldTimer {
   private held = 0
-  push(cents: number | null, dt: number): number {
-    if (cents !== null && Math.abs(cents) <= TOLERANCE_CENTS) this.held += dt
-    else this.held = Math.max(0, this.held - dt * 0.5)
-    return Math.min(1, this.held / HOLD_MS)
+  push(cents: number | null, dt: number, tolerance = TOLERANCE_CENTS, holdMs = HOLD_MS): number {
+    if (cents !== null && Math.abs(cents) <= tolerance) this.held += dt
+    // A gap (breath, crack) drains slowly, so starting over is rarely needed
+    else this.held = Math.max(0, this.held - dt * (tolerance > TOLERANCE_CENTS ? 0.25 : 0.5))
+    return Math.min(1, this.held / holdMs)
   }
   reset() {
     this.held = 0
   }
 }
 
-/** A random note to match inside the chosen range (one octave from the range base). */
-export function randomTarget(range: VoiceRange, naturalsOnly: boolean, previous: number | null, rand = Math.random): number {
+/** A random note to match: from the range base up `span` semitones (7 = Do to Sol, the easy middle of most voices). */
+export function randomTarget(range: VoiceRange, naturalsOnly: boolean, previous: number | null, rand = Math.random, span = 12): number {
   const base = RANGE_BASE[range]
-  const pool = Array.from({ length: 13 }, (_, i) => base + i).filter((m) => (!naturalsOnly || [0, 2, 4, 5, 7, 9, 11].includes(m % 12)) && m !== previous)
+  const pool = Array.from({ length: span + 1 }, (_, i) => base + i).filter((m) => (!naturalsOnly || [0, 2, 4, 5, 7, 9, 11].includes(m % 12)) && m !== previous)
   return pool[Math.floor(rand() * pool.length)]
 }

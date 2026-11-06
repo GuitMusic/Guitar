@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { HoldTimer, HOLD_MS, offTarget, randomTarget, scaleRun } from './vocal'
+import { HoldTimer, HOLD_MS, offTarget, randomTarget, scaleRun, VOCAL_LEVELS } from './vocal'
 
 describe('offTarget', () => {
   it('measures cents from the target', () => {
@@ -33,4 +33,13 @@ it('random targets stay in range, are natural when asked, and change', () => {
     expect(m).not.toBe(48)
     expect([0, 2, 4, 5, 7, 9, 11]).toContain(m % 12)
   }
+})
+
+it('the beginner level accepts notes the practised level does not', () => {
+  const { beginner } = VOCAL_LEVELS
+  const t = new HoldTimer()
+  // 70 cents off is out of tune for a practised singer, fine for a beginner
+  expect(new HoldTimer().push(70, 1000)).toBe(0)
+  expect(t.push(70, beginner.holdMs, beginner.tolerance, beginner.holdMs)).toBe(1)
+  for (let i = 0; i < 50; i++) expect(randomTarget('high', true, null, Math.random, beginner.span)).toBeLessThanOrEqual(67)
 })
