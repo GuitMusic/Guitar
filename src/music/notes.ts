@@ -6,6 +6,14 @@ export function pitchClassName(midi: number): string {
   return NAMES[((midi % 12) + 12) % 12]
 }
 
+/** Fixed-do names (C = Do), as taught in Morocco, France and most of the Arab world. */
+const SOLFEGE = ['Do', 'Do#', 'Ré', 'Mib', 'Mi', 'Fa', 'Fa#', 'Sol', 'Sol#', 'La', 'Sib', 'Si'] as const
+
+/** Do-ré-mi name of a pitch class, e.g. 62 -> "Ré". */
+export function solfegeName(midi: number): string {
+  return SOLFEGE[((midi % 12) + 12) % 12]
+}
+
 /** Scientific pitch name, e.g. 64 -> "E4", 40 -> "E2". */
 export function noteName(midi: number): string {
   return `${pitchClassName(midi)}${Math.floor(midi / 12) - 1}`

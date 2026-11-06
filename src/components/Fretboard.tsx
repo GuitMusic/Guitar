@@ -1,6 +1,6 @@
 import { useEffect, useId, useMemo, useState } from 'react'
 import { fretFingerLabel } from '../music/fingering'
-import { noteName, pitchClassName } from '../music/notes'
+import { noteName, pitchClassName, solfegeName } from '../music/notes'
 import type { FretNote } from '../music/types'
 import { makeFretX, NECK_END, NUT_W, NUT_X, PICK_W, STRING_GAP, TOP, W } from './fretboardGeometry'
 
@@ -62,6 +62,24 @@ interface Props {
 const NOTE_R = 17
 const CHIP_X = 20
 const OPEN_X = NUT_X - 34
+
+/**
+ * A note name with its do-ré-mi name in small type underneath. `dy` is where a
+ * single-line label would sit, so both lines stay centred on the dot.
+ */
+function NoteText({ x, y, midi, size }: { x: number; y: number; midi: number; size: 'big' | 'small' }) {
+  const big = size === 'big'
+  return (
+    <>
+      <text x={x} y={y + (big ? 2 : 1)} textAnchor="middle">
+        {pitchClassName(midi)}
+      </text>
+      <text x={x} y={y + (big ? 12 : 9)} textAnchor="middle" className={big ? 'fb-solfa' : 'fb-solfa fb-solfa-small'}>
+        {solfegeName(midi)}
+      </text>
+    </>
+  )
+}
 
 const SINGLE_INLAYS = [3, 5, 7, 9, 15, 17, 19, 21]
 
@@ -314,9 +332,7 @@ export function Fretboard({ notes, ghosts, tuning, capo, options, onNoteClick, o
       {tapped && (
         <g key={tapped.id} className="fb-tapped">
           <circle cx={X(tapped.fret === 0 ? OPEN_X : (fretX(tapped.fret - 1) + fretX(tapped.fret)) / 2)} cy={Y(tapped.string)} r={NOTE_R} />
-          <text x={X(tapped.fret === 0 ? OPEN_X : (fretX(tapped.fret - 1) + fretX(tapped.fret)) / 2)} y={Y(tapped.string) + 5} textAnchor="middle">
-            {pitchClassName(tapped.midi)}
-          </text>
+          <NoteText x={X(tapped.fret === 0 ? OPEN_X : (fretX(tapped.fret - 1) + fretX(tapped.fret)) / 2)} y={Y(tapped.string)} midi={tapped.midi} size="big" />
         </g>
       )}
 
@@ -337,10 +353,8 @@ export function Fretboard({ notes, ghosts, tuning, capo, options, onNoteClick, o
         <g className="fb-names" aria-hidden="true">
           {names.map((n) => (
             <g key={`n-${n.key}`} className={n.fret === 0 ? 'fb-name fb-name-open' : 'fb-name'}>
-              <circle cx={X(noteX(n))} cy={Y(n.string)} r="12" />
-              <text x={X(noteX(n))} y={Y(n.string) + 4} textAnchor="middle">
-                {pitchClassName(n.midi)}
-              </text>
+              <circle cx={X(noteX(n))} cy={Y(n.string)} r="13" />
+              <NoteText x={X(noteX(n))} y={Y(n.string)} midi={n.midi} size="small" />
             </g>
           ))}
         </g>
@@ -349,9 +363,13 @@ export function Fretboard({ notes, ghosts, tuning, capo, options, onNoteClick, o
       {shape.map((n) => (
         <g key={`s-${n.key}`} className={`fb-shape fb-finger-${n.lh ?? 'x'}`} onClick={click(n)} role="button" aria-label={`${noteName(n.midi)} later in this bar, edit fingering`}>
           <circle cx={X(noteX(n))} cy={Y(n.string)} r="14" />
-          <text x={X(noteX(n))} y={Y(n.string) + 5} textAnchor="middle">
-            {options.labelMode === 'note' ? pitchClassName(n.midi) : n.lh !== null ? fretFingerLabel(n.lh) : ''}
-          </text>
+          {options.labelMode === 'note' ? (
+            <NoteText x={X(noteX(n))} y={Y(n.string)} midi={n.midi} size="small" />
+          ) : (
+            <text x={X(noteX(n))} y={Y(n.string) + 5} textAnchor="middle">
+              {n.lh !== null ? fretFingerLabel(n.lh) : ''}
+            </text>
+          )}
         </g>
       ))}
 
@@ -400,9 +418,13 @@ export function Fretboard({ notes, ghosts, tuning, capo, options, onNoteClick, o
             {!held && <circle className="fb-note-ripple" cx={x} cy={y} r={r} />}
             <circle className="fb-note-body" cx={x} cy={y} r={r} filter={ref('shadow')} />
             {!open && <circle className="fb-note-shine" cx={x} cy={y - 6} r={r * 0.6} />}
-            <text x={x} y={y + 6} textAnchor="middle">
-              {label}
-            </text>
+            {options.labelMode === 'note' && !n.isDead ? (
+              <NoteText x={x} y={y} midi={n.midi} size="big" />
+            ) : (
+              <text x={x} y={y + 6} textAnchor="middle">
+                {label}
+              </text>
+            )}
           </g>
         )
       })}
@@ -425,6 +447,7 @@ export function Fretboard({ notes, ghosts, tuning, capo, options, onNoteClick, o
               </text>
               <text className="fb-pick-note" x={X(pickX + 2)} y={y + 5} textAnchor={anchor('start')}>
                 {noteName(n.midi)}
+                <tspan className="fb-solfa-inline"> {solfegeName(n.midi)}</tspan>
               </text>
             </g>
           )

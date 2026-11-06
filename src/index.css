@@ -4065,3 +4065,179 @@ button.chip.active {
     display: none;
   }
 }
+
+/* Do-ré-mi names under the letter names */
+.fretboard text.fb-solfa,
+svg text.fb-solfa {
+  font-size: 7.5px;
+  font-weight: 600;
+  fill-opacity: 0.8;
+  letter-spacing: 0.02em;
+}
+svg text.fb-solfa-small {
+  font-size: 6.5px;
+}
+.fb-solfa-inline {
+  font-size: 0.72em;
+  font-weight: 600;
+  opacity: 0.7;
+}
+.solfa {
+  display: block;
+  font-size: 0.42em;
+  font-weight: 600;
+  opacity: 0.7;
+  letter-spacing: 0.02em;
+  line-height: 1.1;
+}
+.solfa-inline {
+  font-size: 0.75em;
+  font-weight: 600;
+  opacity: 0.7;
+  margin-left: 0.3em;
+}
+.tn-solfa {
+  font-size: 0.7rem;
+  font-weight: 600;
+  opacity: 0.75;
+}
+
+/* Singing trainer */
+.vocal .row {
+  margin: 8px 0;
+}
+.vocal-steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 10px 0;
+}
+.vocal-steps span {
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--text-2);
+  font-weight: 650;
+  font-size: 0.9rem;
+}
+.vocal-steps span.done {
+  color: var(--ok-text);
+  background: var(--ok-bg);
+}
+.vocal-steps span.now {
+  color: #fff;
+  background: var(--grad, var(--accent));
+}
+.vocal-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 12px 0;
+  padding: 18px 22px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  transition: border-color 0.2s, background 0.2s;
+}
+.vocal-card.in-tune {
+  border-color: color-mix(in srgb, #2fd27a 60%, var(--border));
+  background: color-mix(in srgb, #2fd27a 8%, var(--surface));
+}
+.vocal-target {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+.vocal-label {
+  color: var(--text-2);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.vocal-big {
+  font-size: clamp(2.6rem, 9vw, 3.6rem);
+  font-weight: 850;
+  line-height: 1;
+}
+.vocal-big small {
+  margin-left: 10px;
+  font-size: 0.38em;
+  font-weight: 650;
+  color: var(--text-2);
+}
+.vocal-ring {
+  --hold: 0%;
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 108px;
+  height: 108px;
+  border-radius: 50%;
+  background: conic-gradient(#2fd27a var(--hold), var(--surface-2) 0);
+}
+.vocal-ring span {
+  display: grid;
+  place-items: center;
+  width: 86px;
+  height: 86px;
+  border-radius: 50%;
+  background: var(--surface);
+  font-weight: 750;
+  font-size: 0.95rem;
+  text-align: center;
+}
+.vocal-trace {
+  width: 100%;
+  height: 200px;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+.vt-line {
+  stroke: var(--border);
+  stroke-width: 1;
+}
+.vt-target {
+  stroke: #2fd27a;
+  stroke-width: 1.5;
+  stroke-dasharray: 6 4;
+}
+.vt-band {
+  fill: #2fd27a;
+  opacity: 0.12;
+}
+.vt-label {
+  fill: var(--text-2);
+  font-size: 10px;
+}
+.vt-path {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+.vocal-range {
+  color: var(--text-2);
+}
+@media (max-width: 760px) {
+  .vocal-card {
+    padding: 14px 16px;
+  }
+  .vocal-ring {
+    width: 88px;
+    height: 88px;
+  }
+  .vocal-ring span {
+    width: 70px;
+    height: 70px;
+    font-size: 0.8rem;
+  }
+  .vocal-trace {
+    height: 160px;
+  }
+}

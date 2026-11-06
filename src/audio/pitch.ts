@@ -19,7 +19,13 @@ export interface PitchListener {
  * Calls onReading with null when nothing clear is heard. `level` is the loudness
  * (RMS, 0 to 1) of every frame, pitched or not, so callers can spot a fresh pluck.
  */
-export async function listenForPitch(onReading: (r: PitchReading | null, level: number) => void): Promise<PitchListener> {
+export async function listenForPitch(
+  onReading: (r: PitchReading | null, level: number) => void,
+  /** For the voice: a looser clarity bar (vibrato, breath) and no guitar octave fix */
+  options: { minClarity?: number; octaveFix?: boolean } = {},
+): Promise<PitchListener> {
+  const minClarity = options.minClarity ?? 0.92
+  const octaveFix = options.octaveFix ?? true
   const stream = await navigator.mediaDevices.getUserMedia({
     audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false },
   })
@@ -43,9 +49,9 @@ export async function listenForPitch(onReading: (r: PitchReading | null, level: 
     for (let i = 0; i < buffer.length; i++) sum += buffer[i] * buffer[i]
     const level = Math.sqrt(sum / buffer.length)
     const [raw, clarity] = detector.findPitch(buffer, ctx.sampleRate)
-    if (clarity > 0.92 && raw > 60 && raw < 1400) {
+    if (clarity > minClarity && raw > 60 && raw < 1400) {
       // low strings are often heard an octave too high (see octave.ts)
-      const freq = correctOctave(buffer, ctx.sampleRate, raw)
+      const freq = octaveFix ? correctOctave(buffer, ctx.sampleRate, raw) : raw
       const m = frequencyToMidi(freq)
       smoothed = smoothed === null || Math.abs(smoothed - m) > 0.5 ? m : smoothed * 0.7 + m * 0.3
       onReading({ freq, midi: smoothed, clarity }, level)
