@@ -503,5 +503,226 @@
   "alt": false,
   "tuning": "open-d",
   "drone": true
+ },
+ "alt-dg-lamma": {
+  "file": "$AREALB/lamma-bada-yatathanna.musicxml",
+  "measures": [
+   1,
+   14
+  ],
+  "bass": "chords",
+  "seg": 2.5,
+  "alt": false,
+  "ts_den": 8,
+  "tuning": "dadgad",
+  "drone": true,
+  "shift": -5,
+  "source": "Melody from the Arabic Real Book (github.com/infojunkie/arealb, tunes/), set AREALB to its tunes folder"
+ },
+ "alt-dg-zein": {
+  "file": "$AREALB/ah-ya-zein.musicxml",
+  "measures": [
+   0,
+   10
+  ],
+  "bass": "chords",
+  "seg": 2,
+  "tuning": "dadgad",
+  "drone": true,
+  "source": "Melody from the Arabic Real Book (github.com/infojunkie/arealb, tunes/), set AREALB to its tunes folder"
+ },
+ "alt-dg-bafta": {
+  "file": "$AREALB/bafta-hindi.musicxml",
+  "measures": [
+   1,
+   12
+  ],
+  "bass": "chords",
+  "seg": 2,
+  "tuning": "dadgad",
+  "drone": true,
+  "source": "Melody from the Arabic Real Book (github.com/infojunkie/arealb, tunes/), set AREALB to its tunes folder"
+ },
+ "alt-dg-hamama": {
+  "file": "$AREALB/hamama-beida-12tet.musicxml",
+  "measures": [
+   1,
+   12
+  ],
+  "bass": "chords",
+  "seg": 2,
+  "tuning": "dadgad",
+  "drone": true,
+  "source": "Melody from the Arabic Real Book (github.com/infojunkie/arealb, tunes/), set AREALB to its tunes folder"
+ },
+ "alt-dg-shedd": {
+  "file": "$AREALB/shedd-el-hizam.musicxml",
+  "measures": [
+   1,
+   19
+  ],
+  "bass": "chords",
+  "seg": 2,
+  "tuning": "dadgad",
+  "drone": true,
+  "source": "Melody from the Arabic Real Book (github.com/infojunkie/arealb, tunes/), set AREALB to its tunes folder"
+ },
+ "alt-dg-shams": {
+  "file": "$AAM/a025eef0-d130-496f-9581-f5ce40bd1783.xml",
+  "measures": [
+   54,
+   64
+  ],
+  "bass": "harm",
+  "seg": 3,
+  "alt": true,
+  "chordset": [
+   [
+    "C",
+    "M"
+   ],
+   [
+    "B-",
+    "M"
+   ],
+   [
+    "F",
+    "M"
+   ]
+  ],
+  "tuning": "dadgad",
+  "drone": true,
+  "source": "Melody from the CompMusic Arab-Andalusian corpus transcriptions (github.com/MTG/arab-andalusian-music, scores-musicxml/), set AAM to that folder"
+ },
+ "alt-dg-inkunta": {
+  "file": "$AAM/6311c0de-d66f-482d-8dd1-8d8917ca6a76.xml",
+  "measures": [
+   42,
+   53
+  ],
+  "bass": "harm",
+  "seg": 3,
+  "alt": true,
+  "chordset": [
+   [
+    "C",
+    "M"
+   ],
+   [
+    "B-",
+    "M"
+   ],
+   [
+    "F",
+    "M"
+   ]
+  ],
+  "tuning": "dadgad",
+  "drone": true,
+  "source": "Melody from the CompMusic Arab-Andalusian corpus transcriptions (github.com/MTG/arab-andalusian-music, scores-musicxml/), set AAM to that folder"
+ },
+ "alt-dg-qamarun": {
+  "file": "$AAM/9781e524-92de-43f2-87e3-1e9f05931f0e.xml",
+  "measures": [
+   36,
+   47
+  ],
+  "bass": "harm",
+  "seg": 2,
+  "alt": true,
+  "tuning": "dadgad",
+  "drone": true,
+  "source": "Melody from the CompMusic Arab-Andalusian corpus transcriptions (github.com/MTG/arab-andalusian-music, scores-musicxml/), set AAM to that folder"
+ },
+ "alt-dg-shawq": {
+  "file": "$AAM/56da9cc8-dbdf-4123-9f05-d866b8380d93.xml",
+  "measures": [
+   50,
+   61
+  ],
+  "bass": "harm",
+  "seg": 3,
+  "alt": true,
+  "chordset": [
+   [
+    "F",
+    "M"
+   ],
+   [
+    "C",
+    "M"
+   ],
+   [
+    "B-",
+    "M"
+   ]
+  ],
+  "tuning": "dadgad",
+  "drone": true,
+  "source": "Melody from the CompMusic Arab-Andalusian corpus transcriptions (github.com/MTG/arab-andalusian-music, scores-musicxml/), set AAM to that folder"
+ },
+ "alt-dg-malakni": {
+  "file": "$AAM/0909c62d-7eb7-4976-b125-c20c12cc15a1.xml",
+  "measures": [
+   291,
+   302
+  ],
+  "bass": "harm",
+  "seg": 2,
+  "alt": true,
+  "tuning": "dadgad",
+  "drone": true,
+  "source": "Melody from the CompMusic Arab-Andalusian corpus transcriptions (github.com/MTG/arab-andalusian-music, scores-musicxml/), set AAM to that folder"
+ },
+ "alt-dg-assobho": {
+  "file": "$AAM/0b671737-40b7-4dd3-9baf-d7c9cded139f.xml",
+  "measures": [
+   80,
+   91
+  ],
+  "bass": "harm",
+  "seg": 2,
+  "alt": true,
+  "tuning": "dadgad",
+  "drone": true,
+  "source": "Melody from the CompMusic Arab-Andalusian corpus transcriptions (github.com/MTG/arab-andalusian-music, scores-musicxml/), set AAM to that folder"
+ },
+ "alt-dg-ghaybatuk": {
+  "file": "$AAM/56da9cc8-dbdf-4123-9f05-d866b8380d93.xml",
+  "measures": [
+   124,
+   135
+  ],
+  "bass": "harm",
+  "seg": 2,
+  "alt": true,
+  "tuning": "dadgad",
+  "drone": true,
+  "source": "Melody from the CompMusic Arab-Andalusian corpus transcriptions (github.com/MTG/arab-andalusian-music, scores-musicxml/), set AAM to that folder"
+ },
+ "alt-dg-talata": {
+  "file": "$AAM/02b76946-deec-48cf-9007-770c37b6c3cc.xml",
+  "measures": [
+   513,
+   524
+  ],
+  "bass": "harm",
+  "seg": 2,
+  "alt": true,
+  "tuning": "dadgad",
+  "drone": true,
+  "source": "Melody from the CompMusic Arab-Andalusian corpus transcriptions (github.com/MTG/arab-andalusian-music, scores-musicxml/), set AAM to that folder"
+ },
+ "alt-dg-batta": {
+  "file": "$AREALB/taaleeli-ya-batta.musicxml",
+  "measures": [
+   0,
+   16
+  ],
+  "bass": "chords",
+  "seg": 2,
+  "tuning": "dadgad",
+  "drone": true,
+  "source": "Melody from the Arabic Real Book (github.com/infojunkie/arealb, tunes/), set AREALB to its tunes folder"
  }
 }

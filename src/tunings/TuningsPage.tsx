@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Fretboard } from '../components/Fretboard'
 import { setView, useFretboardView } from '../components/fretboardView'
 import { playTone } from '../audio/pitch'
-import { noteName, parsePitchClass } from '../music/notes'
+import { noteName, parsePitchClass, solfegeName } from '../music/notes'
 import type { FretNote } from '../music/types'
 import { BUILT_IN_SONGS, type OpenSong } from '../library/songs'
 import { Tuner } from '../tools/Tuner'
@@ -133,6 +133,7 @@ export function TuningsPage({ onOpen, onGo }: Props) {
             <li key={s.string} className={s.semitones ? 'changed' : ''}>
               <button onClick={() => playTone(s.to, 2)} title={`Play string ${s.string}: ${noteName(s.to)}`}>
                 <span className="tn-letter">{noteName(s.to).replace(/\d/, '')}</span>
+                <span className="tn-solfa">{solfegeName(s.to)}</span>
                 <small>{s.string}</small>
               </button>
             </li>

@@ -1,6 +1,6 @@
 import { listenForPitch, micErrorMessage, playTone } from '../audio/pitch'
 import { useEffect, useRef, useState } from 'react'
-import { noteName, TUNINGS } from '../music/notes'
+import { noteName, solfegeName, TUNINGS } from '../music/notes'
 
 interface Reading {
   midi: number
@@ -75,7 +75,10 @@ export function Tuner({ initialTuningId = 'standard', heading = 'Tuner' }: { ini
       </label>
 
       <div className={`tuner-display${inTune ? ' in-tune' : ''}`}>
-        <div className="tuner-note">{reading ? noteName(reading.midi) : '–'}</div>
+        <div className="tuner-note">
+          {reading ? noteName(reading.midi) : '–'}
+          {reading && <span className="solfa">{solfegeName(reading.midi)}</span>}
+        </div>
         <div className="tuner-meter" aria-hidden="true">
           <div className="tuner-center" />
           <div className="tuner-needle" style={{ left: `${50 + needle}%` }} />

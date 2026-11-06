@@ -672,4 +672,323 @@ export const TUNING_SONGS: Study[] = [
 (2.1{lf 3} 0.5).16 0.1.16 4.2{lf 5}.16 2.2{lf 3}.16 (0.2 0.5).16 2.3{lf 3}.16 0.2.16 2.2{lf 3}.16 |
 \\ts 3 8 (4.2{lf 5} 0.5).8 0.2.8 (0.2 0.5).8`,
   },
+  {
+    id: 'song-dadgad-ar-lamma',
+    level: 3,
+    kind: 'song',
+    tuning: 'dadgad',
+    title: "Lamma Bada Yatathanna (DADGAD)",
+    description: "The best-loved Andalusian muwashshah in 10/8 (count 3+4+3), now in D minor over DADGAD's open D drone, the way an oud player would hold the low string.",
+    tex:
+      header("Lamma Bada Yatathanna (DADGAD)", 60, 'dadgad', "Muwashshah from al-Andalus, traditional, arranged for this app") +
+      `\\ts 1 8 0.2{rf 3}.8 |
+\\ts 10 8 (0.1{rf 4} 0.6{rf 1} 0.5{rf 1}).4 7.2{lf 4 rf 3}.16 8.2{lf 5 rf 3}.16 (5.1{lf 2 rf 4} 5.6{lf 2 rf 1} 0.4{rf 1}).16 8.2{lf 5 rf 3}.16 8.2{lf 5 rf 3}.16 7.2{lf 4 rf 3}.16 (7.2{lf 4 rf 3} 0.5{rf 1}).16 0.1{rf 4}.16 0.1{rf 4}.16 6.3{lf 3 rf 2}.16 (0.1{rf 4} 0.6{rf 1} 0.5{rf 1}).4 0.2{rf 3}.8 |
+(0.1{rf 4} 0.6{rf 1} 0.5{rf 1}).4 7.2{lf 4 rf 3}.16 8.2{lf 5 rf 3}.16 (5.1{lf 2 rf 4} 5.6{lf 2 rf 1} 0.4{rf 1}).16 8.2{lf 5 rf 3}.16 8.2{lf 5 rf 3}.16 7.2{lf 4 rf 3}.16 (7.2{lf 4 rf 3} 0.5{rf 1}).16 0.1{rf 4}.16 0.1{rf 4}.16 6.3{lf 3 rf 2}.16 (0.1{rf 4} 0.6{rf 1} 0.5{rf 1}).4 7.2{lf 4 rf 3}.16 8.2{lf 5 rf 3}.16 |
+(5.1{lf 2 rf 4} 5.6{lf 2 rf 1} 0.4{rf 1}).4 7.1{lf 4 rf 4}.8 (3.1{lf 4 rf 4} 1.5{lf 2 rf 1}).8 {d} 2.1{lf 3 rf 4}.16 (2.1{lf 3 rf 4} 0.5{rf 1}).16 0.1{rf 4}.16 0.1{rf 4}.16 4.2{lf 5 rf 3}.16 (0.1{rf 4} 0.6{rf 1} 0.5{rf 1}).4 2.1{lf 3 rf 4}.8 |
+(4.2{lf 5} 0.5).4 0.1.8 (3.3{lf 3} 5.6{lf 5} 0.4).8 {d} 0.2.16 (3.3{lf 3} 5.6{lf 5} 0.4).16 0.2.16 3.3{lf 3}.16 4.2{lf 4}.16 (0.2 0.5).4 3.3{lf 3}.16 0.2.16 |
+(0.3 5.6{lf 5} 0.4).4 0.2.16 0.3.16 (3.4{lf 4} 1.5{lf 2}).8 {d} 2.4{lf 3}.16 (2.4{lf 3} 0.5).16 0.4.16 0.4.16 4.5{lf 5}.16 (0.4 0.6 0.5).4 0.2.8 |
+(0.1 0.6 0.5).4 2.1{lf 3}.16 3.1{lf 4}.16 (5.1{lf 2} 5.6{lf 2} 0.4).16 8.2{lf 5}.16 8.2{lf 5}.16 7.2{lf 4}.16 (7.2{lf 4} 0.5).16 0.1.16 6.3{lf 3}.16 7.2{lf 4}.16 (0.1 0.6 0.5).4 0.2.8 |
+(0.1 0.6 0.5).4 7.2{lf 4}.16 8.2{lf 5}.16 (5.1{lf 2} 5.6{lf 2} 0.4).16 3.1{lf 4}.16 3.1{lf 4}.16 2.1{lf 3}.16 (2.1{lf 3} 0.5).16 0.1.16 4.2{lf 5}.16 2.1{lf 3}.16 (0.1 0.6 0.5).4 3.1{lf 4}.8 |
+(3.1{lf 4} 1.5{lf 2}).4 3.1{lf 4}.8 3.1{lf 4}.4 (5.1{lf 5} 1.5{lf 2}).16 3.1{lf 4}.16 2.1{lf 3}.16 5.1{lf 2}.16 8.2{lf 5}.4 5.1{lf 2}.8 |
+(7.1{lf 4} 8.6{lf 5}).4 5.1{lf 2}.8 7.1{lf 4}.16 5.1{lf 2}.16 5.1{lf 2}.16 3.1{lf 4}.16 (3.1{lf 4} 1.5{lf 2}).16 2.1{lf 3}.16 0.1.16 3.1{lf 4}.16 (2.1{lf 3} 0.5).4 0.1.16 2.1{lf 3}.16 |
+(3.1{lf 4} 1.5{lf 2}).4 3.1{lf 4}.8 3.1{lf 4}.4 (5.1{lf 5} 1.5{lf 2}).16 3.1{lf 4}.16 2.1{lf 3}.16 5.1{lf 5}.16 3.1{lf 3}.4 2.1{lf 2}.16 3.1{lf 3}.16 |
+(5.1{lf 4} 5.6{lf 5} 0.4).4 7.1{lf 5}.8 (3.1{lf 4} 1.5{lf 2}).8 {d} 2.1{lf 3}.16 (2.1{lf 3} 0.5).16 0.1.16 0.1.16 4.2{lf 5}.16 (0.1 0.6 0.5).4 2.1{lf 3}.8 |
+(4.2{lf 5} 0.5).4 0.1.8 (3.3{lf 3} 5.6{lf 5} 0.4).8 {d} 0.2.16 (3.3{lf 3} 5.6{lf 5} 0.4).16 0.2.16 3.3{lf 3}.16 4.2{lf 4}.16 (0.2 0.5).4 3.3{lf 3}.16 0.2.16 |
+(0.3 5.6{lf 5} 0.4).4 0.2.16 0.3.16 (3.4{lf 4} 1.5{lf 2}).8 {d} 2.4{lf 3}.16 (2.4{lf 3} 0.5).16 0.4.16 0.4.16 4.5{lf 5}.16 (0.4 0.6 0.5).4 {d}`,
+  },
+  {
+    id: 'song-dadgad-ar-bafta',
+    level: 2,
+    kind: 'song',
+    tuning: 'dadgad',
+    title: "Bafta Hindi (DADGAD)",
+    description: "A cheerful folk song in maqam Nahawand (minor) with a bass on every beat. In DADGAD the open D and A strings ring under it: a gentle first Arabic tune in the new tuning.",
+    tex:
+      header("Bafta Hindi (DADGAD)", 96, 'dadgad', "Traditional (Iraq and the Levant), arranged for this app") +
+      `\\ts 4 4 (0.1{rf 4} 0.6{rf 1} 0.5{rf 1}).4 (0.1{rf 4} 0.5{rf 1}).4 (0.2{rf 3} 0.5{rf 1}).4 (0.2{rf 3} 0.5{rf 1}).4 |
+(0.1{rf 4} 0.6{rf 1} 0.5{rf 1}).4 (0.1{rf 4} 0.5{rf 1}).4 (0.2{rf 3} 0.5{rf 1}).4 (0.2{rf 3} 0.5{rf 1}).4 |
+(0.2{rf 3} 0.6{rf 1} 0.5{rf 1}).4 (0.2{rf 3} 0.5{rf 1}).4 (1.2{lf 2 rf 3} 2.6{lf 3 rf 1}).4 (0.1{rf 4} 1.5{lf 2 rf 1}).4 |
+(4.2{lf 5 rf 3} 0.5{rf 1}).4 (1.2{lf 2 rf 3} 2.6{lf 3 rf 1}).4 (0.2{rf 3} 0.6{rf 1} 0.5{rf 1}).4 0.5{rf 1}.4 |
+(0.2 0.6 0.5).4 (0.2 0.5).4 (1.2{lf 2} 2.6{lf 3}).4 (0.3 1.5{lf 2}).4 |
+(0.3 0.5).4 (0.3 2.6{lf 3}).4 (0.2 0.6 0.5).4 (3.4{lf 4} 0.5).4 |
+(3.4{lf 4} 0.6 0.5).4 (3.4{lf 4} 0.5).4 (0.3 2.6{lf 3}).4 (3.4{lf 4} 1.5{lf 2}).4 |
+(2.4{lf 3} 0.5).4 (0.4 2.6{lf 3}).4 (0.2 0.6 0.5).4 0.5.4 |
+(0.2 0.6 0.5).4 (0.2 0.5).4 (1.2{lf 2} 2.6{lf 3}).4 (0.3 1.5{lf 2}).4 |
+(0.3 0.5).4 (0.3 2.6{lf 3}).4 (0.2 0.6 0.5).4 (3.4{lf 4} 0.5).4 |
+(3.4{lf 4} 0.6 0.5).4 (3.4{lf 4} 0.5).4 (0.3 2.6{lf 3}).4 (3.4{lf 4} 1.5{lf 2}).4 |
+(2.4{lf 3} 0.5).4 (0.4 2.6{lf 3}).4 (0.4 0.6 0.5).4 0.5.4`,
+  },
+  {
+    id: 'song-dadgad-ar-zein',
+    level: 3,
+    kind: 'song',
+    tuning: 'dadgad',
+    title: "Ah Ya Zein (DADGAD)",
+    description: "Levantine folk song in maqam Hijaz Kar, in A over open-string drones. The flat 2nd and raised 3rd give the Arabic sound on ordinary frets.",
+    tex:
+      header("Ah Ya Zein (DADGAD)", 88, 'dadgad', "Traditional (Levant), arranged for this app") +
+      `\\ts 1 4 4.2{lf 4 rf 3}.8 0.1{rf 4}.8 |
+\\ts 4 4 (2.1{lf 2 rf 4} 0.5{rf 1}).4 2.6{lf 2 rf 1}.4 0.5{rf 1}.4 (4.2{lf 4 rf 3} 2.6{lf 2 rf 1}).8 0.1{rf 4}.8 |
+(2.1{lf 2 rf 4} 0.5{rf 1}).4 2.6{lf 2 rf 1}.4 0.5{rf 1}.4 (4.2{lf 4 rf 3} 2.6{lf 2 rf 1}).8 0.1{rf 4}.8 |
+(2.1{lf 2 rf 4} 0.5{rf 1}).8 3.1{lf 3 rf 4}.8 (2.1{lf 2 rf 4} 2.6{lf 2 rf 1}).8 0.1{rf 4}.8 (2.1{lf 2 rf 4} 0.5{rf 1}).8 3.1{lf 3 rf 4}.8 (2.1{lf 2 rf 4} 2.6{lf 2 rf 1}).8 0.1{rf 4}.8 |
+(4.2{lf 4} 0.5).4 2.6{lf 2}.4 0.5.4 (3.1{lf 3} 2.6{lf 2}).8 2.1{lf 2}.8 |
+(0.1 5.6{lf 5} 0.4).4 (0.6 0.5).4 (5.6{lf 5} 0.4).4 (4.2{lf 4} 0.6 0.5).8 0.1.8 |
+(2.1{lf 2} 0.5).8 3.1{lf 3}.8 (2.1{lf 2} 2.6{lf 2}).8 0.1.8 (4.2{lf 4} 0.5).8 3.3{lf 3}.8 (0.2 2.6{lf 2}).4 |
+(2.1{lf 2} 2.6{lf 2}).8 0.1.8 (0.1 1.5{lf 2}).8 4.2{lf 5}.8 (4.2{lf 4} 5.6{lf 5} 0.4).8 3.3{lf 3}.8 (3.3{lf 3} 0.6 0.5).8 0.2.8 |
+(0.2 0.5).4 2.6{lf 2}.4 0.5.4 (4.2{lf 4} 2.6{lf 2}).8 0.1.8 |
+(2.1{lf 2} 0.5).8 3.1{lf 3}.8 (2.1{lf 2} 2.6{lf 2}).8 0.1.8 (4.2{lf 4} 0.5).8 3.3{lf 3}.8 (0.2 2.6{lf 2}).4 |
+(2.1{lf 2} 2.6{lf 2}).8 0.1.8 (0.1 1.5{lf 2}).8 4.2{lf 5}.8 (4.2{lf 4} 5.6{lf 5} 0.4).8 3.3{lf 3}.8 (3.3{lf 3} 0.6 0.5).8 0.2.8`,
+  },
+  {
+    id: 'song-dadgad-ar-hamama',
+    level: 3,
+    kind: 'song',
+    tuning: 'dadgad',
+    title: "Hamama Beida (DADGAD)",
+    description: "Dawud Husni's Egyptian song in D minor. The Rast half-flat third is played natural, the usual compromise on guitar, while the low D drones.",
+    tex:
+      header("Hamama Beida (DADGAD)", 80, 'dadgad', "Dawud Husni (1870–1937), arranged for this app") +
+      `\\ts 4 4 (3.1{lf 2 rf 4} 3.6{lf 2 rf 1}).4 (3.1{lf 2 rf 4} 3.5{lf 2 rf 1} 5.4{lf 4 rf 1}).4 (3.1{lf 2 rf 4} 3.6{lf 2 rf 1}).4 (2.1{lf 2 rf 4} 2.6{lf 2 rf 1}).8 3.1{lf 3 rf 4}.16 2.1{lf 2 rf 4}.16 |
+(0.1{rf 4} 2.6{lf 2 rf 1}).8 2.1{lf 2 rf 4}.8 (3.1{lf 2 rf 4} 3.6{lf 2 rf 1}).4 3.6{lf 2 rf 1}.4 (3.5{lf 2 rf 1} 5.4{lf 4 rf 1}).4 |
+(7.2{lf 5 rf 3} 3.6{lf 2 rf 1}).8 3.1{lf 2 rf 4}.8 (5.1{lf 4 rf 4} 3.5{lf 2 rf 1} 0.3{rf 1}).8 3.1{lf 2 rf 4}.8 (3.1{lf 2 rf 4} 3.6{lf 2 rf 1}).8 2.1{lf 2 rf 4}.8 (2.1{lf 2 rf 4} 5.6{lf 5 rf 1} 0.4{rf 1}).8 0.1{rf 4}.8 |
+(0.1{rf 4} 5.6{lf 5 rf 1} 0.4{rf 1}).8 3.2{lf 3 rf 3}.8 (3.2{lf 2 rf 3} 3.5{lf 2 rf 1} 5.4{lf 4 rf 1}).4 (3.5{lf 2 rf 1} 5.4{lf 4 rf 1}).4 (5.6{lf 4 rf 1} 0.4{rf 1}).4 |
+(3.1{lf 2} 3.6{lf 2}).4 (3.1{lf 2} 3.5{lf 2} 5.4{lf 4}).4 (3.1{lf 2} 3.6{lf 2}).4 (2.1{lf 2} 2.6{lf 2}).8 3.1{lf 3}.16 2.1{lf 2}.16 |
+(0.1 2.6{lf 2}).8 2.1{lf 2}.8 (3.1{lf 2} 3.6{lf 2}).4 3.6{lf 2}.4 (3.5{lf 2} 5.4{lf 4}).4 |
+(7.2{lf 5} 3.6{lf 2}).8 3.1{lf 2}.8 (5.1{lf 4} 3.5{lf 2} 0.3).8 3.1{lf 2}.8 (3.1{lf 2} 3.6{lf 2}).8 2.1{lf 2}.8 (2.1{lf 2} 5.6{lf 5} 0.4).8 0.1.8 |
+(0.1 5.6{lf 5} 0.4).8 3.2{lf 3}.8 (3.2{lf 2} 3.5{lf 2} 5.4{lf 4}).4 (3.5{lf 2} 5.4{lf 4}).4 (5.6{lf 4} 0.4).4 |
+(0.1 1.5{lf 2}).4 (5.3{lf 5} 3.6{lf 4}).4 (1.2{lf 2} 1.5{lf 2}).4 (0.2 0.5).8 1.2{lf 2}.16 0.2.16 |
+(0.3 0.5).8 1.2{lf 2}.8 (0.2 2.6{lf 3}).4 0.5.4 2.6{lf 3}.4 |
+(0.2 5.6{lf 4} 0.4).4 (0.3 0.6 0.5).4 (3.3{lf 2} 5.6{lf 4} 0.4).4 (0.2 3.5{lf 2}).8 0.3.8 |
+(0.3 3.5{lf 2}).8 3.4{lf 2}.8 (3.4{lf 2} 3.6{lf 2}).8 0.2.8 (3.2{lf 2} 3.6{lf 2}).4 (3.4{lf 2} 3.5{lf 2}).4`,
+  },
+  {
+    id: 'song-dadgad-ar-shedd',
+    level: 3,
+    kind: 'song',
+    tuning: 'dadgad',
+    title: "Shedd el Hizam (DADGAD)",
+    description: "Sayed Darwish's rousing \"Tighten the belt\", in D with a Hijaz colour (Bb and C#) over the open D strings.",
+    tex:
+      header("Shedd el Hizam (DADGAD)", 96, 'dadgad', "Sayed Darwish (1892–1923), arranged for this app") +
+      `\\ts 2 4 1.5{lf 2 rf 1}.8 2.1{lf 3 rf 4}.8 (4.2{lf 5 rf 3} 2.6{lf 3 rf 1}).8 1.2{lf 2 rf 3}.8 |
+(0.2{rf 3} 0.5{rf 1}).8 0.3{rf 2}.8 (0.2{rf 3} 2.6{lf 3 rf 1}).8 1.2{lf 2 rf 3}.8 |
+(4.2{lf 5 rf 3} 1.5{lf 2 rf 1}).8 0.1{rf 4}.8 (4.2{lf 5 rf 3} 2.6{lf 3 rf 1}).8 1.2{lf 2 rf 3}.8 |
+(0.2{rf 3} 0.5{rf 1}).4 2.6{lf 3 rf 1}.4 |
+1.5{lf 2}.8 2.1{lf 3}.8 (4.2{lf 5} 2.6{lf 3}).8 1.2{lf 2}.8 |
+(0.2 0.5).8 0.3.8 (0.2 2.6{lf 3}).8 1.2{lf 2}.8 |
+(4.2{lf 5} 1.5{lf 2}).8 0.1.8 (4.2{lf 5} 2.6{lf 3}).8 1.2{lf 2}.8 |
+(0.2 0.5).4 2.6{lf 3}.4 |
+(0.6 0.5).8 0.1.8 (0.1 0.5).8 0.1.8 |
+(4.2{lf 5} 0.5).8 0.1.8 (2.1{lf 2} 2.6{lf 2}).4 |
+(2.1{lf 2} 0.6 0.5).8 3.1{lf 3}.8 (2.1{lf 2} 0.5).8 0.1.8 |
+(4.2{lf 4} 0.5).8 0.1.8 (2.1{lf 2} 2.6{lf 2}).4 |
+1.5{lf 2}.8 2.1{lf 3}.8 (4.2{lf 5} 2.6{lf 3}).8 1.2{lf 2}.8 |
+(0.2 0.5).8 0.3.8 (0.2 2.6{lf 3}).8 1.2{lf 2}.8 |
+\\ts 3 4 (4.2{lf 5} 1.5{lf 2}).8 0.1.8 (2.1{lf 2} 2.6{lf 2}).8 {d} 4.2{lf 5}.16 (0.1 1.5{lf 2}).8 {d} 1.2{lf 2}.16 |
+\\ts 2 4 (0.2 0.5).8 0.2.8 (0.1 2.6{lf 3}).8 2.1{lf 3}.8 |
+(3.1{lf 4} 0.5).8 2.1{lf 3}.8 (0.1 2.6{lf 3}).8 4.2{lf 5}.8 |
+(0.1 0.6 0.5).4 0.5.4 |
+(0.1{t} 0.6 0.5).4 0.5.4`,
+  },
+  {
+    id: 'song-dadgad-ar-shams',
+    level: 3,
+    kind: 'song',
+    tuning: 'dadgad',
+    title: "Shams al-Ashiyya (DADGAD)",
+    description: "A sanʿa from Nawbat al-Māya in 3/4, in D. DADGAD's drones sound like the rabab and oud of a Moroccan Āla orchestra.",
+    tex:
+      header("Shams al-Ashiyya (DADGAD)", 86, 'dadgad', "Moroccan Andalusian music (al-Āla), traditional, arranged for this app") +
+      `\\ts 3 4 (0.6{rf 1} 0.5{rf 1}).8 0.4{rf 1}.8 (4.4{lf 5 rf 1} 0.5{rf 1}).8 0.3{rf 2}.8 0.2{rf 3}.4 |
+(0.6{rf 1} 0.5{rf 1}).8 0.2{rf 3}.8 (0.2{rf 3} 0.5{rf 1}).8 0.2{rf 3}.8 0.2{rf 3}.8 2.2{lf 3 rf 3}.8 |
+(3.2{lf 4 rf 3} 0.6{rf 1} 0.5{rf 1}).8 2.2{lf 3 rf 3}.8 (0.2{rf 3} 0.5{rf 1}).8 0.3{rf 2}.8 4.4{lf 5 rf 1}.4 |
+(0.6{rf 1} 0.5{rf 1}).8 0.2{rf 3}.8 (0.2{rf 3} 0.5{rf 1}).8 0.3{rf 2}.8 4.4{lf 5 rf 1}.8 2.4{lf 3 rf 1}.8 |
+(0.4 0.6 0.5).4 (0.2 0.5).8 0.3.8 0.2.16 2.2{lf 3}.16 0.2.16 0.3.16 |
+(4.4{lf 5} 0.6 0.5).8 0.4.8 (4.4{lf 5} 0.5).8 0.3.8 0.2.4 |
+(0.6 0.5).8 0.2.8 (0.2 0.5).8 0.2.8 0.2.8 2.2{lf 3}.8 |
+(3.2{lf 4} 0.6 0.5).8 2.2{lf 3}.8 (0.2 0.5).8 0.3.8 4.4{lf 5}.4 |
+(0.6 0.5).8 0.2.8 (0.2 0.5).8 0.3.8 4.4{lf 5}.8 2.4{lf 3}.8 |
+(0.4 0.6 0.5).4 (0.2 0.5).8 0.3.8 0.2.16 2.2{lf 3}.16 0.2.16 0.3.16 |
+(4.4{lf 5} 0.6 0.5).8 0.4.8 (4.4{lf 5} 0.5).8 0.3.8 0.2.4`,
+  },
+  {
+    id: 'song-dadgad-ar-inkunta',
+    level: 3,
+    kind: 'song',
+    tuning: 'dadgad',
+    title: "In Kunta Min Ahli al-Hawa (DADGAD)",
+    description: "A Moroccan Andalusian sanʿa from Nawbat Gharībat al-Ḥusayn in 3/4, in G, with the open G and D strings ringing.",
+    tex:
+      header("In Kunta Min Ahli al-Hawa (DADGAD)", 86, 'dadgad', "Moroccan Andalusian music (al-Āla), traditional, arranged for this app") +
+      `\\ts 3 4 (0.3{rf 2} 5.6{lf 5 rf 1} 0.4{rf 1}).4 (0.3{rf 2} 0.6{rf 1} 0.5{rf 1}).8 0.3{rf 2}.4 2.2{lf 2 rf 3}.8 |
+(2.2{lf 2 rf 3} 5.6{lf 5 rf 1} 0.4{rf 1}).4 (0.1{rf 4} 0.6{rf 1} 0.5{rf 1}).8 3.2{lf 3 rf 3}.8 0.1{rf 4}.16 2.1{lf 2 rf 4}.16 0.1{rf 4}.16 3.2{lf 3 rf 3}.16 |
+(2.2{lf 2 rf 3} 5.6{lf 5 rf 1} 0.4{rf 1}).4 (3.2{lf 3 rf 3} 0.6{rf 1} 0.5{rf 1}).8 2.2{lf 2 rf 3}.16 0.2{rf 3}.16 0.3{rf 2}.8 2.2{lf 2 rf 3}.8 |
+(2.2{lf 2 rf 3} 5.6{lf 5 rf 1} 0.4{rf 1}).4 (0.1{rf 4} 0.6{rf 1} 0.5{rf 1}).8 3.2{lf 3 rf 3}.8 0.1{rf 4}.16 2.1{lf 2 rf 4}.16 0.1{rf 4}.16 3.2{lf 3 rf 3}.16 |
+(2.2{lf 2} 5.6{lf 5} 0.4).4 (0.1 0.6 0.5).8 0.1.4 3.2{lf 3}.8 |
+(3.1{lf 2} 3.6{lf 2}).8 2.1{lf 2}.8 (0.1 3.5{lf 3} 5.4{lf 5}).8 3.2{lf 3}.8 0.1.16 2.1{lf 2}.16 0.1.16 3.2{lf 3}.16 |
+(2.2{lf 2} 5.6{lf 5} 0.4).4 (3.2{lf 3} 0.6 0.5).8 2.2{lf 2}.16 0.2.16 0.3.8 2.2{lf 2}.8 |
+(2.2{lf 2} 5.6{lf 5} 0.4).8 0.3.8 (0.2 0.6 0.5).16 2.2{lf 2}.16 3.2{lf 3}.16 2.1{lf 2}.16 0.1.16 3.2{lf 3}.16 2.2{lf 2}.16 0.2.16 |
+(0.3 5.6{lf 5} 0.4).4 (2.2{lf 2} 0.6 0.5).8 3.2{lf 3}.4 2.2{lf 2}.8 |
+(3.2{lf 2} 3.5{lf 2} 5.4{lf 4}).8 2.1{lf 2}.8 (0.1 5.6{lf 5} 0.4).8 3.2{lf 3}.8 0.1.16 2.1{lf 2}.16 0.1.16 3.2{lf 3}.16 |
+(2.2{lf 2} 5.6{lf 5} 0.4).4 (3.2{lf 3} 0.6 0.5).8 2.2{lf 2}.16 0.2.16 0.3.8 2.2{lf 2}.8 |
+(2.2{lf 2} 5.6{lf 5} 0.4).8 0.3.8 (0.2 0.6 0.5).16 2.2{lf 2}.16 3.2{lf 3}.16 2.1{lf 2}.16 0.1.16 3.2{lf 3}.16 2.2{lf 2}.16 0.2.16`,
+  },
+  {
+    id: 'song-dadgad-ar-qamarun',
+    level: 3,
+    kind: 'song',
+    tuning: 'dadgad',
+    title: "Qamarun (DADGAD)",
+    description: "A sanʿa from Nawbat al-Ḥijāz al-Kabīr. The Hijaz colour (Bb and C# around D) sits right on DADGAD's open D: try the D Hijaz scale on the Tunings page first.",
+    tex:
+      header("Qamarun (DADGAD)", 78, 'dadgad', "Moroccan Andalusian music (al-Āla), traditional, arranged for this app") +
+      `\\ts 4 4 0.5{rf 1}.8 0.2{rf 3}.8 (0.2{rf 3} 2.6{lf 2 rf 1}).8 2.2{lf 2 rf 3}.16 4.2{lf 4 rf 3}.16 (0.1{rf 4} 0.6{rf 1} 0.5{rf 1}).8 2.1{lf 2 rf 4}.8 (0.1{rf 4} 0.5{rf 1}).16 4.2{lf 4 rf 3}.16 3.3{lf 3 rf 2}.16 0.2{rf 3}.16 |
+(0.3{rf 2} 5.6{lf 5 rf 1} 0.4{rf 1}).8 0.3{rf 2}.8 (0.3{rf 2} 0.6{rf 1} 0.5{rf 1}).8 0.2{rf 3}.8 (0.6{rf 1} 0.5{rf 1}).8 2.2{lf 2 rf 3}.8 (4.2{lf 4 rf 3} 0.5{rf 1}).8 0.1{rf 4}.8 |
+(2.1{lf 2 rf 4} 0.5{rf 1}).8 0.1{rf 4}.8 (4.2{lf 4 rf 3} 2.6{lf 2 rf 1}).8 0.1{rf 4}.8 (4.2{lf 4 rf 3} 0.5{rf 1}).8 3.3{lf 3 rf 2}.8 (0.2{rf 3} 2.6{lf 2 rf 1}).4 |
+0.5{rf 1}.8 0.2{rf 3}.8 (0.2{rf 3} 2.6{lf 2 rf 1}).8 0.2{rf 3}.8 (0.2{t} 0.5{rf 1}).8 0.3{rf 2}.8 (0.2{rf 3} 2.6{lf 2 rf 1}).8 2.2{lf 2 rf 3}.16 3.2{lf 3 rf 3}.16 |
+(0.1 0.6 0.5).8 3.2{lf 3}.8 (2.2{lf 2} 0.5).8 0.2.8 (0.6 0.5).8 0.3.8 (4.4{lf 4} 0.5).8 2.4{lf 2}.8 |
+(0.4 0.6 0.5).8 0.4.8 (0.4 0.5).8 4.4{lf 4}.8 (0.6 0.5).8 0.3.8 (0.2 0.5).4 |
+(0.6 0.5).8 0.2.8 (0.2 0.5).8 0.1.8 (0.6 0.5).8 2.1{lf 2}.8 (0.1 0.5).16 4.2{lf 4}.16 3.3{lf 3}.16 0.2.16 |
+(0.3 5.6{lf 5} 0.4).8 0.3.8 (0.3 0.6 0.5).8 0.2.8 (0.6 0.5).8 2.2{lf 2}.8 (4.2{lf 4} 0.5).8 0.1.8 |
+(2.1{lf 2} 0.5).8 0.1.8 (4.2{lf 4} 2.6{lf 2}).8 0.1.8 (4.2{lf 4} 0.5).8 3.3{lf 3}.8 (0.2 2.6{lf 2}).4 |
+(5.6{lf 5} 0.4).8 0.3.8 (0.3 0.6 0.5).8 0.3.8 (5.6{lf 5} 0.4).8 0.2.8 (2.2{lf 2} 0.6 0.5).4 |
+(0.2 0.6 0.5).8 2.1{lf 2}.8 (0.1 0.5).8 3.3{lf 3}.16 0.2.16 (0.3 0.6 0.5).8 3.3{lf 3}.8 (0.2 0.5).4 |
+(5.6{lf 5} 0.4).8 0.3.8 (4.4{lf 4} 0.6 0.5).8 0.3.8 (0.2 0.6 0.5).8 0.2.8 (0.2 0.5).4`,
+  },
+  {
+    id: 'song-dadgad-ar-shawq',
+    level: 3,
+    kind: 'song',
+    tuning: 'dadgad',
+    title: "Ashawqu Allamani (DADGAD)",
+    description: "A lilting sanʿa from Nawbat al-Ḥijāz al-Mashriqī in 3/4, in A minor over open-string drones.",
+    tex:
+      header("Ashawqu Allamani (DADGAD)", 86, 'dadgad', "Moroccan Andalusian music (al-Āla), traditional, arranged for this app") +
+      `\\ts 3 4 (3.5{lf 3 rf 1} 5.4{lf 5 rf 1}).4 (2.1{lf 2 rf 4} 5.6{lf 5 rf 1} 0.4{rf 1}).8 2.1{lf 2 rf 4}.4 3.2{lf 3 rf 3}.8 |
+(0.1{rf 4} 5.6{lf 5 rf 1} 0.4{rf 1}).8 2.1{lf 2 rf 4}.8 (0.1{rf 4} 0.6{rf 1} 0.5{rf 1}).8 3.2{lf 3 rf 3}.8 2.2{lf 2 rf 3}.8 0.2{rf 3}.8 |
+(0.3{rf 2} 3.5{lf 3 rf 1}).4 (0.3{rf 2} 5.6{lf 5 rf 1} 0.4{rf 1}).8 0.2{rf 3}.4 0.3{rf 2}.8 |
+(0.2{rf 3} 3.6{lf 3 rf 1}).8 3.2{lf 3 rf 3}.8 (3.2{lf 2 rf 3} 3.5{lf 2 rf 1} 5.4{lf 4 rf 1}).8 0.1{rf 4}.16 7.2{lf 5 rf 3}.16 0.1{rf 4}.16 3.2{lf 2 rf 3}.16 4.3{lf 3 rf 2}.16 0.2{rf 3}.16 |
+(0.3 3.5{lf 2}).4 (0.3 5.6{lf 4} 0.4).8 0.2.4 0.3.8 |
+(0.2 3.6{lf 2}).8 3.2{lf 2}.8 (3.2{lf 2} 3.5{lf 2} 5.4{lf 4}).8 0.1.8 3.2{lf 2}.4 |
+(3.2{t} 3.5{lf 2} 5.4{lf 4}).4 (3.2{lf 2} 5.6{lf 4} 0.4).8 3.2{lf 2}.4 4.3{lf 3}.8 |
+(3.2{lf 2} 3.6{lf 2}).8 0.1.8 (3.2{lf 2} 3.5{lf 2} 5.4{lf 4}).8 2.2{lf 2}.8 0.2.4 |
+(0.3 3.5{lf 3}).8 3.2{lf 3}.8 (3.2{lf 3} 5.6{lf 5} 0.4).8 0.1.8 3.2{lf 3}.8 2.1{lf 2}.8 |
+(0.1 5.6{lf 5} 0.4).4 (3.2{lf 3} 0.6 0.5).8 2.2{lf 2}.8 0.2.4 |
+(2.1{lf 2} 3.5{lf 3} 5.4{lf 5}).4 (5.6{lf 5} 0.4).8 2.1{lf 2}.4 3.2{lf 3}.8 |
+(0.1 3.5{lf 3} 5.4{lf 5}).8 2.1{lf 2}.8 (0.1 5.6{lf 5} 0.4).8 3.2{lf 3}.8 2.2{lf 2}.8 0.2.8`,
+  },
+  {
+    id: 'song-dadgad-ar-malakni',
+    level: 3,
+    kind: 'song',
+    tuning: 'dadgad',
+    title: "Ya Man Malakni ʿAbda",
+    description: "New: a sanʿa from the Quddām of Nawbat Ramal al-Māya. A gently rocking melody in D around the open D string, in 3/4.",
+    tex:
+      header("Ya Man Malakni ʿAbda", 86, 'dadgad', "Moroccan Andalusian music (al-Āla), traditional, arranged for this app") +
+      `\\ts 3 4 (0.1{rf 4} 5.6{lf 5 rf 1} 0.4{rf 1}).4 (2.2{lf 2 rf 3} 0.6{rf 1} 0.5{rf 1}).4 (4.2{lf 4 rf 3} 0.5{rf 1}).4 |
+(0.1{rf 4} 0.6{rf 1} 0.5{rf 1}).4 (0.1{rf 4} 0.5{rf 1}).4 (0.1{rf 4} 0.6{rf 1} 0.5{rf 1}).4 |
+(0.1{rf 4} 0.6{rf 1} 0.5{rf 1}).4 0.5{rf 1}.4 (0.1{rf 4} 0.6{rf 1} 0.5{rf 1}).4 |
+(2.1{lf 2 rf 4} 0.5{rf 1}).8 0.1{rf 4}.8 (4.2{lf 4 rf 3} 2.6{lf 2 rf 1}).8 2.1{lf 2 rf 4}.8 (0.1{rf 4} 0.6{rf 1} 0.5{rf 1}).4 |
+(5.6{lf 5} 0.4).4 (2.2{lf 2} 0.6 0.5).4 (4.2{lf 4} 0.5).4 |
+(0.1 0.6 0.5).4 (0.1 0.5).4 (0.1 0.6 0.5).4 |
+(0.1 0.6 0.5).4 0.5.4 (0.1 0.6 0.5).4 |
+(2.1{lf 2} 0.5).8 0.1.8 (4.2{lf 4} 2.6{lf 2}).8 2.1{lf 2}.8 (0.1 0.6 0.5).4 |
+(5.6{lf 5} 0.4).4 (2.2{lf 2} 0.6 0.5).4 (4.2{lf 4} 0.5).4 |
+(0.1 0.6 0.5).4 (0.1 0.5).4 (0.1 0.6 0.5).4 |
+(0.1 0.6 0.5).4 (4.2{lf 4} 0.5).4 (0.1 0.6 0.5).4 |
+(2.1{lf 2} 0.5).4 2.6{lf 2}.4 (0.6 0.5).4`,
+  },
+  {
+    id: 'song-dadgad-ar-assobho',
+    level: 3,
+    kind: 'song',
+    tuning: 'dadgad',
+    title: "Assubhu Anar",
+    description: "New: \"The morning has shone\", a sanʿa sung in Nawbat Ramal al-Māya, in 3/4. Melody in G over the open G and D strings.",
+    tex:
+      header("Assubhu Anar", 86, 'dadgad', "Moroccan Andalusian music (al-Āla), traditional, arranged for this app") +
+      `\\ts 3 4 (0.3{rf 2} 5.6{lf 4 rf 1} 0.4{rf 1}).8 4.4{lf 3 rf 1}.8 (0.3{rf 2} 0.6{rf 1} 0.5{rf 1}).8 4.3{lf 3 rf 2}.8 (0.2{rf 3} 0.6{rf 1} 0.5{rf 1}).8 0.3{rf 2}.8 |
+(4.4{lf 3 rf 1} 0.6{rf 1} 0.5{rf 1}).4 (0.2{rf 3} 0.5{rf 1}).8 0.2{rf 3}.8 (0.2{rf 3} 0.6{rf 1} 0.5{rf 1}).4 |
+(0.6{rf 1} 0.5{rf 1}).8 0.2{rf 3}.8 (0.2{rf 3} 0.5{rf 1}).8 0.3{rf 2}.8 (3.2{lf 2 rf 3} 3.5{lf 2 rf 1} 5.4{lf 4 rf 1}).8 2.2{lf 2 rf 3}.8 |
+(0.2{rf 3} 0.6{rf 1} 0.5{rf 1}).4 0.5{rf 1}.8 0.1{rf 4}.8 (0.2{rf 3} 0.6{rf 1} 0.5{rf 1}).4 |
+(0.6 0.5).8 0.2.8 (0.2 0.5).8 0.3.8 (4.4{lf 4} 0.6 0.5).8 0.3.8 |
+(2.2{lf 2} 5.6{lf 5} 0.4).4 (0.6 0.5).8 2.2{lf 2}.8 (3.2{lf 3} 5.6{lf 5} 0.4).8 2.2{lf 2}.8 |
+(3.2{lf 3} 5.6{lf 5} 0.4).8 0.1.8 (2.2{lf 2} 0.6 0.5).8 3.2{lf 3}.8 (2.2{lf 2} 5.6{lf 5} 0.4).8 2.2{lf 2}.8 |
+(2.2{lf 2} 5.6{lf 5} 0.4).4 (0.1 0.6 0.5).8 2.1{lf 2}.8 (0.1 5.6{lf 5} 0.4).16 3.2{lf 3}.16 2.2{lf 2}.16 0.2.16 |
+(0.3 5.6{lf 5} 0.4).8 4.4{lf 4}.8 (0.3 0.6 0.5).8 2.2{lf 2}.8 (0.2 0.6 0.5).8 0.3.8 |
+(4.4{lf 4} 0.6 0.5).4 (0.2 0.5).8 0.2.8 (0.2 0.6 0.5).4 |
+(0.6 0.5).8 0.2.8 (0.2 0.5).8 0.3.8 (3.2{lf 2} 3.5{lf 2} 5.4{lf 4}).8 4.3{lf 3}.8 |
+(0.2 0.6 0.5).4 0.5.8 0.1.8 (0.2 5.6{lf 4} 0.4).4`,
+  },
+  {
+    id: 'song-dadgad-ar-ghaybatuk',
+    level: 3,
+    kind: 'song',
+    tuning: 'dadgad',
+    title: "Ghaybatuk",
+    description: "New: \"Your absence\", a sanʿa from Nawbat al-Ḥijāz al-Mashriqī in 3/4, in A minor. Slow and singing: let the open strings carry each phrase.",
+    tex:
+      header("Ghaybatuk", 84, 'dadgad', "Moroccan Andalusian music (al-Āla), traditional, arranged for this app") +
+      `\\ts 3 4 (3.5{lf 3 rf 1} 5.4{lf 5 rf 1}).4 (5.6{lf 5 rf 1} 0.4{rf 1}).4 (2.1{lf 2 rf 4} 3.5{lf 3 rf 1} 5.4{lf 5 rf 1}).4 |
+(2.1{lf 2 rf 4} 3.5{lf 3 rf 1} 5.4{lf 5 rf 1}).4 (2.1{lf 2 rf 4} 5.6{lf 5 rf 1} 0.4{rf 1}).4 (4.1{lf 4 rf 4} 3.5{lf 3 rf 1} 5.4{lf 5 rf 1}).4 |
+(5.1{lf 5 rf 4} 3.5{lf 3 rf 1} 0.3{rf 1}).4 (2.1{lf 2 rf 4} 5.6{lf 5 rf 1} 0.4{rf 1}).4 (2.1{lf 2 rf 4} 3.5{lf 3 rf 1} 5.4{lf 5 rf 1}).4 |
+(0.1{rf 4} 5.6{lf 5 rf 1} 0.4{rf 1}).4 (3.2{lf 3 rf 3} 0.6{rf 1} 0.5{rf 1}).4 (2.2{lf 2 rf 3} 5.6{lf 5 rf 1} 0.4{rf 1}).8 3.2{lf 3 rf 3}.8 |
+(0.1 5.6{lf 5} 0.4).4 (0.6 0.5).4 (0.3 5.6{lf 5} 0.4).4 |
+(0.3 5.6{lf 5} 0.4).4 (0.2 0.6 0.5).4 (2.2{lf 2} 5.6{lf 5} 0.4).4 |
+(3.2{lf 2} 3.5{lf 2} 5.4{lf 4}).4 (3.2{lf 2} 5.6{lf 4} 0.4).4 (3.2{lf 2} 3.5{lf 2} 5.4{lf 4}).4 |
+(3.2{lf 2} 3.5{lf 2} 5.4{lf 4}).4 (3.2{lf 2} 5.6{lf 4} 0.4).4 (4.3{lf 3} 5.6{lf 4} 0.4).8 3.2{lf 2}.8 |
+(0.1 5.6{lf 4} 0.4).4 (0.6 0.5).4 (0.3 5.6{lf 4} 0.4).4 |
+(0.3 5.6{lf 4} 0.4).4 (0.2 0.6 0.5).4 (4.3{lf 3} 5.6{lf 4} 0.4).4 |
+(3.2{lf 2} 3.5{lf 2} 5.4{lf 4}).4 (2.1{lf 2} 5.6{lf 5} 0.4).4 (2.1{lf 2} 3.5{lf 3} 5.4{lf 5}).4 |
+(0.1 5.6{lf 5} 0.4).4 (3.2{lf 3} 0.6 0.5).4 (2.2{lf 2} 3.5{lf 3} 5.4{lf 5}).4`,
+  },
+  {
+    id: 'song-dadgad-ar-talata',
+    level: 3,
+    kind: 'song',
+    tuning: 'dadgad',
+    title: "Ya Talʿata Thurayya",
+    description: "New: a Moroccan Andalusian sanʿa from Nawbat al-Iṣbahān in 3/4, with runs that climb up to the top D string.",
+    tex:
+      header("Ya Talʿata Thurayya", 86, 'dadgad', "Moroccan Andalusian music (al-Āla), traditional, arranged for this app") +
+      `\\ts 3 4 (0.1{rf 4} 5.6{lf 5 rf 1} 0.4{rf 1}).4 (2.1{lf 2 rf 4} 0.6{rf 1} 0.5{rf 1}).4 (3.5{lf 3 rf 1} 5.4{lf 5 rf 1}).8 2.1{lf 2 rf 4}.8 |
+(2.1{lf 2 rf 4} 3.5{lf 3 rf 1} 5.4{lf 5 rf 1}).8 2.1{lf 2 rf 4}.8 (2.1{lf 2 rf 4} 5.6{lf 5 rf 1} 0.4{rf 1}).4 (2.1{lf 2 rf 4} 3.5{lf 3 rf 1} 5.4{lf 5 rf 1}).8 0.1{rf 4}.8 |
+(3.1{lf 2 rf 4} 3.5{lf 2 rf 1} 5.4{lf 4 rf 1}).8 2.1{lf 2 rf 4}.8 (0.1{rf 4} 5.6{lf 5 rf 1} 0.4{rf 1}).8 3.2{lf 3 rf 3}.8 (2.2{lf 2 rf 3} 5.6{lf 5 rf 1} 0.4{rf 1}).8 0.2{rf 3}.8 |
+(2.2{lf 2 rf 3} 5.6{lf 5 rf 1} 0.4{rf 1}).8 3.2{lf 3 rf 3}.8 (0.1{rf 4} 0.6{rf 1} 0.5{rf 1}).8 2.1{lf 2 rf 4}.8 (4.1{lf 4 rf 4} 0.6{rf 1} 0.5{rf 1}).8 5.1{lf 5 rf 4}.8 |
+(4.1{lf 4} 0.6 0.5).8 2.1{lf 2}.8 (0.1 0.5).8 3.2{lf 3}.8 (2.2{lf 2} 5.6{lf 5} 0.4).8 0.1.8 |
+(3.2{lf 3} 5.6{lf 5} 0.4).8 2.2{lf 2}.8 (3.2{lf 3} 0.6 0.5).16 0.1.16 3.2{lf 3}.16 2.2{lf 2}.16 (0.2 0.6 0.5).4 |
+(0.2 0.6 0.5).8 0.2.8 (2.2{lf 2} 0.5).4 (0.3 5.6{lf 5} 0.4).8 0.2.8 |
+(0.2{t} 0.6 0.5).8 2.2{lf 2}.16 3.2{lf 3}.16 (0.1 0.5).8 3.2{lf 3}.16 2.2{lf 2}.16 (0.2 0.6 0.5).8 0.3.8 |
+(0.2 0.6 0.5).8 2.2{lf 2}.8 (0.2 0.5).8 0.3.8 (2.4{lf 2} 3.5{lf 3}).8 0.4.8 |
+(0.3 5.6{lf 5} 0.4).4 (2.2{lf 2} 0.6 0.5).4 (0.2 0.6 0.5).8 2.2{lf 2}.8 |
+(0.3 5.6{lf 5} 0.4).8 2.2{lf 2}.8 (0.2 0.6 0.5).4 (0.6 0.5).8 0.2.8 |
+(0.1 0.6 0.5).4 (2.1{lf 2} 0.5).4 (5.6{lf 5} 0.4).8 2.1{lf 2}.8`,
+  },
+  {
+    id: 'song-dadgad-ar-batta',
+    level: 2,
+    kind: 'song',
+    tuning: 'dadgad',
+    title: "Taʿaleeli Ya Batta",
+    description: "New: the much-loved Egyptian children's song \"Come to me, little duck\", in A minor. Short, bouncy and a nice warm-up for DADGAD.",
+    tex:
+      header("Taʿaleeli Ya Batta", 100, 'dadgad', "Traditional (Egypt), arranged for this app") +
+      `\\ts 2 4 (2.4{lf 3 rf 1} 0.5{rf 1}).8 0.2{rf 3}.8 (0.2{rf 3} 2.6{lf 3 rf 1}).8 0.2{rf 3}.8 |
+(2.2{lf 3 rf 3} 0.5{rf 1}).8 0.2{rf 3}.8 (3.2{lf 4 rf 3} 2.6{lf 3 rf 1}).8 2.2{lf 3 rf 3}.8 |
+(0.1{rf 4} 0.5{rf 1}).8 3.2{lf 4 rf 3}.8 (4.3{lf 5 rf 2} 2.6{lf 3 rf 1}).8 0.2{rf 3}.8 |
+(0.2{rf 3} 0.5{rf 1}).4 2.6{lf 3 rf 1}.4 |
+(0.2 0.5).4 2.6{lf 3}.4 |
+(0.2 2.6{lf 3}).4 (0.2 3.5{lf 4}).4 |
+(0.2 0.5).4 (3.2{lf 4} 2.6{lf 3}).8 0.1.8 |
+(2.1{lf 3} 0.6 0.5).8 0.1.8 (3.2{lf 4} 0.5).8 2.2{lf 3}.8 |
+(0.1 2.6{lf 3}).4 (3.2{lf 4} 2.5{lf 3}).4 |
+(4.3{lf 5} 2.5{lf 3}).8 3.2{lf 4}.8 (0.1 3.6{lf 4}).8 2.2{lf 3}.8 |
+(3.2{lf 4} 0.5).4 (3.2{lf 4} 2.6{lf 3}).8 0.1.8 |
+(3.2{lf 4} 0.5).4 (3.2{lf 4} 2.6{lf 3}).4 |
+(0.2 0.5).4 (0.2 2.6{lf 3}).4 |
+(3.2{lf 4} 0.5).4 2.6{lf 3}.4 |
+(3.2{lf 4} 0.5).8 0.1.8 (2.1{lf 2} 2.6{lf 2}).4 |
+(0.1 0.5).4 (3.2{lf 3} 2.6{lf 2}).4`,
+  },
 ]

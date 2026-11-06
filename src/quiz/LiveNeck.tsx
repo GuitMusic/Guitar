@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { listenForPitch, micErrorMessage, playTone, type PitchListener } from '../audio/pitch'
 import { Fretboard, type FretMark } from '../components/Fretboard'
 import { setView, useFretboardView } from '../components/fretboardView'
-import { noteName, pitchClassName } from '../music/notes'
+import { noteName, pitchClassName, solfegeName } from '../music/notes'
 import type { FretNote } from '../music/types'
 import { NoteEvents } from './quiz'
 
@@ -178,6 +178,7 @@ export function LiveNeck({ tuning }: { tuning: number[] }) {
             <span key={history[history.length - 1]?.id} className="live-name">
               {pitchClassName(heard.midi)}
               <sub>{Math.floor(heard.midi / 12) - 1}</sub>
+              <span className="solfa">{solfegeName(heard.midi)}</span>
             </span>
           ) : (
             <span className="live-name idle">{listening ? '…' : '–'}</span>

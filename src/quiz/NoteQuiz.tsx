@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { VocalTrainer } from './VocalTrainer'
 import { listenForPitch, micErrorMessage, playChime, playTone, type PitchListener } from '../audio/pitch'
 import { Fretboard, type FretMark } from '../components/Fretboard'
 import { setView, useFretboardView } from '../components/fretboardView'
-import { noteName, pitchClassName, TUNINGS } from '../music/notes'
+import { noteName, pitchClassName, solfegeName, TUNINGS } from '../music/notes'
 import type { FretNote } from '../music/types'
 import { localDate } from '../progress/practiceLog'
 import { LiveNeck } from './LiveNeck'
@@ -27,7 +28,7 @@ import {
 } from './quiz'
 
 type Phase = 'idle' | 'prompt' | 'listening' | 'right' | 'timeout' | 'summary'
-type Tab = 'path' | 'free' | 'live'
+type Tab = 'path' | 'free' | 'live' | 'sing'
 
 interface Stats {
   asked: number
@@ -119,6 +120,22 @@ const DEFAULT_PREFS: Prefs = {
   seconds: 5,
   roundLength: 10,
   sounds: true,
+}
+
+/** The question, with the do-ré-mi name in small type right after the note name. */
+function PromptText({ text, midi }: { text: string; midi: number | null }) {
+  if (midi === null) return <>{text}</>
+  const name = pitchClassName(midi)
+  const m = new RegExp(`(^|\\s)${name.replace('#', '\\#')}(?=\\s|$)`).exec(text)
+  if (!m) return <>{text}</>
+  const end = m.index + m[0].length
+  return (
+    <>
+      {text.slice(0, end)}
+      <span className="solfa-inline">{solfegeName(midi)}</span>
+      {text.slice(end)}
+    </>
+  )
 }
 
 const CONFETTI = ['#ff7a45', '#ff4f7b', '#fbbf24', '#2dd4bf', '#a78bfa', '#7cc4ff']
@@ -568,6 +585,9 @@ export function NoteQuiz() {
             <button role="tab" aria-selected={prefs.tab === 'live'} className={prefs.tab === 'live' ? 'active' : ''} onClick={() => setPrefs({ ...prefs, tab: 'live' })}>
               Live neck
             </button>
+            <button role="tab" aria-selected={prefs.tab === 'sing'} className={prefs.tab === 'sing' ? 'active' : ''} onClick={() => setPrefs({ ...prefs, tab: 'sing' })}>
+              Sing
+            </button>
           </div>
 
           {prefs.tab === 'path' && (
@@ -604,6 +624,8 @@ export function NoteQuiz() {
               ))}
             </div>
           )}
+
+          {prefs.tab === 'sing' && <VocalTrainer />}
 
           {prefs.tab === 'live' && (
             <>
@@ -730,7 +752,9 @@ export function NoteQuiz() {
 
       {running && question && (
         <div className={`quiz-card is-${phase}`}>
-          <div className="quiz-prompt">{questionText(question)}</div>
+          <div className="quiz-prompt">
+            <PromptText text={questionText(question)} midi={question.mode === 'ear' || question.mode === 'melody' ? null : question.midi} />
+          </div>
           {question.mode === 'find-all' && (
             <div className="quiz-targets">
               {question.targets.map((t) => (
@@ -865,7 +889,10 @@ export function NoteQuiz() {
               const ratio = t ? t.ok / t.n : -1
               return (
                 <div key={pc} className={`note-tile ${ratio < 0 ? '' : ratio >= 0.85 ? 'good' : ratio >= 0.5 ? 'mid' : 'bad'}`}>
-                  <strong>{pitchClassName(pc)}</strong>
+                  <strong>
+                    {pitchClassName(pc)}
+                    <span className="solfa-inline">{solfegeName(pc)}</span>
+                  </strong>
                   <span>{t ? `${Math.round(ratio * 100)}%` : '–'}</span>
                   <span>{t && t.ok ? `${(avg(t) / 1000).toFixed(1)}s` : ''}</span>
                 </div>
