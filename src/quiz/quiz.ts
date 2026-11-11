@@ -1,6 +1,16 @@
 import { pitchClassName } from '../music/notes'
 
-export type QuizMode = 'find-note' | 'find-on-string' | 'ear' | 'find-all' | 'melody'
+export type QuizMode = 'find-note' | 'find-on-string' | 'ear' | 'find-all' | 'melody' | 'name-dot' | 'tap-spot'
+
+/**
+ * Modes answered by tapping the screen instead of playing: no microphone and no guitar
+ * needed. name-dot: a dot on the neck, tap its note name. tap-spot: a note and a string,
+ * tap the spot on the neck.
+ */
+export const TAP_MODES: QuizMode[] = ['name-dot', 'tap-spot']
+export const isTapMode = (m: QuizMode) => TAP_MODES.includes(m)
+/** Modes where each question is one spot on one string, so the answers fill the neck map. */
+export const isSpotMode = (m: QuizMode) => m === 'find-on-string' || isTapMode(m)
 
 export interface QuizSettings {
   mode: QuizMode
@@ -15,6 +25,11 @@ export interface QuizSettings {
   seconds: number
   /** Notes per phrase in melody mode. Default 3. */
   phraseLength?: number
+  /**
+   * Spot modes only: how often to ask each spot, keyed "string:fret". Spots missing from
+   * the map are not asked at all, so a warm-up can focus on the spots that need work.
+   */
+  spotWeights?: Record<string, number>
 }
 
 export interface Question {
@@ -64,9 +79,12 @@ export function nextQuestion(
   if (all.length === 0) return null
   if (s.mode === 'melody') return melodyQuestion(s, all, random, previous)
   const key = (midi: number) => (s.mode === 'find-note' || s.mode === 'find-all' ? midi % 12 : midi)
-  let candidates = all.filter((sp) => !previous || key(sp.midi) !== key(previous.midi))
-  if (candidates.length === 0) candidates = all
-  const weights = candidates.map((c) => 1 + 2 * (misses[key(c.midi)] ?? 0))
+  const sw = isSpotMode(s.mode) ? s.spotWeights : undefined
+  const pool = sw ? all.filter((sp) => (sw[`${sp.string}:${sp.fret}`] ?? 0) > 0) : all
+  if (pool.length === 0) return null
+  let candidates = pool.filter((sp) => !previous || key(sp.midi) !== key(previous.midi))
+  if (candidates.length === 0) candidates = pool
+  const weights = candidates.map((c) => (sw ? sw[`${c.string}:${c.fret}`] : 1 + 2 * (misses[key(c.midi)] ?? 0)))
   let r = random() * weights.reduce((a, b) => a + b, 0)
   let pick = candidates[candidates.length - 1]
   for (let i = 0; i < candidates.length; i++) {
@@ -79,13 +97,13 @@ export function nextQuestion(
   const positions =
     s.mode === 'find-note' || s.mode === 'find-all'
       ? all.filter((sp) => sp.midi % 12 === pick.midi % 12)
-      : s.mode === 'find-on-string'
+      : isSpotMode(s.mode)
         ? [{ string: pick.string, fret: pick.fret }]
         : all.filter((sp) => sp.midi === pick.midi)
   return {
     mode: s.mode,
     midi: pick.midi,
-    string: s.mode === 'find-on-string' ? pick.string : null,
+    string: isSpotMode(s.mode) ? pick.string : null,
     positions: positions.map(({ string, fret }) => ({ string, fret })),
     targets:
       s.mode === 'find-all' ? [...new Set(all.filter((sp) => sp.midi % 12 === pick.midi % 12).map((p) => p.midi))].sort((a, b) => a - b) : [pick.midi],
@@ -168,6 +186,8 @@ export function questionText(q: Question): string {
   if (q.mode === 'find-on-string') return `Play ${name} on string ${q.string}`
   if (q.mode === 'find-all') return `Find every ${name}`
   if (q.mode === 'melody') return `Listen, then play the ${q.targets.length} notes back`
+  if (q.mode === 'name-dot') return 'Which note is this?'
+  if (q.mode === 'tap-spot') return `Tap ${name} on string ${q.string}`
   return 'Listen, then play the same note'
 }
 
@@ -283,7 +303,7 @@ export interface Level {
   id: string
   title: string
   blurb: string
-  group: 'Open position' | 'Up the neck' | 'Ear'
+  group: 'Open position' | 'Up the neck' | 'Ear' | 'No guitar needed'
   settings: Omit<QuizSettings, 'tuning'>
 }
 
@@ -305,7 +325,71 @@ export const LEVELS: Level[] = [
   { id: 'ear-open', group: 'Ear', title: 'Single notes by ear', blurb: 'The app plays a note from open position. Find it.', settings: { mode: 'ear', strings: ALL, minFret: 0, maxFret: 5, naturalsOnly: true, seconds: 10 } },
   { id: 'ear-melody', group: 'Ear', title: 'Echo a melody', blurb: 'Three-note phrases from open position. Play them back in order.', settings: { mode: 'melody', strings: ALL, minFret: 0, maxFret: 5, naturalsOnly: true, seconds: 15, phraseLength: 3 } },
   { id: 'ear-melody-4', group: 'Ear', title: 'Longer melodies', blurb: 'Four-note phrases up to fret 7, sharps included.', settings: { mode: 'melody', strings: ALL, minFret: 0, maxFret: 7, naturalsOnly: false, seconds: 18, phraseLength: 4 } },
+  { id: 'tap-open', group: 'No guitar needed', title: 'Name the dot', blurb: 'A dot appears on the neck, frets 0 to 5. Tap its name. Practise anywhere, no mic.', settings: { mode: 'name-dot', strings: ALL, minFret: 0, maxFret: 5, naturalsOnly: true, seconds: 6 } },
+  { id: 'tap-mid', group: 'No guitar needed', title: 'Dots up the neck', blurb: 'The same, frets 5 to 12, sharps and flats included.', settings: { mode: 'name-dot', strings: ALL, minFret: 5, maxFret: 12, naturalsOnly: false, seconds: 6 } },
+  { id: 'tap-spot', group: 'No guitar needed', title: 'Tap the spot', blurb: 'A note and a string. Tap where it is, anywhere up to fret 12.', settings: { mode: 'tap-spot', strings: ALL, minFret: 0, maxFret: 12, naturalsOnly: false, seconds: 6 } },
 ]
+
+/** Is a tapped answer right? name-dot: a pitch class (0-11). tap-spot: the spot tapped. */
+export function checkTap(q: Question, answer: number | { string: number; fret: number }): boolean {
+  if (typeof answer === 'number') return answer % 12 === q.midi % 12
+  const p = q.positions[0]
+  return !!p && answer.string === p.string && answer.fret === p.fret
+}
+
+/** Results for one spot on the neck: asked, right, and total time of the right answers in ms. */
+export interface SpotTally {
+  n: number
+  ok: number
+  ms: number
+}
+
+/** Spots in a warm-up round. */
+export const WARMUP_SPOTS = 24
+
+/**
+ * How much each spot needs practice, from the neck map: often missed and slow spots
+ * score highest, spots never asked come next, spots you know well score low. Returns
+ * the `count` neediest spots on the given strings, frets 0 to maxFret, as spot weights.
+ */
+export function warmupWeights(
+  neck: Record<string, SpotTally>,
+  strings: number,
+  maxFret = 12,
+  count = WARMUP_SPOTS,
+  random: () => number = Math.random,
+): Record<string, number> {
+  const scored: { key: string; score: number }[] = []
+  for (let string = 1; string <= strings; string++) {
+    for (let fret = 0; fret <= maxFret; fret++) {
+      const key = `${string}:${fret}`
+      const t = neck[key]
+      let score: number
+      if (!t || t.n === 0) score = 2
+      else {
+        const missRate = 1 - t.ok / t.n
+        const avgMs = t.ok ? t.ms / t.ok : 8000
+        score = 0.3 + 5 * missRate + (avgMs > 5000 ? 1.5 : avgMs > 3000 ? 0.8 : 0)
+        // few answers say little yet, so they keep some of the never-asked score
+        if (t.n < 3) score = Math.max(score, 1.2)
+      }
+      // a little noise, so equal spots are not always picked in the same order
+      scored.push({ key, score: score + random() * 0.2 })
+    }
+  }
+  scored.sort((a, b) => b.score - a.score)
+  return Object.fromEntries(scored.slice(0, count).map((s) => [s.key, s.score]))
+}
+
+/** Within a level, spots you miss more come up more: weight 1, plus up to 3 for a spot always missed. */
+export function pathWeights(s: QuizSettings, neck: Record<string, SpotTally>): Record<string, number> {
+  return Object.fromEntries(
+    spots(s).map(({ string, fret }) => {
+      const t = neck[`${string}:${fret}`]
+      return [`${string}:${fret}`, t && t.n ? 1 + 3 * (1 - t.ok / t.n) : 1]
+    }),
+  )
+}
 
 /** 0 to 3 stars for a round: 7 of 10 passes, 9 is two stars, all of them three. */
 export function starsFor(correct: number, total: number): number {

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { STANDARD_TUNING } from '../music/notes'
-import { Attacks, checkAnswer, dayStreak, isUnlocked, LEVELS, nextQuestion, NoteEvents, questionText, samePitch, spots, StableNote, starsFor, type QuizSettings } from './quiz'
+import { Attacks, checkAnswer, checkTap, dayStreak, pathWeights, warmupWeights, isUnlocked, LEVELS, nextQuestion, NoteEvents, questionText, samePitch, spots, StableNote, starsFor, type QuizSettings } from './quiz'
 
 const base: QuizSettings = {
   mode: 'find-note',
@@ -177,5 +177,58 @@ describe('path', () => {
     expect(dayStreak(['2026-10-30', '2026-10-31', '2026-11-01'], '2026-11-01')).toBe(3)
     expect(dayStreak(['2026-10-30', '2026-10-31'], '2026-11-01')).toBe(2)
     expect(dayStreak(['2026-10-29'], '2026-11-01')).toBe(0)
+  })
+})
+
+describe('tap modes', () => {
+  it('names a single spot and checks a tapped note name', () => {
+    const q = nextQuestion({ ...base, mode: 'name-dot', strings: [5], minFret: 3, maxFret: 3 }, () => 0)!
+    expect(q.positions).toEqual([{ string: 5, fret: 3 }])
+    expect(questionText(q)).toBe('Which note is this?')
+    expect(checkTap(q, 0)).toBe(true) // C
+    expect(checkTap(q, 2)).toBe(false)
+  })
+  it('checks a tapped spot', () => {
+    const q = nextQuestion({ ...base, mode: 'tap-spot', strings: [3], minFret: 2, maxFret: 2 }, () => 0)!
+    expect(questionText(q)).toBe('Tap A on string 3')
+    expect(checkTap(q, { string: 3, fret: 2 })).toBe(true)
+    expect(checkTap(q, { string: 4, fret: 7 })).toBe(false) // same pitch, wrong string
+  })
+})
+
+describe('spot weights', () => {
+  it('only asks the spots in the map, weighted', () => {
+    const s: QuizSettings = { ...base, mode: 'find-on-string', spotWeights: { '2:1': 1, '6:3': 9 } }
+    let seed = 7
+    const random = () => ((seed = (seed * 16807) % 2147483647) / 2147483647)
+    const counts: Record<string, number> = {}
+    for (let i = 0; i < 300; i++) {
+      const q = nextQuestion(s, random)!
+      const k = `${q.positions[0].string}:${q.positions[0].fret}`
+      counts[k] = (counts[k] ?? 0) + 1
+    }
+    expect(Object.keys(counts).sort()).toEqual(['2:1', '6:3'])
+    expect(counts['6:3']).toBeGreaterThan(counts['2:1'] * 4)
+  })
+
+  it('warm-up favours missed and slow spots, then new ones, over known ones', () => {
+    const known = { n: 10, ok: 10, ms: 10 * 1500 }
+    const neck: Record<string, { n: number; ok: number; ms: number }> = {}
+    for (let st = 1; st <= 6; st++) for (let f = 0; f <= 12; f++) neck[`${st}:${f}`] = known
+    neck['3:4'] = { n: 6, ok: 2, ms: 2 * 2000 } // often missed
+    neck['5:9'] = { n: 6, ok: 6, ms: 6 * 6000 } // right but slow
+    delete neck['1:11'] // never asked
+    const w = warmupWeights(neck, 6, 12, 3, () => 0)
+    expect(Object.keys(w)).toEqual(['3:4', '1:11', '5:9'])
+  })
+
+  it('warm-up with an empty neck map spreads over the whole neck', () => {
+    const w = warmupWeights({}, 6, 12, 24)
+    expect(Object.keys(w)).toHaveLength(24)
+  })
+
+  it('levels weight missed spots up', () => {
+    const s: QuizSettings = { ...base, mode: 'find-on-string', strings: [1], minFret: 0, maxFret: 1 }
+    expect(pathWeights(s, { '1:1': { n: 4, ok: 0, ms: 0 } })).toEqual({ '1:0': 1, '1:1': 4 })
   })
 })
