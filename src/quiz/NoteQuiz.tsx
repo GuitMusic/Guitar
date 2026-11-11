@@ -6,6 +6,7 @@ import { setView, useFretboardView } from '../components/fretboardView'
 import { noteName, pitchClassName, solfegeName, TUNINGS } from '../music/notes'
 import type { FretNote } from '../music/types'
 import { localDate } from '../progress/practiceLog'
+import { Games } from './Games'
 import { LiveNeck } from './LiveNeck'
 import {
   Attacks,
@@ -34,7 +35,7 @@ import {
 } from './quiz'
 
 type Phase = 'idle' | 'prompt' | 'listening' | 'right' | 'timeout' | 'summary'
-type Tab = 'path' | 'free' | 'live' | 'sing'
+type Tab = 'path' | 'free' | 'games' | 'live' | 'sing'
 
 interface Stats {
   asked: number
@@ -686,13 +687,19 @@ export function NoteQuiz() {
         <>
           <div className="segmented quiz-tabs" role="tablist">
             <button role="tab" aria-selected={prefs.tab === 'path'} className={prefs.tab === 'path' ? 'active' : ''} onClick={() => setPrefs({ ...prefs, tab: 'path' })}>
-              Learn the neck
+              <span className="tab-long">Learn the neck</span>
+              <span className="tab-short">Learn</span>
             </button>
             <button role="tab" aria-selected={prefs.tab === 'free'} className={prefs.tab === 'free' ? 'active' : ''} onClick={() => setPrefs({ ...prefs, tab: 'free' })}>
-              Free practice
+              <span className="tab-long">Free practice</span>
+              <span className="tab-short">Practice</span>
+            </button>
+            <button role="tab" aria-selected={prefs.tab === 'games'} className={prefs.tab === 'games' ? 'active' : ''} onClick={() => setPrefs({ ...prefs, tab: 'games' })}>
+              Games
             </button>
             <button role="tab" aria-selected={prefs.tab === 'live'} className={prefs.tab === 'live' ? 'active' : ''} onClick={() => setPrefs({ ...prefs, tab: 'live' })}>
-              Live neck
+              <span className="tab-long">Live neck</span>
+              <span className="tab-short">Live</span>
             </button>
             <button role="tab" aria-selected={prefs.tab === 'sing'} className={prefs.tab === 'sing' ? 'active' : ''} onClick={() => setPrefs({ ...prefs, tab: 'sing' })}>
               Sing
@@ -755,6 +762,8 @@ export function NoteQuiz() {
           )}
 
           {prefs.tab === 'sing' && <VocalTrainer />}
+
+          {prefs.tab === 'games' && <Games tuning={tuning.strings} sounds={prefs.sounds} view={{ ...view, labelMode: 'note', showGhosts: false }} />}
 
           {prefs.tab === 'live' && (
             <>
@@ -987,7 +996,7 @@ export function NoteQuiz() {
         </div>
       )}
 
-      {phase !== 'summary' && !(phase === 'idle' && prefs.tab === 'live') && (
+      {phase !== 'summary' && !(phase === 'idle' && (prefs.tab === 'live' || prefs.tab === 'games')) && (
         <>
           {phase === 'idle' && <h2 className="quiz-group">Your neck map</h2>}
           <Fretboard
@@ -1035,7 +1044,7 @@ export function NoteQuiz() {
         </>
       )}
 
-      {phase === 'idle' && prefs.tab !== 'live' && Object.keys(noteTally).length > 0 && (
+      {phase === 'idle' && prefs.tab !== 'live' && prefs.tab !== 'games' && Object.keys(noteTally).length > 0 && (
         <>
           <h2 className="quiz-group">Notes</h2>
           <div className="note-tiles">

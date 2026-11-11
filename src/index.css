@@ -4343,3 +4343,149 @@ svg text.fb-solfa-small {
   border-color: var(--error-text);
   color: var(--error-text);
 }
+
+/* Note finder: games */
+.quiz-tabs {
+  max-width: 100%;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.quiz-tabs button {
+  white-space: nowrap;
+  flex: 0 0 auto;
+}
+.games > .hint {
+  margin: 14px 0 12px;
+}
+.game-card .level-foot {
+  margin-top: 10px;
+}
+.game-best {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-2);
+}
+.game-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  background: var(--grad, var(--accent));
+  position: relative;
+  margin-bottom: 4px;
+  box-shadow: 0 6px 18px color-mix(in srgb, var(--accent) 30%, transparent);
+}
+.game-icon::after {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  font-weight: 800;
+  font-size: 1rem;
+}
+.game-rush::after {
+  content: 'A?';
+}
+.game-hunt::after {
+  content: '•••';
+  letter-spacing: -1px;
+}
+.game-octave::after {
+  content: '8va';
+  font-size: 0.85rem;
+}
+.game-climb::after {
+  content: '↗';
+  font-size: 1.3rem;
+}
+.game-play {
+  margin-top: 6px;
+}
+.game-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+.game-bar .quiz-round-title {
+  flex: 1 1 auto;
+}
+.game-score {
+  font-size: 1.6rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  background: var(--grad, var(--accent));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.game-time {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  color: var(--text-2);
+  min-width: 3ch;
+  text-align: right;
+}
+.game-quit {
+  padding: 6px 14px;
+}
+.game-prompt {
+  position: relative;
+  text-align: center;
+  padding: 14px 8px 6px;
+}
+.game-sub {
+  margin-top: 4px;
+  color: var(--text-2);
+  font-size: 0.95rem;
+  letter-spacing: 0.04em;
+  min-height: 1.4em;
+}
+.game-flash {
+  display: inline-block;
+  margin-top: 6px;
+  font-weight: 800;
+  font-size: 1rem;
+  animation: game-flash 900ms ease-out forwards;
+}
+.game-flash.good {
+  color: #3ddc84;
+}
+.game-flash.bad {
+  color: #ff5a4f;
+}
+@keyframes game-flash {
+  0% {
+    opacity: 0;
+    transform: translateY(6px) scale(0.9);
+  }
+  15% {
+    opacity: 1;
+    transform: translateY(0) scale(1.08);
+  }
+  70% {
+    opacity: 1;
+    transform: none;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .game-flash {
+    animation: none;
+  }
+}
+.quiz-tabs .tab-short {
+  display: none;
+}
+@media (max-width: 520px) {
+  .quiz-tabs .tab-long {
+    display: none;
+  }
+  .quiz-tabs .tab-short {
+    display: inline;
+  }
+}
