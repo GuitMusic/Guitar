@@ -81,12 +81,21 @@ export function micErrorMessage(e: unknown): string {
 
 /** Plays a plucked-sounding reference tone. */
 export function playTone(midi: number, seconds = 1.6): void {
-  const ctx = sharedAudioContext()
   // A little ahead, so the attack is not cut off while the context wakes up
-  const t = ctx.currentTime + 0.02
+  playToneAt(midi, sharedAudioContext().currentTime + 0.02, seconds)
+}
+
+/** The audio clock, in seconds, for scheduling notes with playToneAt. */
+export function audioNow(): number {
+  return sharedAudioContext().currentTime
+}
+
+/** Plays a tone at a time on the audio clock (see audioNow), e.g. for a backing loop. */
+export function playToneAt(midi: number, t: number, seconds = 1.6, volume = 0.5): void {
+  const ctx = sharedAudioContext()
   const out = ctx.createGain()
   out.gain.setValueAtTime(0.0001, t)
-  out.gain.exponentialRampToValueAtTime(0.5, t + 0.01)
+  out.gain.exponentialRampToValueAtTime(volume, t + 0.01)
   out.gain.exponentialRampToValueAtTime(0.0001, t + seconds)
   out.connect(ctx.destination)
   // fundamental plus two quiet overtones so it sounds less like a beep

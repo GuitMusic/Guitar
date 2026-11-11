@@ -4494,3 +4494,318 @@ svg text.fb-solfa-small {
   color: var(--text);
   margin-right: 2px;
 }
+
+/* Theory: notes coloured by role */
+.fb-note.fb-tone-root .fb-note-body,
+.fb-note.fb-note-open.fb-tone-root .fb-note-body {
+  fill: #ff4f7b;
+}
+.fb-note.fb-tone-chord .fb-note-body,
+.fb-note.fb-note-open.fb-tone-chord .fb-note-body {
+  fill: #ff8a3d;
+}
+.fb-note.fb-tone-scale .fb-note-body,
+.fb-note.fb-note-open.fb-tone-scale .fb-note-body {
+  fill: #3a3a46;
+}
+.fb-note.fb-note-open[class*='fb-tone-'] .fb-note-body {
+  stroke: #fff;
+  stroke-width: 1.5;
+}
+.fb-note[class*='fb-tone-'] text {
+  fill: #fff;
+  font-weight: 800;
+}
+.fb-name.fb-tone-root circle {
+  fill: rgba(255, 79, 123, 0.85);
+  stroke: none;
+}
+.fb-name.fb-tone-chord circle {
+  fill: rgba(255, 138, 61, 0.85);
+  stroke: none;
+}
+.fb-name.fb-tone-root text,
+.fb-name.fb-tone-chord text {
+  fill-opacity: 1;
+}
+
+/* Theory page */
+.theory-head h1 {
+  margin-bottom: 4px;
+}
+.theory-head .hint {
+  margin-top: 0;
+}
+.theory-keys {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 14px;
+  margin: 14px 0 4px;
+}
+.theory-tonics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.theory-tonics .chip {
+  min-width: 42px;
+  justify-content: center;
+}
+.theory-section h2 {
+  margin: 18px 0 8px;
+  font-size: 1.25rem;
+}
+.theory-controls {
+  align-items: flex-end;
+  margin: 10px 0;
+}
+.degree-strip {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 6px 0 8px;
+}
+.degree-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.degree-note {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 42px;
+  padding: 6px 4px;
+  border-radius: 12px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+}
+.degree-note strong {
+  font-size: 1.05rem;
+}
+.degree-note small {
+  color: var(--text-2);
+  font-size: 0.72rem;
+}
+.degree-note.root {
+  background: #ff4f7b;
+  border-color: transparent;
+  color: #fff;
+}
+.degree-note.chord {
+  background: #ff8a3d;
+  border-color: transparent;
+  color: #fff;
+}
+.degree-note.root small,
+.degree-note.chord small {
+  color: rgba(255, 255, 255, 0.85);
+}
+.degree-step {
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: var(--text-2);
+  min-width: 12px;
+  text-align: center;
+}
+.chord-chips .chip small {
+  opacity: 0.6;
+  margin-left: 4px;
+}
+.inversion-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin: 10px 0;
+}
+.inversion-card,
+.key-chord,
+.progression-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  text-align: left;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+.inversion-card span {
+  font-weight: 700;
+  color: var(--accent);
+}
+.inversion-card small,
+.key-chord span,
+.progression-card small {
+  color: var(--text-2);
+  font-size: 0.8rem;
+}
+.key-chords {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 8px;
+  margin: 10px 0;
+}
+.key-chord {
+  align-items: center;
+  text-align: center;
+  padding: 10px 4px;
+}
+.key-chord small {
+  font-weight: 800;
+  color: var(--text-2);
+}
+.key-chord strong {
+  font-size: 1.1rem;
+}
+.key-chord.q-maj small {
+  color: #ff8a3d;
+}
+.key-chord.q-min small {
+  color: #7cc4ff;
+}
+.key-chord.q-dim small {
+  color: #a78bfa;
+}
+.key-chord.active {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 20%, transparent);
+}
+.progressions {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 10px;
+}
+.progression-card {
+  gap: 6px;
+  padding: 14px;
+}
+.progression-chords {
+  font-size: 1.15rem;
+  font-weight: 800;
+  word-spacing: 0.4em;
+}
+.progression-card .row {
+  margin-top: 4px;
+}
+.freestyle-now {
+  margin: 8px 0;
+}
+.freestyle-chords {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+.freestyle-chords span {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px 4px;
+  border-radius: 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  font-size: 1.4rem;
+  font-weight: 800;
+  transition: transform 120ms ease, background 120ms ease;
+}
+.freestyle-chords span small {
+  font-size: 0.75rem;
+  color: var(--text-2);
+}
+.freestyle-chords span.on {
+  background: var(--grad, var(--accent));
+  color: #fff;
+  border-color: transparent;
+  transform: scale(1.04);
+}
+.freestyle-chords span.on small {
+  color: rgba(255, 255, 255, 0.85);
+}
+.freestyle-beats {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin: 10px 0 2px;
+}
+.freestyle-beats i {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--surface-2);
+}
+.freestyle-beats i.on {
+  background: #ff8a3d;
+}
+.freestyle-beats i.on.one {
+  background: #ff4f7b;
+}
+.freestyle-tips {
+  margin: 12px 0;
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+.freestyle-tips ol {
+  margin: 6px 0 0;
+  padding-left: 1.2em;
+  color: var(--text-2);
+  line-height: 1.5;
+}
+.drill-pad {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 8px;
+  margin: 12px 0;
+}
+.drill-pad.n7 {
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+.name-key.picked {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 18%, var(--surface));
+}
+.drill-score {
+  font-weight: 800;
+  font-size: 1.1rem;
+}
+.drill-card .quiz-status {
+  line-height: 1.45;
+}
+@media (max-width: 600px) {
+  .key-chords {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  .inversion-row {
+    grid-template-columns: 1fr;
+  }
+  .drill-pad.n7 {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  .freestyle-chords span {
+    font-size: 1.1rem;
+  }
+}
+.theory {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+@media (max-width: 700px) {
+  nav.main-nav {
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+  }
+  nav.main-nav .nav-item {
+    font-size: 0.6rem;
+    min-width: 0;
+  }
+  nav.main-nav .nav-item span {
+    max-width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
