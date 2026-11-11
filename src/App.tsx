@@ -2,8 +2,7 @@ import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react'
 import { Library } from './components/Library'
 import type { OpenSong } from './library/songs'
 import { setView, useFretboardView } from './components/fretboardView'
-import { Metronome } from './tools/Metronome'
-import { Tuner } from './tools/Tuner'
+import { ToolsPage } from './tools/ToolsPage'
 import { NoteQuiz } from './quiz/NoteQuiz'
 import { TheoryPage } from './theory/TheoryPage'
 import { BrandMark, Icon as LineIcon, type IconName } from './components/icons'
@@ -204,10 +203,7 @@ export default function App() {
           />
         )}
         {page === 'tools' && (
-          <div className="tools-page">
-            <Tuner />
-            <Metronome />
-          </div>
+          <ToolsPage />
         )}
       </main>
     </div>
