@@ -1,3 +1,4 @@
+import { Icon, type IconName } from './icons'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { useRef, useState } from 'react'
 import { ACCEPTED_FILES, songFromAsciiTab, songFromFile } from '../import/importFile'
@@ -170,11 +171,11 @@ function loadFilter(): Filter {
   return { kind: 'all', level: 0, tuning: 'any' }
 }
 
-const SHORTCUTS: { page: ShortcutPage; title: string; sub: string; icon: string; tone: string }[] = [
-  { page: 'tunings', title: 'DADGAD & Open D', sub: 'Lessons, chords, songs', icon: 'M5 6h14M5 12h14M5 18h14M9 4v16M17 9.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5z', tone: 'rose' },
-  { page: 'quiz', title: 'Note finder', sub: 'Learn the neck by ear', icon: 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8zM12 11.5v1', tone: 'violet' },
-  { page: 'tools', title: 'Tune up', sub: 'Tuner and metronome', icon: 'M4 16a8 8 0 0 1 16 0M12 16l4-6', tone: 'teal' },
-  { page: 'progress', title: 'Your progress', sub: 'Streak and minutes', icon: 'M4 20h16M6 16v-4M11 16V8M16 16v-6M21 16V5', tone: 'amber' },
+const SHORTCUTS: { page: ShortcutPage; title: string; sub: string; icon: IconName; tone: string }[] = [
+  { page: 'tunings', title: 'DADGAD & Open D', sub: 'Lessons, chords, songs', icon: 'headstock', tone: 'rose' },
+  { page: 'quiz', title: 'Note finder', sub: 'Learn the neck by ear', icon: 'fretboard', tone: 'violet' },
+  { page: 'tools', title: 'Tune up', sub: 'Tuner and metronome', icon: 'metronome', tone: 'teal' },
+  { page: 'progress', title: 'Your progress', sub: 'Streak and minutes', icon: 'progress', tone: 'amber' },
 ]
 
 /** The home screen: what to play next, quick tools, and every song. */
@@ -332,9 +333,7 @@ export function Library({ onOpen, onGo }: Props) {
         {SHORTCUTS.map((s) => (
           <button key={s.page} className={`shortcut tone-${s.tone}`} onClick={() => onGo(s.page)}>
             <span className="shortcut-icon">
-              <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
-                <path d={s.icon} fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
+              <Icon name={s.icon} />
             </span>
             <span className="shortcut-text">
               <strong>{s.title}</strong>

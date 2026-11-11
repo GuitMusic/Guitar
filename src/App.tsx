@@ -5,6 +5,7 @@ import { setView, useFretboardView } from './components/fretboardView'
 import { Metronome } from './tools/Metronome'
 import { Tuner } from './tools/Tuner'
 import { NoteQuiz } from './quiz/NoteQuiz'
+import { BrandMark, Icon as LineIcon, type IconName } from './components/icons'
 import { Icon, Menu } from './components/PlayerBar'
 import { setTheme, useTheme } from './components/theme'
 import { Progress } from './progress/Progress'
@@ -18,15 +19,14 @@ const Practice = lazy(() => loadPractice().then((m) => ({ default: m.Practice })
 
 type Page = 'library' | 'practice' | 'tunings' | 'quiz' | 'progress' | 'tools'
 
-// Simple line icons, shown in the bottom tab bar on phones
-const ICONS: Record<Page, string> = {
-  library: 'M4 11l8-7 8 7v9a1 1 0 0 1-1 1h-4v-6h-6v6H5a1 1 0 0 1-1-1z',
-  practice: 'M9 18V6l10-2v12M9 18a3 3 0 1 1-3-3 3 3 0 0 1 3 3zM19 16a3 3 0 1 1-3-3 3 3 0 0 1 3 3z',
-  // three strings and a tuning peg
-  tunings: 'M5 6h14M5 12h14M5 18h14M9 4v16M17 9.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5z',
-  quiz: 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8zM12 11.5v1',
-  progress: 'M4 20h16M6 16v-4M11 16V8M16 16v-6M21 16V5',
-  tools: 'M4 16a8 8 0 0 1 16 0M12 16l4-6',
+// Line icons for each page, shown in the bottom tab bar on phones
+const ICONS: Record<Page, IconName> = {
+  library: 'home',
+  practice: 'guitar',
+  tunings: 'headstock',
+  quiz: 'fretboard',
+  progress: 'progress',
+  tools: 'metronome',
 }
 
 const PAGES: Page[] = ['library', 'practice', 'tunings', 'quiz', 'progress', 'tools']
@@ -82,9 +82,7 @@ export default function App() {
 
   const nav = (p: Page, label: string, disabled = false) => (
     <button className={page === p ? 'nav-item active' : 'nav-item'} disabled={disabled} onClick={() => setPage(p)} aria-current={page === p ? 'page' : undefined}>
-      <svg className="nav-icon" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
-        <path d={ICONS[p]} fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
+      <LineIcon name={ICONS[p]} className="nav-icon" />
       <span>{label}</span>
     </button>
   )
@@ -94,11 +92,7 @@ export default function App() {
       <header className="topbar">
         <div className="brand">
           <span className="brand-mark" aria-hidden="true">
-            <svg viewBox="0 0 24 24" width="18" height="18">
-              <path d="M9 18V6l10-2v12" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
-              <circle cx="6.5" cy="18" r="2.6" fill="currentColor" />
-              <circle cx="16.5" cy="16" r="2.6" fill="currentColor" />
-            </svg>
+            <BrandMark size={22} />
           </span>
           <span className="brand-name">
             Fingerstyle<span>Trainer</span>
