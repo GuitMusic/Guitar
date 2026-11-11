@@ -31,6 +31,10 @@ export interface FretNote {
   isTieContinuation?: boolean
   /** Fretted earlier in the bar and probably still held down (part of the chord shape). */
   isHeld?: boolean
+  /** Text to show on the dot instead of the finger or note name, e.g. a scale degree. */
+  label?: string
+  /** Colour by role, e.g. in theory views: the root, a chord tone, or another scale note. */
+  tone?: 'root' | 'chord' | 'scale'
 }
 
 export interface FingeringOverride {

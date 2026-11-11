@@ -5,6 +5,7 @@ import { setView, useFretboardView } from './components/fretboardView'
 import { Metronome } from './tools/Metronome'
 import { Tuner } from './tools/Tuner'
 import { NoteQuiz } from './quiz/NoteQuiz'
+import { TheoryPage } from './theory/TheoryPage'
 import { BrandMark, Icon as LineIcon, type IconName } from './components/icons'
 import { Icon, Menu } from './components/PlayerBar'
 import { setTheme, useTheme } from './components/theme'
@@ -17,7 +18,7 @@ import { TuningsPage } from './tunings/TuningsPage'
 const loadPractice = () => import('./components/Practice')
 const Practice = lazy(() => loadPractice().then((m) => ({ default: m.Practice })))
 
-type Page = 'library' | 'practice' | 'tunings' | 'quiz' | 'progress' | 'tools'
+type Page = 'library' | 'practice' | 'tunings' | 'quiz' | 'theory' | 'progress' | 'tools'
 
 // Line icons for each page, shown in the bottom tab bar on phones
 const ICONS: Record<Page, IconName> = {
@@ -25,11 +26,12 @@ const ICONS: Record<Page, IconName> = {
   practice: 'guitar',
   tunings: 'headstock',
   quiz: 'fretboard',
+  theory: 'triad',
   progress: 'progress',
   tools: 'metronome',
 }
 
-const PAGES: Page[] = ['library', 'practice', 'tunings', 'quiz', 'progress', 'tools']
+const PAGES: Page[] = ['library', 'practice', 'tunings', 'quiz', 'theory', 'progress', 'tools']
 const pageFromState = (state: unknown): Page => {
   const p = (state as { page?: Page } | null)?.page
   return p && PAGES.includes(p) ? p : 'library'
@@ -103,6 +105,7 @@ export default function App() {
           {nav('practice', 'Practice', !song)}
           {nav('tunings', 'Tunings')}
           {nav('quiz', 'Note finder')}
+          {nav('theory', 'Theory')}
           {nav('progress', 'Progress')}
           {nav('tools', 'Tools')}
         </nav>
@@ -191,6 +194,7 @@ export default function App() {
           />
         )}
         {page === 'quiz' && <NoteQuiz />}
+        {page === 'theory' && <TheoryPage />}
         {page === 'progress' && (
           <Progress
             onOpen={(s) => {

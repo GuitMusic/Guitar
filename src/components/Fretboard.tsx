@@ -352,9 +352,15 @@ export function Fretboard({ notes, ghosts, tuning, capo, options, onNoteClick, o
       {names.length > 0 && (
         <g className="fb-names" aria-hidden="true">
           {names.map((n) => (
-            <g key={`n-${n.key}`} className={n.fret === 0 ? 'fb-name fb-name-open' : 'fb-name'}>
+            <g key={`n-${n.key}`} className={`${n.fret === 0 ? 'fb-name fb-name-open' : 'fb-name'}${n.tone ? ` fb-tone-${n.tone}` : ''}`}>
               <circle cx={X(noteX(n))} cy={Y(n.string)} r="13" />
-              <NoteText x={X(noteX(n))} y={Y(n.string)} midi={n.midi} size="small" />
+              {n.label !== undefined ? (
+                <text x={X(noteX(n))} y={Y(n.string) + 4} textAnchor="middle">
+                  {n.label}
+                </text>
+              ) : (
+                <NoteText x={X(noteX(n))} y={Y(n.string)} midi={n.midi} size="small" />
+              )}
             </g>
           ))}
         </g>
@@ -410,6 +416,7 @@ export function Fretboard({ notes, ghosts, tuning, capo, options, onNoteClick, o
           open ? 'fb-note-open' : `fb-finger-${n.lh ?? 'x'}`,
           n.lhInferred ? 'fb-suggested' : '',
           held ? 'fb-held' : '',
+          n.tone ? `fb-tone-${n.tone}` : '',
         ].join(' ')
         const r = open ? NOTE_R - 3 : NOTE_R
         return (
@@ -418,7 +425,11 @@ export function Fretboard({ notes, ghosts, tuning, capo, options, onNoteClick, o
             {!held && <circle className="fb-note-ripple" cx={x} cy={y} r={r} />}
             <circle className="fb-note-body" cx={x} cy={y} r={r} filter={ref('shadow')} />
             {!open && <circle className="fb-note-shine" cx={x} cy={y - 6} r={r * 0.6} />}
-            {options.labelMode === 'note' && !n.isDead ? (
+            {n.label !== undefined ? (
+              <text x={x} y={y + 6} textAnchor="middle">
+                {n.label}
+              </text>
+            ) : options.labelMode === 'note' && !n.isDead ? (
               <NoteText x={x} y={y} midi={n.midi} size="big" />
             ) : (
               <text x={x} y={y + 6} textAnchor="middle">

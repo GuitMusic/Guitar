@@ -15,6 +15,7 @@ export type IconName =
   | 'search-dot'
   | 'octave'
   | 'climb'
+  | 'triad'
 
 const DOT = { fill: 'currentColor', stroke: 'none' } as const
 
@@ -82,6 +83,15 @@ const PATHS: Record<IconName, ReactNode> = {
       <circle cx="6" cy="17" r="2.6" {...DOT} />
       <circle cx="18" cy="7" r="2.6" {...DOT} />
       <path d="M6 13.2C6 7.5 9 5.6 14.5 6.3" strokeDasharray="2 2.6" />
+    </>
+  ),
+  // a triad: three stacked notes
+  triad: (
+    <>
+      <path d="M3 6.5h18M3 12h18M3 17.5h18" strokeOpacity="0.35" />
+      <circle cx="8" cy="17.5" r="2.6" {...DOT} />
+      <circle cx="12" cy="12" r="2.6" {...DOT} />
+      <circle cx="16" cy="6.5" r="2.6" {...DOT} />
     </>
   ),
   climb: (
