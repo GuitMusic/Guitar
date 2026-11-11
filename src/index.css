@@ -4809,3 +4809,218 @@ svg text.fb-solfa-small {
     text-overflow: ellipsis;
   }
 }
+
+/* Tools: rhythm trainer */
+.tools-tabs-wrap {
+  max-width: 1100px;
+  margin: 0 auto 14px;
+}
+.tools-page.rhythm-page {
+  grid-template-columns: minmax(0, 1fr);
+  max-width: 1000px;
+}
+.rhythm .level-card.done .level-num {
+  background: var(--ok-bg);
+  color: var(--ok-text);
+}
+.rhythm-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+.rhythm-why {
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  line-height: 1.5;
+}
+.rhythm-why p {
+  margin: 0 0 6px;
+  color: var(--text-2);
+}
+.rhythm-why p:last-child {
+  margin: 0;
+  color: var(--text);
+}
+.rhythm-options {
+  align-items: flex-end;
+  margin: 12px 0;
+}
+.rhythm-count {
+  display: flex;
+  justify-content: center;
+  gap: clamp(6px, 2vw, 14px);
+  margin: 18px 0 4px;
+}
+.rhythm-count span {
+  display: grid;
+  place-items: center;
+  width: clamp(40px, 11vw, 64px);
+  height: clamp(40px, 11vw, 64px);
+  border-radius: 50%;
+  font-size: clamp(1.2rem, 4vw, 1.8rem);
+  font-weight: 800;
+  background: var(--surface-2);
+  color: var(--text-2);
+  border: 2px solid transparent;
+  transition: transform 80ms ease, background 80ms ease;
+}
+.rhythm-count span.and {
+  width: clamp(30px, 8vw, 46px);
+  height: clamp(30px, 8vw, 46px);
+  font-size: clamp(0.9rem, 3vw, 1.2rem);
+  align-self: center;
+}
+.rhythm-count span.play {
+  border-color: color-mix(in srgb, var(--accent) 60%, transparent);
+  color: var(--text);
+}
+.rhythm-count span.now {
+  background: var(--surface);
+  color: var(--text);
+  transform: scale(1.12);
+}
+.rhythm-count span.now.click {
+  background: #ff8a3d;
+  color: #fff;
+}
+.rhythm-count span.now.play {
+  background: var(--grad, var(--accent));
+  color: #fff;
+}
+.rhythm-count.silent span.now {
+  background: var(--surface);
+  border-style: dashed;
+}
+.rhythm-note {
+  text-align: center;
+  min-height: 1.5em;
+}
+.rhythm-pad {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 120px;
+  margin: 10px 0;
+  border-radius: 22px;
+  font-size: 1.3rem;
+  font-weight: 800;
+  background: var(--surface);
+  border: 2px dashed var(--border);
+  color: var(--text-2);
+  touch-action: manipulation;
+  user-select: none;
+}
+.rhythm-pad small {
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+.rhythm-pad.live {
+  border-style: solid;
+  border-color: color-mix(in srgb, var(--accent) 60%, transparent);
+  color: var(--text);
+}
+.rhythm-pad.live:active {
+  background: color-mix(in srgb, var(--accent) 25%, var(--surface));
+}
+.rhythm-meter {
+  position: relative;
+  height: 54px;
+  margin: 14px 0 6px;
+  border-radius: 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+.rhythm-zone {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background: color-mix(in srgb, #3ddc84 16%, transparent);
+}
+.rhythm-center {
+  position: absolute;
+  left: 50%;
+  top: 6px;
+  bottom: 6px;
+  width: 2px;
+  margin-left: -1px;
+  background: #3ddc84;
+}
+.rhythm-label {
+  position: absolute;
+  top: 4px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--text-2);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.rhythm-label.early {
+  left: 10px;
+}
+.rhythm-label.late {
+  right: 10px;
+}
+.rhythm-dot {
+  position: absolute;
+  top: 50%;
+  width: 14px;
+  height: 14px;
+  margin: -7px 0 0 -7px;
+  border-radius: 50%;
+  background: #3ddc84;
+}
+.rhythm-dot.early {
+  background: #7cc4ff;
+}
+.rhythm-dot.late {
+  background: #ffb347;
+}
+.rhythm-dot.last {
+  width: 22px;
+  height: 22px;
+  margin: -11px 0 0 -11px;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.85);
+}
+.rhythm-last {
+  text-align: center;
+  font-size: 1.1rem;
+  min-height: 1.6em;
+}
+.rhythm-last .on {
+  color: #3ddc84;
+}
+.rhythm-last .early {
+  color: #7cc4ff;
+}
+.rhythm-last .late {
+  color: #ffb347;
+}
+.rhythm-progress {
+  height: 8px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  overflow: hidden;
+  margin: 10px 0 4px;
+}
+.rhythm-progress div {
+  height: 100%;
+  background: var(--grad, var(--accent));
+  transition: width 200ms ease;
+}
+.rhythm-done {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 14px 0;
+  padding: 16px;
+  border-radius: 16px;
+  background: var(--ok-bg);
+  color: var(--ok-text);
+}
