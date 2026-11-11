@@ -4241,3 +4241,105 @@ svg text.fb-solfa-small {
     height: 160px;
   }
 }
+
+/* Note finder: daily warm-up, tap-to-answer pad */
+.warmup-card {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px 20px;
+  margin: 14px 0 6px;
+  padding: 16px 18px;
+  border-radius: 20px;
+  border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--border));
+  background:
+    radial-gradient(120% 140% at 0% 0%, color-mix(in srgb, var(--accent) 16%, transparent), transparent 60%),
+    var(--surface);
+}
+.warmup-card.done {
+  border-color: var(--border);
+  background: var(--surface);
+}
+.warmup-text {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1 1 260px;
+  min-width: 0;
+}
+.warmup-text strong {
+  font-size: 1.1rem;
+}
+.warmup-text .hint {
+  margin: 0;
+}
+.warmup-card .eyebrow {
+  margin: 0;
+}
+.warmup-card.done .eyebrow::before {
+  content: '✓ ';
+  color: var(--ok-text);
+}
+.warmup-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.level-badge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-2);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 1px 8px;
+}
+.name-pad {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 8px;
+  margin: 12px 0 4px;
+}
+.name-pad.all {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+.name-key {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  padding: 10px 0 8px;
+  min-height: 54px;
+  border-radius: 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+  transition: transform 120ms ease, background 150ms ease, border-color 150ms ease;
+}
+.name-key strong {
+  font-size: 1.15rem;
+}
+.name-key span {
+  font-size: 0.7rem;
+  color: var(--text-2);
+}
+.name-key:active:not(:disabled) {
+  transform: scale(0.95);
+}
+.name-key:disabled {
+  opacity: 0.55;
+}
+.name-key.right {
+  opacity: 1;
+  background: var(--ok-bg);
+  border-color: var(--ok-text);
+  color: var(--ok-text);
+}
+.name-key.wrong {
+  opacity: 1;
+  background: var(--error-bg);
+  border-color: var(--error-text);
+  color: var(--error-text);
+}

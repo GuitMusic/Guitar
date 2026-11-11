@@ -10,6 +10,11 @@ import { LiveNeck } from './LiveNeck'
 import {
   Attacks,
   checkAnswer,
+  checkTap,
+  isSpotMode,
+  isTapMode,
+  pathWeights,
+  warmupWeights,
   dayStreak,
   isUnlocked,
   LEVELS,
@@ -54,8 +59,15 @@ interface RoundResult {
   ms: number | null
 }
 
+/** A round with its own settings that is not a path level, e.g. the daily warm-up. */
+interface Custom {
+  title: string
+  settings: Omit<QuizSettings, 'tuning'>
+}
+
 interface Round {
   level: Level | null
+  custom?: Custom
   /** 0 = keep going until stopped. */
   total: number
   results: RoundResult[]
@@ -71,6 +83,8 @@ const MODES: { id: QuizMode; label: string; hint: string }[] = [
   { id: 'find-all', label: 'Every octave', hint: 'The app names a note. Play it in every octave you can reach.' },
   { id: 'ear', label: 'Ear training', hint: 'The app plays a note. Find it on your guitar by ear.' },
   { id: 'melody', label: 'Echo a melody', hint: 'The app plays a short phrase. Play it back, note by note.' },
+  { id: 'name-dot', label: 'Name the dot', hint: 'No guitar or mic needed. A dot appears on the neck: tap its note name, or press its letter key.' },
+  { id: 'tap-spot', label: 'Tap the spot', hint: 'No guitar or mic needed. The app names a note and a string: tap that spot on the neck.' },
 ]
 
 const RANGES = [
@@ -109,6 +123,8 @@ interface Prefs {
   seconds: number
   roundLength: number
   sounds: boolean
+  /** Last day the warm-up was finished, YYYY-MM-DD. */
+  warmupDay?: string
 }
 
 const DEFAULT_PREFS: Prefs = {
@@ -190,6 +206,7 @@ export function NoteQuiz() {
   const [timeLeft, setTimeLeft] = useState(0)
   const [error, setError] = useState<string | null>(null)
   const [answerMs, setAnswerMs] = useState<number | null>(null)
+  const [tapSpot, setTapSpot] = useState<{ string: number; fret: number } | null>(null)
   const view = useFretboardView()
 
   const listener = useRef<PitchListener | null>(null)
@@ -224,7 +241,14 @@ export function NoteQuiz() {
     seconds: prefs.mode === 'find-all' ? prefs.seconds * 4 : prefs.mode === 'melody' ? prefs.seconds * 3 : prefs.seconds,
     phraseLength: 3,
   }
-  const settings: QuizSettings = round?.level ? { ...round.level.settings, tuning: tuning.strings } : freeSettings
+  const roundSettings = (level: Level | null, custom?: Custom): QuizSettings => {
+    if (custom) return { ...custom.settings, tuning: tuning.strings }
+    if (!level) return freeSettings
+    const s = { ...level.settings, tuning: tuning.strings }
+    // within a level, the spots you miss come up more often
+    return isSpotMode(s.mode) ? { ...s, spotWeights: pathWeights(s, neck) } : s
+  }
+  const settings: QuizSettings = round ? roundSettings(round.level, round.custom) : freeSettings
   const settingsRef = useRef(settings)
   const statsRef = useRef(stats)
   const soundsRef = useRef(prefs.sounds)
@@ -271,7 +295,7 @@ export function NoteQuiz() {
     setAnswerMs(ms)
     const key = q.mode === 'find-note' || q.mode === 'find-all' ? q.midi % 12 : q.midi
     // lifetime stats and the "asked more often" weights belong to free practice
-    if (!roundRef.current?.level) setStats((s) => {
+    if (!roundRef.current?.level && !roundRef.current?.custom) setStats((s) => {
       const misses = { ...s.misses }
       if (firstTry) misses[key] = Math.max(0, (misses[key] ?? 0) - 1)
       else misses[key] = (misses[key] ?? 0) + 1
@@ -287,7 +311,7 @@ export function NoteQuiz() {
       const pc = String(q.midi % 12)
       setNoteTally((n) => ({ ...n, [pc]: add(n[pc]) }))
     }
-    if (q.mode === 'find-on-string') {
+    if (isSpotMode(q.mode)) {
       const spot = `${q.positions[0].string}:${q.positions[0].fret}`
       setNeck((n) => ({ ...n, [spot]: add(n[spot]) }))
     }
@@ -296,7 +320,7 @@ export function NoteQuiz() {
     const label =
       q.mode === 'melody'
         ? q.targets.map(pitchClassName).join(' ')
-        : q.mode === 'find-on-string'
+        : isSpotMode(q.mode)
           ? `${pitchClassName(q.midi)} on ${q.string}`
           : q.mode === 'find-note' || q.mode === 'find-all'
             ? pitchClassName(q.midi)
@@ -309,12 +333,14 @@ export function NoteQuiz() {
       setRound(next)
     }
     if (soundsRef.current) {
-      if (correct) playChime('right')
+      // tapping: hear the note you were looking for, so name, place and sound go together
+      if (isTapMode(q.mode)) later(() => playTone(q.midi, 1.2), correct ? 0 : 250)
+      else if (correct) playChime('right')
       else if (q.mode === 'melody') later(() => playPhrase(q.targets), 400)
       else later(() => playTone(q.midi), 300)
     }
     setLivePhase(correct ? 'right' : 'timeout')
-    later(() => askRef.current(), correct ? 1500 : q.mode === 'melody' ? 4000 : 3000)
+    later(() => askRef.current(), correct ? (isTapMode(q.mode) ? 900 : 1500) : isTapMode(q.mode) ? 2200 : q.mode === 'melody' ? 4000 : 3000)
   }, [])
 
   const ask = useCallback(() => {
@@ -324,6 +350,10 @@ export function NoteQuiz() {
       stopMic()
       setLivePhase('summary')
       const level = r.level
+      if (r.custom) {
+        const today = localDate()
+        setPrefs((p) => ({ ...p, warmupDay: today }))
+      }
       if (level) {
         const stars = starsFor(r.results.filter((x) => x.ok).length, r.total)
         setPathStars((p) => ({ ...p, [level.id]: Math.max(p[level.id] ?? 0, stars) }))
@@ -346,6 +376,7 @@ export function NoteQuiz() {
     setFound([])
     setWrongTries([])
     setAnswerMs(null)
+    setTapSpot(null)
     let delay = 300
     if (q.mode === 'ear') {
       playTone(q.midi)
@@ -399,20 +430,37 @@ export function NoteQuiz() {
     } else if (checkAnswer(q, note).correct) finish(true)
     else wrong()
   }
+  /** A tapped answer: a pitch class for name-dot, a spot for tap-spot. A wrong tap is a real guess, so it ends the question. */
+  const onTap = (answer: number | { string: number; fret: number }) => {
+    const q = L.current.question
+    if (!q || !isTapMode(q.mode) || L.current.phase !== 'listening') return
+    const tapped = typeof answer === 'number' ? answer : tuning.strings[answer.string - 1] + answer.fret
+    setHeard(tapped)
+    if (typeof answer !== 'number') setTapSpot(answer)
+    if (!checkTap(q, answer)) {
+      L.current.wrong = [tapped]
+      setWrongTries([tapped])
+      if (soundsRef.current) playChime('miss')
+    }
+    finish(checkTap(q, answer))
+  }
+
   const onNoteRef = useRef(onNote)
   useEffect(() => {
     onNoteRef.current = onNote
   })
 
-  const begin = async (level: Level | null) => {
+  const begin = async (level: Level | null, custom?: Custom) => {
     setError(null)
-    const r: Round = { level, total: level ? ROUND : prefs.roundLength, results: [], streak: 0, best: 0 }
+    const r: Round = { level, custom, total: level || custom ? ROUND : prefs.roundLength, results: [], streak: 0, best: 0 }
     roundRef.current = r
     setRound(r)
-    settingsRef.current = level ? { ...level.settings, tuning: tuning.strings } : freeSettings
+    settingsRef.current = roundSettings(level, custom)
     L.current.question = null
+    window.scrollTo?.({ top: 0, behavior: 'smooth' })
     try {
-      if (!listener.current) {
+      if (isTapMode(settingsRef.current.mode)) stopMic()
+      else if (!listener.current) {
         listener.current = await listenForPitch((reading, level) => {
           const S = L.current
           attacks.current.push(level)
@@ -474,6 +522,12 @@ export function NoteQuiz() {
     const onKey = (e: KeyboardEvent) => {
       if (L.current.phase === 'idle' || e.target instanceof HTMLInputElement || e.target instanceof HTMLSelectElement) return
       if (e.key === 'Escape') stop()
+      const q = L.current.question
+      if (q?.mode === 'name-dot') {
+        const pc = { c: 0, d: 2, e: 4, f: 5, g: 7, a: 9, b: 11 }[e.key.toLowerCase()]
+        if (pc !== undefined) onTap(pc)
+        return
+      }
       if (e.key.toLowerCase() === 'r') replay()
     }
     window.addEventListener('keydown', onKey)
@@ -501,8 +555,16 @@ export function NoteQuiz() {
     lhInferred: false,
     rhInferred: false,
   })
-  const shownNotes: FretNote[] = question && reveal ? question.positions.map(toFretNote) : []
-  const target = question?.mode === 'find-on-string' && !reveal && running ? [question.string!] : []
+  const tapMode = !!question && isTapMode(question.mode) && running
+  // name-dot shows its dot, without the name, while you answer
+  const dotNow = running && question?.mode === 'name-dot' && !reveal
+  const shownNotes: FretNote[] = question && (reveal || dotNow) && running ? question.positions.map(toFretNote) : []
+  const target = (question?.mode === 'find-on-string' || question?.mode === 'tap-spot') && !reveal && running ? [question.string!] : []
+  // A wrong tap on the neck: ring the spot that was tapped
+  const wrongTapMarks: FretMark[] =
+    question?.mode === 'tap-spot' && phase === 'timeout' && tapSpot
+      ? [{ key: `w${tapSpot.string}:${tapSpot.fret}`, string: tapSpot.string, fret: tapSpot.fret, result: 'miss' }]
+      : []
 
   // While finding every octave, ring the places of the octaves already played
   const foundMarks: FretMark[] =
@@ -536,11 +598,35 @@ export function NoteQuiz() {
   const nextUp = LEVELS.findIndex((l, i) => isUnlocked(i, pathStars) && !(pathStars[l.id] > 0))
   const totalStars = LEVELS.reduce((a, l) => a + (pathStars[l.id] ?? 0), 0)
   const groups = [...new Set(LEVELS.map((l) => l.group))]
-  const mode = round?.level?.settings.mode ?? prefs.mode
+  const mode = round?.custom?.settings.mode ?? round?.level?.settings.mode ?? prefs.mode
+  const roundTitle = (r: Round) =>
+    r.custom ? r.custom.title : r.level ? `Level ${LEVELS.indexOf(r.level) + 1}: ${r.level.title}` : MODES.find((m) => m.id === mode)?.label
+  const warmup = (withGuitar: boolean): Custom => ({
+    title: withGuitar ? 'Warm-up on guitar' : 'Warm-up, tapping',
+    settings: {
+      mode: withGuitar ? 'find-on-string' : 'tap-spot',
+      strings: tuning.strings.map((_, i) => i + 1),
+      minFret: 0,
+      maxFret: 12,
+      naturalsOnly: false,
+      seconds: withGuitar ? 8 : 6,
+      spotWeights: warmupWeights(neck, tuning.strings.length),
+    },
+  })
+  const warmedUpToday = prefs.warmupDay === localDate()
+  const neckSeen = Object.keys(neck).length
 
   const statusText = () => {
     if (!question) return ''
     if (phase === 'prompt') return question.mode === 'ear' || question.mode === 'melody' ? 'Listen…' : 'Get ready…'
+    if (phase === 'listening' && tapMode) return `${timeLeft}s`
+    if (phase === 'timeout' && tapMode) {
+      const where = `string ${question.string}, fret ${question.positions[0]?.fret}`
+      if (heard === null) return `Time's up. It was ${pitchClassName(question.midi)}, ${where}.`
+      return question.mode === 'name-dot'
+        ? `Not ${pitchClassName(heard)}. This dot is ${pitchClassName(question.midi)}.`
+        : `That spot is ${pitchClassName(heard)}. ${pitchClassName(question.midi)} is at fret ${question.positions[0]?.fret}.`
+    }
     if (phase === 'listening') {
       const last = wrongTries.length ? wrongTries[wrongTries.length - 1] : null
       if (question.mode === 'find-all')
@@ -554,6 +640,8 @@ export function NoteQuiz() {
       const extra = ''
       if (question.mode === 'melody') return `You got the melody${time}${extra}`
       if (question.mode === 'find-all') return `All ${question.targets.length} found${time}${extra}`
+      if (question.mode === 'name-dot') return `Yes, ${pitchClassName(question.midi)}${time}`
+      if (question.mode === 'tap-spot') return `Yes, fret ${question.positions[0]?.fret}${time}`
       return `Correct, ${noteName(question.mode === 'find-note' ? (heard ?? question.midi) : question.midi)}${time}${extra}`
     }
     if (phase === 'timeout') {
@@ -613,6 +701,25 @@ export function NoteQuiz() {
 
           {prefs.tab === 'path' && (
             <div className="quiz-path">
+              <div className={`warmup-card${warmedUpToday ? ' done' : ''}`}>
+                <div className="warmup-text">
+                  <span className="eyebrow">{warmedUpToday ? 'Done today' : 'Daily warm-up'}</span>
+                  <strong>{ROUND} spots picked for you</strong>
+                  <span className="hint">
+                    {neckSeen >= 10
+                      ? 'From your neck map: the spots you miss or answer slowly, plus ones you have not tried yet. About three minutes.'
+                      : 'Spots from the whole neck, up to fret 12. The more you play, the more it focuses on the spots you miss.'}
+                  </span>
+                </div>
+                <div className="warmup-actions">
+                  <button className={warmedUpToday ? '' : 'primary'} onClick={() => void begin(null, warmup(true))}>
+                    Play on guitar
+                  </button>
+                  <button className="ghost" onClick={() => void begin(null, warmup(false))}>
+                    Tap, no guitar
+                  </button>
+                </div>
+              </div>
               <p className="hint">
                 Short rounds of {ROUND} notes. Get 14 right to earn a star and open the next level. Uses your microphone, so play one note at a time, no capo.
               </p>
@@ -633,6 +740,7 @@ export function NoteQuiz() {
                           <span className="level-num">{i + 1}</span>
                           <span className="level-title">{l.title}</span>
                           <span className="level-blurb">{open ? l.blurb : 'Earn a star on the level before to open this.'}</span>
+                          {isTapMode(l.settings.mode) && <span className="level-badge">No mic</span>}
                           <span className="level-foot">
                             <Stars n={pathStars[l.id] ?? 0} />
                             {i === nextUp && <span className="level-tag">Start here</span>}
@@ -755,7 +863,7 @@ export function NoteQuiz() {
 
       {running && round && (
         <div className="quiz-round">
-          <span className="quiz-round-title">{round.level ? `Level ${LEVELS.indexOf(round.level) + 1}: ${round.level.title}` : MODES.find((m) => m.id === mode)?.label}</span>
+          <span className="quiz-round-title">{roundTitle(round)}</span>
           {round.total > 0 && (
             <div className="quiz-dots" aria-label={`Note ${Math.min(round.results.length + 1, round.total)} of ${round.total}`}>
               {Array.from({ length: round.total }, (_, i) => (
@@ -802,9 +910,11 @@ export function NoteQuiz() {
               <div key={question.targets.join() + question.midi} className="quiz-timer-fill" style={{ animationDuration: `${settings.seconds}s` }} />
             </div>
           )}
-          <div className="quiz-live" aria-hidden="true">
-            <span className={live !== null ? 'on' : ''}>{live !== null ? `Hearing ${noteName(live)}` : 'Waiting for a note'}</span>
-          </div>
+          {!tapMode && (
+            <div className="quiz-live" aria-hidden="true">
+              <span className={live !== null ? 'on' : ''}>{live !== null ? `Hearing ${noteName(live)}` : 'Waiting for a note'}</span>
+            </div>
+          )}
           <div className="row">
             {(question.mode === 'ear' || question.mode === 'melody') && <button onClick={replay}>Play it again</button>}
             <button onClick={() => finish(false)} disabled={phase !== 'listening'}>
@@ -824,7 +934,7 @@ export function NoteQuiz() {
               ))}
             </div>
           )}
-          <p className="eyebrow">{round.level ? `Level ${LEVELS.indexOf(round.level) + 1}: ${round.level.title}` : 'Round done'}</p>
+          <p className="eyebrow">{round.level || round.custom ? roundTitle(round) : 'Round done'}</p>
           <div className="quiz-score">
             {summary.right}
             <span> / {round.total}</span>
@@ -839,9 +949,13 @@ export function NoteQuiz() {
                     ? `Star earned. Level ${LEVELS.indexOf(summary.next) + 1} is open.`
                     : 'Star earned.'
                   : '14 right earns a star. Have another go.'
-              : summary.passed
-                ? 'Nicely done.'
-                : 'Keep at it. The notes you miss come up more often.'}
+              : round.custom
+                ? summary.passed
+                  ? 'Warm-up done. Your neck map is updated.'
+                  : 'Warm-up done. The spots you missed come back tomorrow.'
+                : summary.passed
+                  ? 'Nicely done.'
+                  : 'Keep at it. The notes you miss come up more often.'}
           </p>
           <div className="complete-stats">
             <div>
@@ -863,11 +977,11 @@ export function NoteQuiz() {
                 Next level
               </button>
             )}
-            <button className={summary.next ? 'ghost' : 'primary'} onClick={() => void begin(round.level)}>
+            <button className={summary.next ? 'ghost' : 'primary'} onClick={() => void begin(round.level, round.custom && warmup(round.custom.settings.mode === 'find-on-string'))}>
               Try again
             </button>
             <button className="ghost" onClick={stop}>
-              {round.level ? 'All levels' : 'Done'}
+              {round.level || round.custom ? 'All levels' : 'Done'}
             </button>
           </div>
         </div>
@@ -882,19 +996,39 @@ export function NoteQuiz() {
             highlightStrings={target}
             tuning={tuning.strings}
             capo={0}
-            maxFret={12}
+            maxFret={running && settings.maxFret <= 5 ? 7 : 12}
             showPickZone={false}
-            marks={phase === 'idle' ? neckMarks : foundMarks}
-            options={{ ...view, labelMode: 'note', showGhosts: false }}
+            marks={phase === 'idle' ? neckMarks : [...foundMarks, ...wrongTapMarks]}
+            options={{ ...view, labelMode: dotNow ? 'finger' : 'note', showGhosts: false }}
+            onFretClick={question?.mode === 'tap-spot' && phase === 'listening' ? (string, fret) => onTap({ string, fret }) : undefined}
           />
+          {running && question?.mode === 'name-dot' && (
+            <div className={`name-pad${settings.naturalsOnly ? '' : ' all'}`} role="group" aria-label="Note names">
+              {Array.from({ length: 12 }, (_, pc) => pc)
+                .filter((pc) => !settings.naturalsOnly || [0, 2, 4, 5, 7, 9, 11].includes(pc))
+                .map((pc) => (
+                  <button
+                    key={pc}
+                    className={
+                      reveal && pc === question.midi % 12 ? 'name-key right' : phase === 'timeout' && heard !== null && pc === heard % 12 ? 'name-key wrong' : 'name-key'
+                    }
+                    disabled={phase !== 'listening'}
+                    onClick={() => onTap(pc)}
+                  >
+                    <strong>{pitchClassName(pc)}</strong>
+                    <span>{solfegeName(pc)}</span>
+                  </button>
+                ))}
+            </div>
+          )}
           {phase === 'idle' && (
             <p className="hint neck-legend">
               {neckMarks.length ? (
                 <>
-                  <i className="lg hit" /> known <i className="lg late" /> getting there <i className="lg miss" /> often missed. Filled in whenever a question names the string.
+                  <i className="lg hit" /> known <i className="lg late" /> getting there <i className="lg miss" /> often missed. Filled in by every question about one spot: a note on a string, a dot, or a tap.
                 </>
               ) : (
-                'Play a few rounds with a string named and this map shows which spots you know and which need work.'
+                'Play a warm-up or a few levels and this map shows which spots you know and which need work.'
               )}
             </p>
           )}
