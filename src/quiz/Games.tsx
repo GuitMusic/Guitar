@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { playChime, playTone } from '../audio/pitch'
 import { Fretboard, type FretMark } from '../components/Fretboard'
+import { Icon, type IconName } from '../components/icons'
 import type { FretboardOptions } from '../components/Fretboard'
 import { pitchClassName, solfegeName } from '../music/notes'
 import type { FretNote } from '../music/types'
@@ -10,6 +11,7 @@ import {
   GAME_SECONDS,
   GAMES,
   huntTurn,
+  isNatural,
   loadBest,
   multiplier,
   octaveTurn,
@@ -37,7 +39,29 @@ interface Score {
 const ZERO: Score = { points: 0, right: 0, wrong: 0, run: 0, bestRun: 0 }
 const key = (s: { string: number; fret: number }) => `${s.string}:${s.fret}`
 const NATURALS = [0, 2, 4, 5, 7, 9, 11]
+const GAME_ICONS: Record<GameId, IconName> = { rush: 'bolt', hunt: 'search-dot', octave: 'octave', climb: 'climb' }
 const CONFETTI = ['#ff7a45', '#ff4f7b', '#fbbf24', '#2dd4bf', '#a78bfa', '#7cc4ff']
+
+/** Note rush spots missed in the last game, as "string:fret", so the next game asks them first. */
+function loadReview(tuning: number[]): Spot[] {
+  try {
+    const keys: string[] = JSON.parse(localStorage.getItem('games-review') ?? '[]')
+    return keys.map((k) => {
+      const [string, fret] = k.split(':').map(Number)
+      return { string, fret, midi: tuning[string - 1] + fret }
+    }).filter((s) => s.string >= 1 && s.string <= tuning.length && s.fret >= 0 && s.fret <= GAME_FRETS)
+  } catch {
+    return []
+  }
+}
+
+function saveReview(spots: Spot[]): void {
+  try {
+    localStorage.setItem('games-review', JSON.stringify(spots.map(key)))
+  } catch {
+    // storage unavailable: nothing carried over
+  }
+}
 
 function asFretNote(s: Spot): FretNote {
   return { key: key(s), string: s.string, fret: s.fret, tabFret: s.fret, midi: s.midi, lh: null, rh: null, lhInferred: false, rhInferred: false }
@@ -55,17 +79,31 @@ export function Games({ tuning, sounds, view }: { tuning: number[]; sounds: bool
   const [misses, setMisses] = useState<FretMark[]>([])
   const [note, setNote] = useState<{ id: number; text: string; good: boolean } | null>(null)
   const [hits, setHits] = useState<FretMark[]>([])
+  /** Note rush after a miss: the right name and the one tapped, shown for a moment. */
+  const [reveal, setReveal] = useState<{ pc: number; tapped: number } | null>(null)
+  /** Spots missed this game, shown with their names at the end. */
+  const [missed, setMissed] = useState<Spot[]>([])
+  /** Missed spots come back a few turns later: [spot, turn number it is due]. */
+  const again = useRef<[Spot, number][]>([])
+  const missedRef = useRef(missed)
+  const turnNo = useRef(0)
   const endsAt = useRef(0)
   const scoreRef = useRef(score)
   const busy = useRef(false)
   useEffect(() => {
     scoreRef.current = score
+    missedRef.current = missed
   })
 
   const say = (text: string, good: boolean) => setNote((n) => ({ id: (n?.id ?? 0) + 1, text, good }))
 
   const newTurn = (g: GameId, prev: Turn | null, right: number): Turn => {
-    if (g === 'rush') return { game: 'rush', spot: rushTurn(tuning, right, prev?.game === 'rush' ? prev.spot : null) }
+    turnNo.current++
+    if (g === 'rush') {
+      const due = again.current.findIndex(([, at]) => at <= turnNo.current)
+      if (due >= 0) return { game: 'rush', spot: again.current.splice(due, 1)[0][0] }
+      return { game: 'rush', spot: rushTurn(tuning, right, prev?.game === 'rush' ? prev.spot : null) }
+    }
     if (g === 'hunt') {
       const t = huntTurn(tuning, right, prev?.game === 'hunt' ? prev.pc : null)
       return { game: 'hunt', ...t, found: [] }
@@ -77,6 +115,11 @@ export function Games({ tuning, sounds, view }: { tuning: number[]; sounds: bool
 
   const start = (g: GameId) => {
     setGame(g)
+    setReveal(null)
+    setMissed([])
+    // Note rush starts with the spots missed last time
+    again.current = g === 'rush' ? loadReview(tuning).slice(0, 6).map((spot, i) => [spot, 2 + i * 3] as [Spot, number]) : []
+    turnNo.current = 0
     setScore(ZERO)
     scoreRef.current = ZERO
     setTurn(newTurn(g, null, 0))
@@ -100,6 +143,7 @@ export function Games({ tuning, sounds, view }: { tuning: number[]; sounds: bool
       if (ms <= 0) {
         window.clearInterval(id)
         setPhase('over')
+        if (game === 'rush') saveReview(missedRef.current)
         const points = scoreRef.current.points
         const saved = loadBest()
         if (points > 0 && points > (saved[game] ?? 0)) {
@@ -141,6 +185,7 @@ export function Games({ tuning, sounds, view }: { tuning: number[]; sounds: bool
       if (performance.now() >= endsAt.current) return
       setTurn(newTurn(t.game, t, scoreRef.current.right))
       setHits([])
+      setReveal(null)
     }, ms)
   }
 
@@ -152,9 +197,15 @@ export function Games({ tuning, sounds, view }: { tuning: number[]; sounds: bool
       setTurn(newTurn('rush', turn, scoreRef.current.right))
     } else {
       wrong()
-      say(`It was ${pitchClassName(turn.spot.midi)}`, false)
-      setHits([{ key: `r${key(turn.spot)}`, string: turn.spot.string, fret: turn.spot.fret, result: 'miss' }])
-      advance(turn, 700)
+      const spot = turn.spot
+      // Show and play the right answer, and ask this spot again in a few turns
+      say(`That's ${pitchClassName(spot.midi)}, not ${pitchClassName(pc)}`, false)
+      setReveal({ pc: spot.midi % 12, tapped: pc })
+      setHits([{ key: `r${key(spot)}`, string: spot.string, fret: spot.fret, result: 'hit' }])
+      setMissed((m) => (m.some((x) => x.midi === spot.midi && x.string === spot.string) ? m : [...m, spot]))
+      if (!again.current.some(([x]) => x === spot)) again.current.push([spot, turnNo.current + 3])
+      if (sounds) window.setTimeout(() => playTone(spot.midi, 0.9), 250)
+      advance(turn, 1800)
     }
   }
 
@@ -163,7 +214,10 @@ export function Games({ tuning, sounds, view }: { tuning: number[]; sounds: bool
     const midi = tuning[string - 1] + fret
     const here = { string, fret }
     if (turn.game === 'hunt') {
-      if (midi % 12 !== turn.pc) return wrong(here)
+      if (midi % 12 !== turn.pc) {
+        say(`That's ${pitchClassName(midi)}`, false)
+        return wrong(here)
+      }
       if (turn.found.includes(key(here))) return
       const found = [...turn.found, key(here)]
       const done = found.length === turn.spots.length
@@ -174,14 +228,26 @@ export function Games({ tuning, sounds, view }: { tuning: number[]; sounds: bool
         advance(turn, 600)
       }
     } else if (turn.game === 'octave') {
-      if (!turn.turn.targets.some((t) => t.string === string && t.fret === fret)) return wrong(here)
+      if (!turn.turn.targets.some((t) => t.string === string && t.fret === fret)) {
+        // show where the answers were, then move on
+        wrong(here)
+        say(`That's ${pitchClassName(midi)}. The ${turn.turn.kind === 'octave' ? 'octaves are' : 'same pitch is'} ringed`, false)
+        setHits(turn.turn.targets.map((t) => ({ key: `h${key(t)}`, string: t.string, fret: t.fret, result: 'hit' as const })))
+        setMissed((m) => [...m, ...turn.turn.targets.filter((t) => !m.some((x) => x.string === t.string && x.fret === t.fret))])
+        advance(turn, 1800)
+        return
+      }
       const p = right(0, midi)
       say(`${turn.turn.kind === 'octave' ? 'Octave' : 'Same pitch'} +${p}`, true)
       setHits(turn.turn.targets.map((t) => ({ key: `h${key(t)}`, string: t.string, fret: t.fret, result: t.string === string && t.fret === fret ? 'hit' : 'octave' })))
       advance(turn, 650)
     } else if (turn.game === 'climb') {
       const want = turn.steps[turn.next]
-      if (!want || want.string !== string || want.fret !== fret) return wrong(here)
+      if (!want || want.string !== string || want.fret !== fret) {
+        say(`That's ${pitchClassName(midi)}. Next is ${want ? pitchClassName(want.midi) : ''}`, false)
+        if (want) setMissed((m) => (m.includes(want) ? m : [...m, want]))
+        return wrong(here)
+      }
       const next = turn.next + 1
       const done = next === turn.steps.length
       const p = right(done ? 20 : 0, midi)
@@ -214,7 +280,9 @@ export function Games({ tuning, sounds, view }: { tuning: number[]; sounds: bool
         <div className="level-grid">
           {GAMES.map((g) => (
             <button key={g.id} className="level-card game-card" onClick={() => start(g.id)}>
-              <span className={`game-icon game-${g.id}`} aria-hidden="true" />
+              <span className="game-icon" aria-hidden="true">
+                <Icon name={GAME_ICONS[g.id]} size={22} />
+              </span>
               <span className="level-title">{g.title}</span>
               <span className="level-blurb">{g.blurb}</span>
               <span className="level-foot">
@@ -256,6 +324,28 @@ export function Games({ tuning, sounds, view }: { tuning: number[]; sounds: bool
             <span>best run</span>
           </div>
         </div>
+        {missed.length > 0 && (
+          <div className="game-review">
+            <p className="eyebrow">Notes to review</p>
+            <p className="hint">The spots you missed, with their names.{game === 'rush' ? ' They come back early in your next Note rush.' : ''}</p>
+            <Fretboard
+              notes={missed.slice(0, 16).map(asFretNote)}
+              ghosts={[]}
+              tuning={tuning}
+              capo={0}
+              maxFret={GAME_FRETS}
+              showPickZone={false}
+              options={{ ...view, labelMode: 'note', showGhosts: false }}
+            />
+            <div className="game-review-list">
+              {missed.slice(0, 16).map((m) => (
+                <span key={key(m)}>
+                  <strong>{pitchClassName(m.midi)}</strong> string {m.string}, {m.fret === 0 ? 'open' : `fret ${m.fret}`}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
         <div className="complete-actions">
           <button className="primary" onClick={() => start(game)}>
             Play again
@@ -310,7 +400,7 @@ export function Games({ tuning, sounds, view }: { tuning: number[]; sounds: bool
   const ring: FretMark[] = dots.length && !hits.length ? [{ key: `q${dots[0].key}`, string: dots[0].string, fret: dots[0].fret, result: 'waiting' }] : []
   const climbNames: FretNote[] = turn.game === 'climb' ? turn.steps.slice(0, turn.next).map(asFretNote) : []
   const mult = multiplier(score.run)
-  const sharps = turn.game === 'rush' && score.right >= 8
+  const sharps = turn.game === 'rush' && (score.right >= 8 || !isNatural(turn.spot.midi))
 
   return (
     <div className="game-play">
@@ -347,13 +437,17 @@ export function Games({ tuning, sounds, view }: { tuning: number[]; sounds: bool
         highlightStrings={turn.game === 'climb' ? [turn.string] : []}
         marks={[...ring, ...found, ...hits, ...misses]}
         names={climbNames}
-        options={{ ...view, labelMode: turn.game === 'rush' ? 'finger' : 'note', showGhosts: false }}
+        options={{ ...view, labelMode: turn.game === 'rush' && !reveal ? 'finger' : 'note', showGhosts: false }}
         onFretClick={turn.game === 'rush' ? undefined : onSpot}
       />
       {turn.game === 'rush' && (
         <div className={`name-pad${sharps ? ' all' : ''}`} role="group" aria-label="Note names">
           {(sharps ? Array.from({ length: 12 }, (_, i) => i) : NATURALS).map((pc) => (
-            <button key={pc} className="name-key" onClick={() => onName(pc)}>
+            <button
+              key={pc}
+              className={reveal?.pc === pc ? 'name-key right' : reveal?.tapped === pc ? 'name-key wrong' : 'name-key'}
+              onClick={() => onName(pc)}
+            >
               <strong>{pitchClassName(pc)}</strong>
               <span>{solfegeName(pc)}</span>
             </button>

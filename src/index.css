@@ -2181,9 +2181,9 @@ textarea {
   width: 30px;
   height: 30px;
   border-radius: 9px;
-  background: var(--grad);
-  color: #fff;
-  box-shadow: 0 4px 14px color-mix(in srgb, var(--accent) 40%, transparent);
+  background: radial-gradient(120% 120% at 25% 15%, #2b1a20, #0c0b0e 70%);
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--accent) 25%, transparent);
 }
 .brand-name {
   font-weight: 800;
@@ -4370,33 +4370,11 @@ svg text.fb-solfa-small {
   height: 38px;
   border-radius: 12px;
   background: var(--grad, var(--accent));
-  position: relative;
-  margin-bottom: 4px;
-  box-shadow: 0 6px 18px color-mix(in srgb, var(--accent) 30%, transparent);
-}
-.game-icon::after {
-  position: absolute;
-  inset: 0;
   display: grid;
   place-items: center;
   color: #fff;
-  font-weight: 800;
-  font-size: 1rem;
-}
-.game-rush::after {
-  content: 'A?';
-}
-.game-hunt::after {
-  content: '•••';
-  letter-spacing: -1px;
-}
-.game-octave::after {
-  content: '8va';
-  font-size: 0.85rem;
-}
-.game-climb::after {
-  content: '↗';
-  font-size: 1.3rem;
+  margin-bottom: 4px;
+  box-shadow: 0 6px 18px color-mix(in srgb, var(--accent) 30%, transparent);
 }
 .game-play {
   margin-top: 6px;
@@ -4488,4 +4466,31 @@ svg text.fb-solfa-small {
   .quiz-tabs .tab-short {
     display: inline;
   }
+}
+.game-review {
+  margin: 18px 0 6px;
+  text-align: left;
+}
+.game-review .eyebrow {
+  margin-bottom: 2px;
+}
+.game-review .hint {
+  margin: 0 0 8px;
+}
+.game-review-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+.game-review-list span {
+  font-size: 0.85rem;
+  color: var(--text-2);
+  background: var(--surface-2);
+  border-radius: 999px;
+  padding: 4px 10px;
+}
+.game-review-list strong {
+  color: var(--text);
+  margin-right: 2px;
 }
