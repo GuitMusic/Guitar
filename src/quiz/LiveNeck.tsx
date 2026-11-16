@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { NeckScroll } from '../components/NeckScroll'
 import { listenForPitch, micErrorMessage, playTone, type PitchListener } from '../audio/pitch'
 import { Fretboard, type FretMark } from '../components/Fretboard'
 import { useFretboardView } from '../components/fretboardView'
@@ -223,18 +224,20 @@ export function LiveNeck({ tuning }: { tuning: number[] }) {
         </div>
       </div>
 
-      <Fretboard
-        notes={lit}
-        ghosts={[]}
-        names={shownNames}
-        tuning={tuning}
-        capo={0}
-        maxFret={FRETS}
-        showPickZone={false}
-        marks={octaves}
-        onFretClick={onFretClick}
-        options={{ ...view, labelMode: 'note', showGhosts: false }}
-      />
+      <NeckScroll frets={FRETS} leftHanded={view.leftHanded}>
+        <Fretboard
+          notes={lit}
+          ghosts={[]}
+          names={shownNames}
+          tuning={tuning}
+          capo={0}
+          maxFret={FRETS}
+          showPickZone={false}
+          marks={octaves}
+          onFretClick={onFretClick}
+          options={{ ...view, labelMode: 'note', showGhosts: false }}
+        />
+      </NeckScroll>
 
       <div className="live-history">
         <span className="field-label">Last notes</span>

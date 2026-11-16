@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { NeckScroll } from '../components/NeckScroll'
 import { Fretboard } from '../components/Fretboard'
 import { useFretboardView } from '../components/fretboardView'
 import { playTone } from '../audio/pitch'
@@ -215,18 +216,20 @@ export function TuningsPage({ onOpen, onGo }: Props) {
         </div>
         <p className="hint">{scaleView.hint} Tap any spot to hear it.</p>
         <div className="tn-neck">
-          <Fretboard
-            notes={lit}
-            ghosts={[]}
-            names={names}
-            tuning={guide.strings}
-            capo={0}
-            maxFret={NECK_FRETS}
-            showPickZone={false}
-            highlightStrings={steps.filter((s) => s.semitones).map((s) => s.string)}
-            onFretClick={(_, __, midi) => playTone(midi, 1.4)}
-            options={{ ...view, labelMode: 'note', showGhosts: false }}
-          />
+          <NeckScroll frets={NECK_FRETS} leftHanded={view.leftHanded}>
+            <Fretboard
+              notes={lit}
+              ghosts={[]}
+              names={names}
+              tuning={guide.strings}
+              capo={0}
+              maxFret={NECK_FRETS}
+              showPickZone={false}
+              highlightStrings={steps.filter((s) => s.semitones).map((s) => s.string)}
+              onFretClick={(_, __, midi) => playTone(midi, 1.4)}
+              options={{ ...view, labelMode: 'note', showGhosts: false }}
+            />
+          </NeckScroll>
         </div>
         <div className="row">
           <button

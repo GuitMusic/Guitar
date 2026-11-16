@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { NeckScroll } from '../components/NeckScroll'
 import { audioNow, playTone, playToneAt } from '../audio/pitch'
 import { Fretboard } from '../components/Fretboard'
 import { useFretboardView } from '../components/fretboardView'
@@ -218,7 +219,9 @@ export function TheoryPage() {
               Hear it
             </button>
           </div>
-          <Fretboard notes={scaleDots} ghosts={[]} tuning={tuning} capo={0} maxFret={12} showPickZone={false} options={fbOptions} onNoteClick={play} />
+          <NeckScroll frets={12} leftHanded={fbOptions.leftHanded}>
+            <Fretboard notes={scaleDots} ghosts={[]} tuning={tuning} capo={0} maxFret={12} showPickZone={false} options={fbOptions} onNoteClick={play} />
+          </NeckScroll>
           <p className="hint">Tap a dot to hear it. Play the scale slowly in one box, up and down, saying the numbers out loud.</p>
         </section>
       )}
@@ -251,7 +254,9 @@ export function TheoryPage() {
               {chord.name} = {chord.toneNames.join(' ')}
             </span>
           </div>
-          <Fretboard notes={triadDots} ghosts={[]} tuning={tuning} capo={0} maxFret={15} showPickZone={false} options={fbOptions} onNoteClick={play} />
+          <NeckScroll frets={15} leftHanded={fbOptions.leftHanded}>
+            <Fretboard notes={triadDots} ghosts={[]} tuning={tuning} capo={0} maxFret={15} showPickZone={false} options={fbOptions} onNoteClick={play} />
+          </NeckScroll>
           <div className="inversion-row">
             {([0, 1, 2] as const).map((inv) => {
               const v = firstOf(inv)
@@ -283,7 +288,9 @@ export function TheoryPage() {
               </button>
             ))}
           </div>
-          <Fretboard notes={keyChordDots} ghosts={[]} tuning={tuning} capo={0} maxFret={12} showPickZone={false} options={fbOptions} onNoteClick={play} />
+          <NeckScroll frets={12} leftHanded={fbOptions.leftHanded}>
+            <Fretboard notes={keyChordDots} ghosts={[]} tuning={tuning} capo={0} maxFret={12} showPickZone={false} options={fbOptions} onNoteClick={play} />
+          </NeckScroll>
           <p className="hint">
             {shown.name} ({shown.roman}) on the neck: R, 3 and 5 are coloured, the other notes of the key are grey.
           </p>
