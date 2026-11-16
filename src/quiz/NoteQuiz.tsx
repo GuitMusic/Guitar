@@ -508,6 +508,8 @@ export function NoteQuiz() {
   )
 
   const running = phase !== 'idle' && phase !== 'summary'
+  /** Frets drawn: a low level gets a short neck with room to spare, so its frets come out bigger. */
+  const neckFrets = !running ? 12 : settings.maxFret <= 5 ? 7 : settings.maxFret <= 7 ? 9 : 12
   const reveal = phase === 'right' || phase === 'timeout'
   const toFretNote = (p: { string: number; fret: number }): FretNote => ({
     key: `${p.string}:${p.fret}`,
@@ -963,14 +965,19 @@ export function NoteQuiz() {
       {phase !== 'summary' && !(phase === 'idle' && (prefs.tab === 'live' || prefs.tab === 'games')) && (
         <>
           {phase === 'idle' && <h2 className="quiz-group">Your neck map</h2>}
-          <NeckScroll frets={running && settings.maxFret <= 5 ? 7 : 12} leftHanded={view.leftHanded}>
+          <NeckScroll
+            frets={neckFrets}
+            leftHanded={view.leftHanded}
+            focus={running ? [settings.minFret, settings.maxFret] : [0, 12]}
+            recenter={question}
+          >
             <Fretboard
               notes={shownNotes}
               ghosts={[]}
               highlightStrings={target}
               tuning={tuning.strings}
               capo={0}
-              maxFret={running && settings.maxFret <= 5 ? 7 : 12}
+              maxFret={neckFrets}
               showPickZone={false}
               marks={phase === 'idle' ? neckMarks : [...foundMarks, ...wrongTapMarks]}
               options={{ ...view, labelMode: dotNow ? 'finger' : 'note', showGhosts: false }}

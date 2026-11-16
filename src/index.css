@@ -5191,7 +5191,9 @@ svg text.fb-solfa-small {
     display: none;
   }
   .neck-scroll > svg.fretboard {
-    width: calc(var(--neck-frets, 12) * 62px + 170px);
+    /* The readable size, or the size NeckScroll picked to fit a fret window. 0.898 = the drawing
+       without its empty picking-hand strip. */
+    width: var(--neck-w, calc((var(--neck-frets, 12) * 62px + 170px) * 0.898));
     max-width: none;
   }
   .neck-scroll-hint {
@@ -5200,6 +5202,25 @@ svg text.fb-solfa-small {
     text-align: center;
     font-size: 0.75rem;
     color: var(--text-2);
+  }
+}
+@media (max-width: 700px) {
+  .neck-parts {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+    margin-top: 6px;
+  }
+  .neck-parts button.chip {
+    padding: 4px 10px;
+    font-size: 0.8rem;
+  }
+}
+@media (orientation: landscape) {
+  .neck-scroll-turn {
+    display: none !important;
   }
 }
 .retune-folded {
