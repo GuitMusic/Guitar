@@ -84,9 +84,13 @@ interface Props {
 
 export function Practice({ song, active }: Props) {
   const activeRef = useRef(active)
+<<<<<<< HEAD
   useEffect(() => {
     activeRef.current = active
   }, [active])
+=======
+  activeRef.current = active
+>>>>>>> c6fd92881384bf2937e78734e17f035020f99b90
   const scoreEl = useRef<HTMLDivElement>(null)
   const scrollEl = useRef<HTMLDivElement>(null)
   const apiRef = useRef<alphaTab.AlphaTabApi | null>(null)
