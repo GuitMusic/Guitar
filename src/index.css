@@ -428,7 +428,7 @@ main {
 }
 
 /* Wide screens and phones held sideways: the 3D hand sits beside the fretboard, as tall as it */
-@media (min-width: 900px), (orientation: landscape) and (min-width: 600px) {
+@media (min-width: 900px), (orientation: landscape) and (min-width: 540px) {
   .fretboard-row.with-hand {
     display: grid;
     grid-template-columns: minmax(0, 1.75fr) minmax(0, 1fr);
@@ -5355,4 +5355,33 @@ svg text.fb-solfa-small {
 :root[data-note-colors='on'] .live-name:not(.idle) {
   border-bottom: 5px solid var(--nc);
   padding-bottom: 4px;
+}
+
+/* Phone held sideways: the screen is too short for a player floating over the fretboard, so the
+   slim player becomes a narrow rail on the right edge, with the page kept clear of it */
+@media (max-height: 500px) and (orientation: landscape) {
+  .practice {
+    padding-right: calc(64px + env(safe-area-inset-right));
+  }
+  .mini-player {
+    left: auto;
+    right: calc(6px + env(safe-area-inset-right));
+    top: 50%;
+    bottom: auto;
+    width: 56px;
+    transform: translateY(-50%);
+    flex-direction: column;
+    gap: 8px;
+    padding: 8px 6px;
+    border-radius: 28px;
+  }
+  .mini-player.mini-hidden {
+    transform: translate(16px, -50%);
+  }
+  .mini-player .pb-progress,
+  .mini-player .mini-speed,
+  .mini-player .pb-sound-off,
+  .mini-player .time {
+    display: none;
+  }
 }
