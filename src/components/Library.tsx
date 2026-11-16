@@ -6,6 +6,7 @@ import { db } from '../library/db'
 import { BUILT_IN_SONGS, toOpenSong, type OpenSong } from '../library/songs'
 import { localDate, minutesByDay, needsRevisit, streak, summarize, type SongProgress } from '../progress/practiceLog'
 import { findSong } from '../progress/Progress'
+import { activeDays } from '../progress/activity'
 import { COLLECTIONS, collectionOf, groupTunes, type Collection, type Tune } from '../library/collections'
 
 export type ShortcutPage = 'tunings' | 'quiz' | 'theory' | 'tools' | 'progress'
@@ -229,7 +230,7 @@ export function Library({ onOpen, onGo }: Props) {
   const due = needsRevisit(progress).slice(0, 3)
   const bySong = new Map(progress.map((p) => [p.songId, p]))
   const last = progress[0]
-  const days = practice ? streak(practice) : 0
+  const days = practice ? streak([...practice, ...activeDays()]) : 0
   const week = practice ? minutesByDay(practice, 7, localDate()).reduce((a, d) => a + d.minutes, 0) : 0
   const fileInput = useRef<HTMLInputElement>(null)
   const [message, setMessage] = useState<{ kind: 'error' | 'ok'; text: string } | null>(null)

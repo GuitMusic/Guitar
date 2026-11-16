@@ -1,4 +1,6 @@
 import { useLiveQuery } from 'dexie-react-hooks'
+import { activeDays } from './activity'
+import { Training } from './Training'
 import { db } from '../library/db'
 import { BUILT_IN_SONGS, toOpenSong, type OpenSong } from '../library/songs'
 import { minutesByDay, needsRevisit, streak, summarize } from './practiceLog'
@@ -42,8 +44,9 @@ export function Progress({ onOpen }: Props) {
   return (
     <div className="progress">
       <h1>Progress</h1>
+      <Training streakDays={streak([...rows, ...activeDays()])} />
       {rows.length === 0 ? (
-        <p className="empty">Nothing logged yet. Time counts automatically while a song is playing.</p>
+        <p className="empty">No song time yet. Minutes count automatically while a song is playing.</p>
       ) : (
         <>
           <div className="quiz-stats">
@@ -52,16 +55,12 @@ export function Progress({ onOpen }: Props) {
               <span>played in the last 7 days</span>
             </div>
             <div>
-              <strong>{streak(rows)}</strong>
-              <span>days in a row</span>
-            </div>
-            <div>
               <strong>{songs.length}</strong>
               <span>songs practiced</span>
             </div>
           </div>
 
-          <h2>Minutes per day, last 2 weeks</h2>
+          <h2>Songs: minutes per day, last 2 weeks</h2>
           <div className="day-chart" role="img" aria-label={`Minutes per day: ${days.map((d) => `${d.date} ${d.minutes}`).join(', ')}`}>
             {days.map((d) => (
               <div key={d.date} className="day-col" title={`${d.date}: ${d.minutes} min`}>
@@ -89,7 +88,7 @@ export function Progress({ onOpen }: Props) {
             </>
           )}
 
-          <h2>Songs</h2>
+          <h2>Every song</h2>
           <table className="progress-table">
             <thead>
               <tr>

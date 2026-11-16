@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { markActive } from '../progress/activity'
 import { NeckScroll } from '../components/NeckScroll'
 import { listenForPitch, micErrorMessage, playChime, playTone, type PitchListener } from '../audio/pitch'
 import { Fretboard, type FretMark } from '../components/Fretboard'
@@ -320,6 +321,7 @@ export function NoteQuiz() {
     }
     const today = localDate()
     setDays((d) => (d.includes(today) ? d : [...d.slice(-60), today]))
+    markActive('notes')
     const label =
       q.mode === 'melody'
         ? q.targets.map(pitchClassName).join(' ')

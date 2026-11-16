@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { markActive } from '../progress/activity'
 import { audioNow, micErrorMessage } from '../audio/pitch'
 import { clickAt as playClick, listenForOnsets, outputDelay, type OnsetListener } from './onsets'
 import { clickAt, LESSONS, matchHit, median, tendency, verdict, WINDOWS, type Lesson, type Verdict } from './rhythm'
@@ -245,6 +246,7 @@ export function RhythmTrainer() {
     stop()
     setStatus('done')
     if (lesson) save({ done: { ...saved.done, [lesson.id]: true } })
+    markActive('rhythm')
   }
 
   useEffect(() => {

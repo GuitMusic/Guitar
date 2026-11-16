@@ -87,7 +87,7 @@ export function minutesByDay(rows: PracticeDay[], n = 14, today = localDate()): 
 }
 
 /** Days in a row with practice, ending today or yesterday. */
-export function streak(rows: PracticeDay[], today = localDate()): number {
+export function streak(rows: { date: string }[], today = localDate()): number {
   const days = new Set(rows.map((r) => r.date))
   let d = Date.parse(today)
   if (!days.has(today)) d -= 864e5
