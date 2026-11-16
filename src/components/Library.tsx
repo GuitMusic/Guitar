@@ -1,13 +1,14 @@
 import { Icon, type IconName } from './icons'
 import { useLiveQuery } from 'dexie-react-hooks'
-import { useRef, useState } from 'react'
+import { useRef, useState, type ReactNode } from 'react'
 import { ACCEPTED_FILES, songFromAsciiTab, songFromFile } from '../import/importFile'
 import { db } from '../library/db'
 import { BUILT_IN_SONGS, toOpenSong, type OpenSong } from '../library/songs'
 import { localDate, minutesByDay, needsRevisit, streak, summarize, type SongProgress } from '../progress/practiceLog'
 import { findSong } from '../progress/Progress'
+import { COLLECTIONS, collectionOf, groupTunes, type Collection, type Tune } from '../library/collections'
 
-export type ShortcutPage = 'tunings' | 'quiz' | 'tools' | 'progress'
+export type ShortcutPage = 'tunings' | 'quiz' | 'theory' | 'tools' | 'progress'
 
 interface Props {
   onOpen: (song: OpenSong) => void
@@ -102,7 +103,22 @@ export function SongCover({ id, big = false, dots: showDots = true }: { id: stri
   )
 }
 
-function SongTile({ song, p, onOpen, onRemove }: { song: OpenSong; p?: SongProgress; onOpen: () => void; onRemove?: () => void }) {
+function SongTile({
+  song,
+  p,
+  onOpen,
+  onRemove,
+  versions,
+  onOpenVersion,
+}: {
+  song: OpenSong
+  p?: SongProgress
+  onOpen: () => void
+  onRemove?: () => void
+  /** Other arrangements of the same tune, in other tunings */
+  versions?: OpenSong[]
+  onOpenVersion?: (s: OpenSong) => void
+}) {
   const facts = songFacts(song)
   const pct = p ? Math.min(100, Math.round(p.topSpeed * 100)) : 0
   return (
@@ -131,6 +147,16 @@ function SongTile({ song, p, onOpen, onRemove }: { song: OpenSong; p?: SongProgr
           </span>
         )}
       </button>
+      {versions && versions.length > 0 && (
+        <div className="tile-versions">
+          <span>Also in</span>
+          {versions.map((v) => (
+            <button key={v.id} className="chip" onClick={() => onOpenVersion?.(v)}>
+              {v.tuning ? TUNING_NAMES[v.tuning] : 'Standard'}
+            </button>
+          ))}
+        </div>
+      )}
       {onRemove && (
         <button className="tile-remove" aria-label={`Remove ${song.title}`} onClick={onRemove}>
           ×
@@ -140,7 +166,7 @@ function SongTile({ song, p, onOpen, onRemove }: { song: OpenSong; p?: SongProgr
   )
 }
 
-type Kind = 'all' | 'song' | 'study' | 'mine'
+type Kind = 'all' | Collection | 'mine'
 type TuningFilter = 'any' | 'standard' | 'dadgad' | 'open-d'
 interface Filter {
   kind: Kind
@@ -155,11 +181,10 @@ const TUNING_FILTERS: { id: TuningFilter; label: string }[] = [
 ]
 const KINDS: { id: Kind; label: string }[] = [
   { id: 'all', label: 'All' },
-  { id: 'song', label: 'Songs' },
-  { id: 'study', label: 'Studies' },
+  ...COLLECTIONS.map((c) => ({ id: c.id, label: c.label })),
   { id: 'mine', label: 'Imported' },
 ]
-const FILTER_KEY = 'home-filter-v1'
+const FILTER_KEY = 'home-filter-v2'
 function loadFilter(): Filter {
   try {
     const f = JSON.parse(localStorage.getItem(FILTER_KEY) ?? '') as Filter
@@ -172,11 +197,29 @@ function loadFilter(): Filter {
 }
 
 const SHORTCUTS: { page: ShortcutPage; title: string; sub: string; icon: IconName; tone: string }[] = [
+  { page: 'quiz', title: 'Note finder', sub: 'Learn the neck, games', icon: 'fretboard', tone: 'violet' },
+  { page: 'theory', title: 'Theory', sub: 'Scales, chords, jam', icon: 'triad', tone: 'amber' },
   { page: 'tunings', title: 'DADGAD & Open D', sub: 'Lessons, chords, songs', icon: 'headstock', tone: 'rose' },
-  { page: 'quiz', title: 'Note finder', sub: 'Learn the neck by ear', icon: 'fretboard', tone: 'violet' },
-  { page: 'tools', title: 'Tune up', sub: 'Tuner and metronome', icon: 'metronome', tone: 'teal' },
-  { page: 'progress', title: 'Your progress', sub: 'Streak and minutes', icon: 'progress', tone: 'amber' },
+  { page: 'tools', title: 'Tools', sub: 'Tuner, timing, singing', icon: 'metronome', tone: 'teal' },
 ]
+
+/** A sideways row of tunes with a link to the full, filtered list. */
+function Shelf({ title, note, count, onSeeAll, children }: { title: string; note?: string; count?: number; onSeeAll?: () => void; children: ReactNode }) {
+  return (
+    <section className="shelf">
+      <div className="shelf-head">
+        <h2>{title}</h2>
+        {note && <span className="shelf-note">{note}</span>}
+        {onSeeAll && (
+          <button className="link shelf-all" onClick={onSeeAll}>
+            See all{count ? ` ${count}` : ''}
+          </button>
+        )}
+      </div>
+      <ul className="tiles shelf-row">{children}</ul>
+    </section>
+  )
+}
 
 /** The home screen: what to play next, quick tools, and every song. */
 export function Library({ onOpen, onGo }: Props) {
@@ -211,12 +254,23 @@ export function Library({ onOpen, onGo }: Props) {
   const kind: Kind = savedKind === 'mine' && songs?.length === 0 ? 'all' : savedKind
   const all = [...mine, ...BUILT_IN_SONGS]
   const q = query.trim().toLowerCase()
+  const [showAll, setShowAll] = useState(false)
+  const browseRef = useRef<HTMLElement>(null)
+  const filtered = kind !== 'all' || level !== 0 || tuning !== 'any' || q !== ''
   const shown = all
-    .filter((s) => (kind === 'all' ? true : kind === 'mine' ? !s.builtIn : s.builtIn && s.kind === kind))
+    .filter((s) => (kind === 'all' ? true : kind === 'mine' ? !s.builtIn : collectionOf(s) === kind))
     .filter((s) => !level || s.level === level)
     .filter((s) => tuning === 'any' || (s.tuning ?? 'standard') === tuning)
     .filter((s) => !q || `${s.title} ${s.description ?? ''} ${s.tuning ? TUNING_NAMES[s.tuning] : ''}`.toLowerCase().includes(q))
     .sort((a, b) => (a.builtIn === b.builtIn ? (a.level ?? 0) - (b.level ?? 0) : a.builtIn ? 1 : -1))
+  const shownTunes = groupTunes(shown)
+  const builtInTunes = groupTunes(BUILT_IN_SONGS)
+  const seeAll = (k: Kind) => {
+    setFilter({ kind: k, level: 0, tuning: 'any' })
+    setQuery('')
+    setShowAll(true)
+    requestAnimationFrame(() => browseRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
+  }
 
   const importFiles = async (files: FileList | File[]) => {
     const added: string[] = []
@@ -254,6 +308,32 @@ export function Library({ onOpen, onGo }: Props) {
     const s = await findSong(id)
     if (s) void open(s)
   }
+
+  const tile = (t: Tune) => (
+    <SongTile
+      key={t.key}
+      song={t.main}
+      p={bySong.get(t.main.id)}
+      onOpen={() => void open(t.main)}
+      versions={t.versions.slice(1)}
+      onOpenVersion={(v) => void open(v)}
+      onRemove={
+        t.main.builtIn
+          ? undefined
+          : () => {
+              if (window.confirm(`Remove ${t.main.title} from your library?`)) {
+                void db.songs.delete(t.main.id)
+                void db.settings.delete(t.main.id)
+              }
+            }
+      }
+    />
+  )
+  // Pieces at the player's level (intermediate) that they have played least, standard tuning first
+  const forYou = builtInTunes
+    .filter((t) => (t.main.level ?? 0) >= 3 && t.main.kind === 'song')
+    .sort((a, b) => (bySong.get(a.main.id)?.totalSeconds ?? 0) - (bySong.get(b.main.id)?.totalSeconds ?? 0))
+    .slice(0, 12)
 
   const featuredId = last?.songId ?? FIRST_SONG
   const featured = BUILT_IN_SONGS.find((s) => s.id === featuredId)
@@ -343,81 +423,9 @@ export function Library({ onOpen, onGo }: Props) {
         ))}
       </div>
 
-      <section className="shelf browse">
-        <div className="shelf-head">
-          <h2>Songs and studies</h2>
-          <span className="shelf-note">
-            {shown.length} of {all.length}
-          </span>
-        </div>
-        <div className="browse-bar">
-          <label className="browse-search">
-            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
-              <path d="M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14zM20 20l-4-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-            </svg>
-            <input type="search" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search songs and studies" aria-label="Search songs and studies" />
-          </label>
-          <div className="seg" role="group" aria-label="Type">
-            {KINDS.filter((k) => k.id !== 'mine' || mine.length > 0).map((k) => (
-              <button key={k.id} className={kind === k.id ? 'on' : ''} aria-pressed={kind === k.id} onClick={() => setFilter({ kind: k.id, level, tuning })}>
-                {k.label}
-              </button>
-            ))}
-          </div>
-          <div className="seg" role="group" aria-label="Level">
-            {([0, 1, 2, 3, 4] as const).map((l) => (
-              <button
-                key={l}
-                className={`${level === l ? 'on' : ''}${l ? ` level-${l}` : ''}`}
-                aria-pressed={level === l}
-                onClick={() => setFilter({ kind, level: l, tuning })}
-              >
-                {l ? LEVELS[l] : 'Any level'}
-              </button>
-            ))}
-          </div>
-          <div className="seg" role="group" aria-label="Tuning">
-            {TUNING_FILTERS.map((t) => (
-              <button key={t.id} className={tuning === t.id ? 'on' : ''} aria-pressed={tuning === t.id} onClick={() => setFilter({ kind, level, tuning: t.id })}>
-                {t.label}
-              </button>
-            ))}
-          </div>
-        </div>
-        {shown.length > 0 ? (
-          <ul className="tiles">
-            {shown.map((s) => (
-              <SongTile
-                key={s.id}
-                song={s}
-                p={bySong.get(s.id)}
-                onOpen={() => void open(s)}
-                onRemove={
-                  s.builtIn
-                    ? undefined
-                    : () => {
-                        if (window.confirm(`Remove ${s.title} from your library?`)) {
-                          void db.songs.delete(s.id)
-                          void db.settings.delete(s.id)
-                        }
-                      }
-                }
-              />
-            ))}
-          </ul>
-        ) : (
-          <div className="browse-empty">
-            Nothing matches.{' '}
-            <button className="link" onClick={() => { setQuery(''); setFilter({ kind: 'all', level: 0, tuning: 'any' }) }}>
-              Show everything
-            </button>
-          </div>
-        )}
-      </section>
-
-      <section className="import-card">
+      <section className={`import-card${mine.length ? ' compact' : ''}`}>
         <div className="import-text">
-          <h2>Bring your own songs</h2>
+          <h2>{mine.length ? 'Add more of your songs' : 'Bring your own songs'}</h2>
           <p>
             Landslide, Blackbird and other songs under copyright can’t ship with the app, but any tab you own works: Guitar Pro
             (.gp, .gpx, .gp5, .gp4, .gp3), MusicXML or a plain text tab. Drop a file here. It stays on this device.
@@ -471,6 +479,83 @@ export function Library({ onOpen, onGo }: Props) {
           </div>
         )}
       </section>
+
+      {mine.length > 0 && (
+        <Shelf title="Your songs" note="Imported on this device" count={mine.length} onSeeAll={() => seeAll('mine')}>
+          {groupTunes(mine).map(tile)}
+        </Shelf>
+      )}
+
+      <Shelf title="For your level" note="Intermediate pieces you have played least">
+        {forYou.map(tile)}
+      </Shelf>
+
+      {COLLECTIONS.map((c) => {
+        const tunes = builtInTunes.filter((t) => collectionOf(t.main) === c.id)
+        return (
+          <Shelf key={c.id} title={c.label} note={c.note} count={tunes.length} onSeeAll={() => seeAll(c.id)}>
+            {tunes.slice(0, 12).map(tile)}
+          </Shelf>
+        )
+      })}
+
+      <section className="shelf browse" ref={browseRef}>
+        <div className="shelf-head">
+          <h2>All songs and studies</h2>
+          <span className="shelf-note">
+            {shownTunes.length} of {groupTunes(all).length}
+          </span>
+        </div>
+        <div className="browse-bar">
+          <label className="browse-search">
+            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+              <path d="M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14zM20 20l-4-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+            </svg>
+            <input type="search" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search songs and studies" aria-label="Search songs and studies" />
+          </label>
+          <div className="seg" role="group" aria-label="Type">
+            {KINDS.filter((k) => k.id !== 'mine' || mine.length > 0).map((k) => (
+              <button key={k.id} className={kind === k.id ? 'on' : ''} aria-pressed={kind === k.id} onClick={() => setFilter({ kind: k.id, level, tuning })}>
+                {k.label}
+              </button>
+            ))}
+          </div>
+          <div className="seg" role="group" aria-label="Level">
+            {([0, 1, 2, 3, 4] as const).map((l) => (
+              <button
+                key={l}
+                className={`${level === l ? 'on' : ''}${l ? ` level-${l}` : ''}`}
+                aria-pressed={level === l}
+                onClick={() => setFilter({ kind, level: l, tuning })}
+              >
+                {l ? LEVELS[l] : 'Any level'}
+              </button>
+            ))}
+          </div>
+          <div className="seg" role="group" aria-label="Tuning">
+            {TUNING_FILTERS.map((t) => (
+              <button key={t.id} className={tuning === t.id ? 'on' : ''} aria-pressed={tuning === t.id} onClick={() => setFilter({ kind, level, tuning: t.id })}>
+                {t.label}
+              </button>
+            ))}
+          </div>
+        </div>
+        {!filtered && !showAll ? (
+          <button className="ghost browse-show" onClick={() => setShowAll(true)}>
+            Show all {groupTunes(all).length}
+          </button>
+        ) : shownTunes.length > 0 ? (
+          <ul className="tiles">{shownTunes.map(tile)}</ul>
+        ) : (
+          <div className="browse-empty">
+            Nothing matches.{' '}
+            <button className="link" onClick={() => { setQuery(''); setFilter({ kind: 'all', level: 0, tuning: 'any' }); setShowAll(true) }}>
+              Show everything
+            </button>
+          </div>
+        )}
+      </section>
+
     </div>
   )
 }

@@ -5029,3 +5029,148 @@ svg text.fb-solfa-small {
   display: flex;
   gap: 8px;
 }
+.tools-sub {
+  margin: 4px 0 10px;
+  font-size: 1.4rem;
+}
+
+/* Five tabs: Home, Practice, Learn, Tools, Progress */
+@media (max-width: 760px) {
+  nav.main-nav {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+  nav.main-nav .nav-item {
+    font-size: 0.72rem;
+  }
+}
+/* Note finder, Theory and Tunings under one Learn tab */
+.learn-switch {
+  display: flex;
+  max-width: 1000px;
+  margin: 0 auto 14px;
+  width: fit-content;
+}
+.learn-switch button {
+  padding: 8px 18px;
+  font-weight: 650;
+}
+@media (max-width: 520px) {
+  .learn-switch {
+    width: 100%;
+  }
+  .learn-switch button {
+    flex: 1 1 0;
+    padding: 8px 6px;
+  }
+}
+
+/* Home shelves: sideways rows of tunes */
+.shelf-all {
+  margin-left: auto;
+  font-weight: 650;
+  color: var(--accent);
+  background: none;
+  border: none;
+  padding: 4px 0;
+}
+.tiles.shelf-row {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 240px;
+  grid-template-columns: none;
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  scrollbar-width: thin;
+  padding: 2px 2px 10px;
+  margin: 0 -2px;
+}
+.tiles.shelf-row > .tile {
+  scroll-snap-align: start;
+}
+.tile-versions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+  font-size: 0.78rem;
+  color: var(--text-2);
+}
+.tile-versions .chip {
+  padding: 3px 10px;
+  font-size: 0.78rem;
+}
+.browse-show {
+  width: 100%;
+  padding: 12px;
+}
+.import-card {
+  margin-top: 22px;
+}
+.import-card.compact {
+  padding: 14px 18px;
+}
+.import-card.compact p {
+  display: none;
+}
+@media (max-width: 700px) {
+  .tiles.shelf-row {
+    grid-auto-columns: 72%;
+    gap: 12px;
+  }
+  /* Shelf tiles keep the picture on top, even on a phone */
+  .shelf-row .tile-main {
+    display: flex;
+    flex-direction: column;
+    padding: 0 0 12px;
+  }
+  .shelf-row .tile-art {
+    aspect-ratio: 16 / 8;
+    min-height: 0;
+    margin-bottom: 6px;
+  }
+  .shelf-row .tile-art .level {
+    display: inline-block;
+  }
+  .shelf-row .tile-title,
+  .shelf-row .tile-sub,
+  .shelf-row .tile-facts {
+    padding-left: 12px;
+  }
+  .shelf-row .tile-facts .tile-level {
+    display: none;
+  }
+  .shelf-row .tile-play {
+    left: auto;
+    right: 12px;
+    top: auto;
+    bottom: 12px;
+  }
+  .import-card {
+    padding: 16px;
+  }
+}
+.shelf-row > .tile {
+  display: flex;
+  flex-direction: column;
+}
+.shelf-row > .tile > .tile-main {
+  flex: 1 1 auto;
+  height: auto;
+}
+.shelf .shelf-head .shelf-note {
+  order: 3;
+  flex-basis: 100%;
+}
+.shelf.browse .shelf-head .shelf-note {
+  order: 0;
+  flex-basis: auto;
+}
+@media (max-width: 700px) {
+  .tiles.shelf-row {
+    grid-auto-columns: 64%;
+  }
+  .shelf-row .tile-sub {
+    -webkit-line-clamp: 2;
+  }
+}
