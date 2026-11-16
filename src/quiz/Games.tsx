@@ -7,11 +7,13 @@ import type { FretboardOptions } from '../components/Fretboard'
 import { pitchClassName, solfegeName } from '../music/notes'
 import { noteColorStyle } from '../music/noteColors'
 import { NoteSwatch } from '../components/NoteColorStrip'
+import { DIFFICULTY_LABELS, DifficultySlider, loadDifficulty, saveDifficulty, type Difficulty } from '../components/DifficultySlider'
 import type { FretNote } from '../music/types'
 import {
   climbTurn,
-  GAME_FRETS,
+  GAME_LEVEL_DETAIL,
   GAME_SECONDS,
+  gameLevel,
   GAMES,
   huntTurn,
   isNatural,
@@ -46,13 +48,13 @@ const GAME_ICONS: Record<GameId, IconName> = { rush: 'bolt', hunt: 'search-dot',
 const CONFETTI = ['#ff7a45', '#ff4f7b', '#fbbf24', '#2dd4bf', '#a78bfa', '#7cc4ff']
 
 /** Note rush spots missed in the last game, as "string:fret", so the next game asks them first. */
-function loadReview(tuning: number[]): Spot[] {
+function loadReview(tuning: number[], frets: number, naturalsOnly: boolean): Spot[] {
   try {
     const keys: string[] = JSON.parse(localStorage.getItem('games-review') ?? '[]')
     return keys.map((k) => {
       const [string, fret] = k.split(':').map(Number)
       return { string, fret, midi: tuning[string - 1] + fret }
-    }).filter((s) => s.string >= 1 && s.string <= tuning.length && s.fret >= 0 && s.fret <= GAME_FRETS)
+    }).filter((s) => s.string >= 1 && s.string <= tuning.length && s.fret >= 0 && s.fret <= frets && (!naturalsOnly || isNatural(s.midi)))
   } catch {
     return []
   }
@@ -73,10 +75,11 @@ function asFretNote(s: Spot): FretNote {
 /** Minute-long tap games for learning the notes on the neck. */
 export function Games({ tuning, sounds, view }: { tuning: number[]; sounds: boolean; view: FretboardOptions }) {
   const [game, setGame] = useState<GameId | null>(null)
+  const [difficulty, setDifficulty] = useState<Difficulty>(() => loadDifficulty('games-difficulty'))
   const [phase, setPhase] = useState<'pick' | 'play' | 'over'>('pick')
   const [turn, setTurn] = useState<Turn | null>(null)
   const [score, setScore] = useState<Score>(ZERO)
-  const [best, setBest] = useState(loadBest)
+  const [best, setBest] = useState(() => loadBest(difficulty))
   const [newBest, setNewBest] = useState(false)
   const [left, setLeft] = useState(GAME_SECONDS)
   const [misses, setMisses] = useState<FretMark[]>([])
@@ -98,21 +101,32 @@ export function Games({ tuning, sounds, view }: { tuning: number[]; sounds: bool
     missedRef.current = missed
   })
 
+  const level = gameLevel(game ?? 'rush', difficulty)
+  /** Added to a miss message on Hard, where a miss costs points. */
+  const lost = level.penalty ? ` −${level.penalty}` : ''
+
+  const pickDifficulty = (d: Difficulty) => {
+    setDifficulty(d)
+    saveDifficulty('games-difficulty', d)
+    setBest(loadBest(d))
+  }
+
   const say = (text: string, good: boolean) => setNote((n) => ({ id: (n?.id ?? 0) + 1, text, good }))
 
   const newTurn = (g: GameId, prev: Turn | null, right: number): Turn => {
     turnNo.current++
+    const lv = gameLevel(g, difficulty)
     if (g === 'rush') {
       const due = again.current.findIndex(([, at]) => at <= turnNo.current)
       if (due >= 0) return { game: 'rush', spot: again.current.splice(due, 1)[0][0] }
-      return { game: 'rush', spot: rushTurn(tuning, right, prev?.game === 'rush' ? prev.spot : null) }
+      return { game: 'rush', spot: rushTurn(tuning, right, prev?.game === 'rush' ? prev.spot : null, Math.random, lv) }
     }
     if (g === 'hunt') {
-      const t = huntTurn(tuning, right, prev?.game === 'hunt' ? prev.pc : null)
+      const t = huntTurn(tuning, right, prev?.game === 'hunt' ? prev.pc : null, Math.random, lv)
       return { game: 'hunt', ...t, found: [] }
     }
-    if (g === 'octave') return { game: 'octave', turn: octaveTurn(tuning, prev?.game === 'octave' ? prev.turn.from : null) }
-    const t = climbTurn(tuning, prev?.game === 'climb' ? prev.string : null)
+    if (g === 'octave') return { game: 'octave', turn: octaveTurn(tuning, prev?.game === 'octave' ? prev.turn.from : null, Math.random, lv) }
+    const t = climbTurn(tuning, prev?.game === 'climb' ? prev.string : null, Math.random, lv)
     return { game: 'climb', ...t, next: 0 }
   }
 
@@ -121,7 +135,7 @@ export function Games({ tuning, sounds, view }: { tuning: number[]; sounds: bool
     setReveal(null)
     setMissed([])
     // Note rush starts with the spots missed last time
-    again.current = g === 'rush' ? loadReview(tuning).slice(0, 6).map((spot, i) => [spot, 2 + i * 3] as [Spot, number]) : []
+    again.current = g === 'rush' ? loadReview(tuning, gameLevel('rush', difficulty).frets, difficulty === 0).slice(0, 6).map((spot, i) => [spot, 2 + i * 3] as [Spot, number]) : []
     turnNo.current = 0
     setScore(ZERO)
     scoreRef.current = ZERO
@@ -149,17 +163,17 @@ export function Games({ tuning, sounds, view }: { tuning: number[]; sounds: bool
         markActive('games')
         if (game === 'rush') saveReview(missedRef.current)
         const points = scoreRef.current.points
-        const saved = loadBest()
+        const saved = loadBest(difficulty)
         if (points > 0 && points > (saved[game] ?? 0)) {
           const next = { ...saved, [game]: points }
-          saveBest(next)
+          saveBest(next, difficulty)
           setBest(next)
           setNewBest(true)
         }
       }
     }, 100)
     return () => window.clearInterval(id)
-  }, [phase, game])
+  }, [phase, game, difficulty])
 
   const right = (bonus = 0, midi?: number) => {
     const s = scoreRef.current
@@ -174,7 +188,7 @@ export function Games({ tuning, sounds, view }: { tuning: number[]; sounds: bool
 
   const wrong = (spot?: { string: number; fret: number }) => {
     const s = scoreRef.current
-    const next = { ...s, wrong: s.wrong + 1, run: 0 }
+    const next = { ...s, points: Math.max(0, s.points - level.penalty), wrong: s.wrong + 1, run: 0 }
     scoreRef.current = next
     setScore(next)
     if (sounds) playChime('miss')
@@ -203,7 +217,7 @@ export function Games({ tuning, sounds, view }: { tuning: number[]; sounds: bool
       wrong()
       const spot = turn.spot
       // Show and play the right answer, and ask this spot again in a few turns
-      say(`That's ${pitchClassName(spot.midi)}, not ${pitchClassName(pc)}`, false)
+      say(`That's ${pitchClassName(spot.midi)}, not ${pitchClassName(pc)}${lost}`, false)
       setReveal({ pc: spot.midi % 12, tapped: pc })
       setHits([{ key: `r${key(spot)}`, string: spot.string, fret: spot.fret, result: 'hit' }])
       setMissed((m) => (m.some((x) => x.midi === spot.midi && x.string === spot.string) ? m : [...m, spot]))
@@ -219,7 +233,7 @@ export function Games({ tuning, sounds, view }: { tuning: number[]; sounds: bool
     const here = { string, fret }
     if (turn.game === 'hunt') {
       if (midi % 12 !== turn.pc) {
-        say(`That's ${pitchClassName(midi)}`, false)
+        say(`That's ${pitchClassName(midi)}${lost}`, false)
         return wrong(here)
       }
       if (turn.found.includes(key(here))) return
@@ -235,7 +249,7 @@ export function Games({ tuning, sounds, view }: { tuning: number[]; sounds: bool
       if (!turn.turn.targets.some((t) => t.string === string && t.fret === fret)) {
         // show where the answers were, then move on
         wrong(here)
-        say(`That's ${pitchClassName(midi)}. The ${turn.turn.kind === 'octave' ? 'octaves are' : 'same pitch is'} ringed`, false)
+        say(`That's ${pitchClassName(midi)}${lost}. The ${turn.turn.kind === 'octave' ? 'octaves are' : 'same pitch is'} ringed`, false)
         setHits(turn.turn.targets.map((t) => ({ key: `h${key(t)}`, string: t.string, fret: t.fret, result: 'hit' as const })))
         setMissed((m) => [...m, ...turn.turn.targets.filter((t) => !m.some((x) => x.string === t.string && x.fret === t.fret))])
         advance(turn, 1800)
@@ -248,7 +262,7 @@ export function Games({ tuning, sounds, view }: { tuning: number[]; sounds: bool
     } else if (turn.game === 'climb') {
       const want = turn.steps[turn.next]
       if (!want || want.string !== string || want.fret !== fret) {
-        say(`That's ${pitchClassName(midi)}. Next is ${want ? pitchClassName(want.midi) : ''}`, false)
+        say(`That's ${pitchClassName(midi)}${lost}. Next is ${want ? pitchClassName(want.midi) : ''}`, false)
         if (want) setMissed((m) => (m.includes(want) ? m : [...m, want]))
         return wrong(here)
       }
@@ -281,6 +295,7 @@ export function Games({ tuning, sounds, view }: { tuning: number[]; sounds: bool
     return (
       <div className="games">
         <p className="hint">One minute each, answered by tapping. No guitar or mic needed, so you can play anywhere. Beat your best score.</p>
+        <DifficultySlider value={difficulty} onChange={pickDifficulty} detail={GAME_LEVEL_DETAIL[difficulty]} />
         <div className="level-grid">
           {GAMES.map((g) => (
             <button key={g.id} className="level-card game-card" onClick={() => start(g.id)}>
@@ -290,7 +305,7 @@ export function Games({ tuning, sounds, view }: { tuning: number[]; sounds: bool
               <span className="level-title">{g.title}</span>
               <span className="level-blurb">{g.blurb}</span>
               <span className="level-foot">
-                <span className="game-best">{best[g.id] ? `Best ${best[g.id]}` : 'Not played yet'}</span>
+                <span className="game-best">{best[g.id] ? `Best ${best[g.id]}` : `Not played on ${DIFFICULTY_LABELS[difficulty]}`}</span>
                 <span className="level-tag">Play</span>
               </span>
             </button>
@@ -311,7 +326,9 @@ export function Games({ tuning, sounds, view }: { tuning: number[]; sounds: bool
             ))}
           </div>
         )}
-        <p className="eyebrow">{info.title}</p>
+        <p className="eyebrow">
+          {info.title} · {DIFFICULTY_LABELS[difficulty]}
+        </p>
         <div className="quiz-score">{score.points}</div>
         <p className="complete-line">{newBest ? 'New best score!' : best[game] ? `Your best is ${best[game]}.` : 'Time.'}</p>
         <div className="complete-stats">
@@ -337,7 +354,7 @@ export function Games({ tuning, sounds, view }: { tuning: number[]; sounds: bool
               ghosts={[]}
               tuning={tuning}
               capo={0}
-              maxFret={GAME_FRETS}
+              maxFret={level.frets}
               showPickZone={false}
               options={{ ...view, labelMode: 'note', showGhosts: false }}
             />
@@ -405,12 +422,16 @@ export function Games({ tuning, sounds, view }: { tuning: number[]; sounds: bool
   const ring: FretMark[] = dots.length && !hits.length ? [{ key: `q${dots[0].key}`, string: dots[0].string, fret: dots[0].fret, result: 'waiting' }] : []
   const climbNames: FretNote[] = turn.game === 'climb' ? turn.steps.slice(0, turn.next).map(asFretNote) : []
   const mult = multiplier(score.run)
-  const sharps = turn.game === 'rush' && (score.right >= 8 || !isNatural(turn.spot.midi))
+  const sharps =
+    turn.game === 'rush' && (level.sharps === 'always' || (level.sharps === 'later' && score.right >= 8) || !isNatural(turn.spot.midi))
 
   return (
     <div className="game-play">
       <div className="game-bar">
-        <span className="quiz-round-title">{info.title}</span>
+        <span className="quiz-round-title">
+          {info.title}
+          <span className="game-level"> · {DIFFICULTY_LABELS[difficulty]}</span>
+        </span>
         <span className="game-score" aria-label={`${score.points} points`}>
           {score.points}
         </span>
@@ -437,7 +458,7 @@ export function Games({ tuning, sounds, view }: { tuning: number[]; sounds: bool
         ghosts={[]}
         tuning={tuning}
         capo={0}
-        maxFret={GAME_FRETS}
+        maxFret={level.frets}
         showPickZone={false}
         highlightStrings={turn.game === 'climb' ? [turn.string] : []}
         marks={[...ring, ...found, ...hits, ...misses]}

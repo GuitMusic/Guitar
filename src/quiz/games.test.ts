@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { STANDARD_TUNING } from '../music/notes'
-import { climbTurn, huntTurn, isNatural, multiplier, neckSpots, octaveTurn, rushTurn } from './games'
+import { climbTurn, gameLevel, huntTurn, isNatural, multiplier, neckSpots, octaveTurn, rushTurn } from './games'
 
 const seq = (seed = 3) => () => ((seed = (seed * 16807) % 2147483647) / 2147483647)
 
@@ -49,5 +49,31 @@ describe('games', () => {
     const t = climbTurn(STANDARD_TUNING, null, () => 0.7) // string 5, A
     expect(t.string).toBe(5)
     expect(t.steps.map((s) => s.fret)).toEqual([0, 2, 3, 5, 7, 8, 10, 12])
+  })
+
+  it('easy keeps to the first frets and natural notes, even after many right', () => {
+    const r = seq(7)
+    const easy = gameLevel('rush', 0)
+    for (let i = 0; i < 100; i++) {
+      const s = rushTurn(STANDARD_TUNING, 50, null, r, easy)
+      expect(s.fret).toBeLessThanOrEqual(5)
+      expect(isNatural(s.midi)).toBe(true)
+      const h = huntTurn(STANDARD_TUNING, 50, null, r, gameLevel('hunt', 0))
+      expect(isNatural(h.pc)).toBe(true)
+      expect(h.spots.every((x) => x.fret <= 5)).toBe(true)
+      const o = octaveTurn(STANDARD_TUNING, null, r, gameLevel('octave', 0))
+      expect(o.kind).toBe('octave')
+      expect(o.targets.length).toBeGreaterThan(0)
+      expect([o.from, ...o.targets].every((x) => x.fret <= 7)).toBe(true)
+    }
+  })
+
+  it('hard asks sharps from the first turn and climbs every fret', () => {
+    const r = seq(11)
+    const hard = gameLevel('rush', 2)
+    expect(hard.penalty).toBeGreaterThan(0)
+    const names = new Set(Array.from({ length: 200 }, () => rushTurn(STANDARD_TUNING, 0, null, r, hard).midi % 12))
+    expect(names.size).toBe(12)
+    expect(climbTurn(STANDARD_TUNING, null, r, gameLevel('climb', 2)).steps).toHaveLength(13)
   })
 })
