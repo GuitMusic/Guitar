@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { VocalTrainer } from './VocalTrainer'
 import { listenForPitch, micErrorMessage, playChime, playTone, type PitchListener } from '../audio/pitch'
 import { Fretboard, type FretMark } from '../components/Fretboard'
-import { setView, useFretboardView } from '../components/fretboardView'
+import { useFretboardView } from '../components/fretboardView'
 import { noteName, pitchClassName, solfegeName, TUNINGS } from '../music/notes'
 import type { FretNote } from '../music/types'
 import { localDate } from '../progress/practiceLog'
@@ -852,9 +852,6 @@ export function NoteQuiz() {
                 </label>
                 <label className="check">
                   <input type="checkbox" checked={prefs.sounds} onChange={(e) => setPrefs({ ...prefs, sounds: e.target.checked })} /> Sounds
-                </label>
-                <label className="check">
-                  <input type="checkbox" checked={view.leftHanded} onChange={(e) => setView({ ...view, leftHanded: e.target.checked })} /> Left-handed
                 </label>
               </div>
               <div className="row">

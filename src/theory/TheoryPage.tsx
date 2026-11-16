@@ -50,12 +50,12 @@ function loadPrefs(): Prefs {
   }
 }
 
-const TABS: { id: Tab; label: string }[] = [
+const TABS: { id: Tab; label: string; short?: string }[] = [
   { id: 'scale', label: 'Scale' },
   { id: 'triads', label: 'Triads' },
-  { id: 'chords', label: 'Chords in a key' },
-  { id: 'freestyle', label: 'Freestyle' },
-  { id: 'test', label: 'Test yourself' },
+  { id: 'chords', label: 'Chords in a key', short: 'Chords' },
+  { id: 'freestyle', label: 'Freestyle', short: 'Jam' },
+  { id: 'test', label: 'Test yourself', short: 'Quiz' },
 ]
 
 const STRING_SETS = [
@@ -157,7 +157,14 @@ export function TheoryPage() {
       <div className="segmented quiz-tabs" role="tablist">
         {TABS.map((t) => (
           <button key={t.id} role="tab" aria-selected={prefs.tab === t.id} className={prefs.tab === t.id ? 'active' : ''} onClick={() => setPrefs({ tab: t.id })}>
-            {t.label}
+            {t.short ? (
+              <>
+                <span className="tab-long">{t.label}</span>
+                <span className="tab-short">{t.short}</span>
+              </>
+            ) : (
+              t.label
+            )}
           </button>
         ))}
       </div>
