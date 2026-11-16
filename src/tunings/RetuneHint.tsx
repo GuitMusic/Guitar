@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { playTone } from '../audio/pitch'
 import { noteName, STANDARD_TUNING, TUNINGS } from '../music/notes'
 import { retuneSteps } from './guide'
@@ -9,10 +10,34 @@ const name = (m: number) => noteName(m).replace(/\d/, '')
  * much, and a reference tone for each, so nobody plays a DADGAD piece in standard.
  */
 export function RetuneHint({ tuning }: { tuning: number[] }) {
-  if (tuning.length !== 6 || tuning.every((m, i) => m === STANDARD_TUNING[i])) return null
-  const steps = retuneSteps(tuning).filter((s) => s.semitones !== 0)
+  const other = tuning.length === 6 && !tuning.every((m, i) => m === STANDARD_TUNING[i])
   const known = TUNINGS.find((t) => t.strings.every((m, i) => m === tuning[i]))
   const label = known ? known.name.replace(/ \(.*\)$/, '') : 'a different tuning'
+  // Once you say you know how to retune, it folds to one line so the fretboard gets the room
+  const key = `retune-folded-${tuning.join('-')}`
+  const [folded, setFoldedState] = useState(() => {
+    try {
+      return localStorage.getItem(key) === '1'
+    } catch {
+      return false
+    }
+  })
+  const setFolded = (f: boolean) => {
+    setFoldedState(f)
+    try {
+      localStorage.setItem(key, f ? '1' : '0')
+    } catch {
+      // not remembered
+    }
+  }
+  if (!other) return null
+  const steps = retuneSteps(tuning).filter((s) => s.semitones !== 0)
+  if (folded)
+    return (
+      <button className="retune-folded" onClick={() => setFolded(false)}>
+        <b>{label}</b> {[...tuning].reverse().map(name).join(' ')} · <span>How to retune</span>
+      </button>
+    )
   return (
     <div className="retune-hint" role="note">
       <span className="retune-hint-text">
@@ -34,6 +59,9 @@ export function RetuneHint({ tuning }: { tuning: number[] }) {
             {s.string}: {noteName(s.to)}
           </button>
         ))}
+        <button className="chip ghost" onClick={() => setFolded(true)}>
+          Got it
+        </button>
       </span>
     </div>
   )

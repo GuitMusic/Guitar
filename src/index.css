@@ -5174,3 +5174,50 @@ svg text.fb-solfa-small {
     -webkit-line-clamp: 2;
   }
 }
+
+/* Readable necks on phones: drawn bigger, slide sideways */
+.neck-scroll-hint {
+  display: none;
+}
+@media (max-width: 700px) {
+  .neck-scroll {
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+    -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 14px, #000 calc(100% - 14px), transparent 100%);
+    mask-image: linear-gradient(90deg, transparent 0, #000 14px, #000 calc(100% - 14px), transparent 100%);
+  }
+  .neck-scroll::-webkit-scrollbar {
+    display: none;
+  }
+  .neck-scroll > svg.fretboard {
+    width: calc(var(--neck-frets, 12) * 62px + 170px);
+    max-width: none;
+  }
+  .neck-scroll-hint {
+    display: block;
+    margin: 2px 0 0;
+    text-align: center;
+    font-size: 0.75rem;
+    color: var(--text-2);
+  }
+}
+.retune-folded {
+  display: inline-flex;
+  gap: 6px;
+  align-items: baseline;
+  margin: 6px 0 8px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--border));
+  background: color-mix(in srgb, var(--accent) 8%, var(--surface));
+  font-size: 0.82rem;
+  color: var(--text-2);
+}
+.retune-folded b {
+  color: var(--text);
+}
+.retune-folded span {
+  color: var(--accent);
+  font-weight: 650;
+}

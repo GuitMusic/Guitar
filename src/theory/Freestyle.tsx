@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { NeckScroll } from '../components/NeckScroll'
 import { audioNow, listenForPitch, micErrorMessage, playToneAt, type PitchListener } from '../audio/pitch'
 import { Fretboard, type FretboardOptions, type FretMark } from '../components/Fretboard'
 import { NoteEvents } from '../quiz/quiz'
@@ -174,7 +175,9 @@ export function Freestyle({ tuning, keyInfo, progressions, progression, onProgre
         </p>
       </div>
 
-      <Fretboard notes={dots} ghosts={[]} tuning={tuning} capo={0} maxFret={12} showPickZone={false} options={options} marks={heard} />
+      <NeckScroll frets={12} leftHanded={options.leftHanded}>
+        <Fretboard notes={dots} ghosts={[]} tuning={tuning} capo={0} maxFret={12} showPickZone={false} options={options} marks={heard} />
+      </NeckScroll>
 
       <div className="freestyle-tips">
         <strong>How to start improvising</strong>

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { NeckScroll } from '../components/NeckScroll'
 import { listenForPitch, micErrorMessage, playChime, playTone, type PitchListener } from '../audio/pitch'
 import { Fretboard, type FretMark } from '../components/Fretboard'
 import { useFretboardView } from '../components/fretboardView'
@@ -992,18 +993,20 @@ export function NoteQuiz() {
       {phase !== 'summary' && !(phase === 'idle' && (prefs.tab === 'live' || prefs.tab === 'games')) && (
         <>
           {phase === 'idle' && <h2 className="quiz-group">Your neck map</h2>}
-          <Fretboard
-            notes={shownNotes}
-            ghosts={[]}
-            highlightStrings={target}
-            tuning={tuning.strings}
-            capo={0}
-            maxFret={running && settings.maxFret <= 5 ? 7 : 12}
-            showPickZone={false}
-            marks={phase === 'idle' ? neckMarks : [...foundMarks, ...wrongTapMarks]}
-            options={{ ...view, labelMode: dotNow ? 'finger' : 'note', showGhosts: false }}
-            onFretClick={question?.mode === 'tap-spot' && phase === 'listening' ? (string, fret) => onTap({ string, fret }) : undefined}
-          />
+          <NeckScroll frets={running && settings.maxFret <= 5 ? 7 : 12} leftHanded={view.leftHanded}>
+            <Fretboard
+              notes={shownNotes}
+              ghosts={[]}
+              highlightStrings={target}
+              tuning={tuning.strings}
+              capo={0}
+              maxFret={running && settings.maxFret <= 5 ? 7 : 12}
+              showPickZone={false}
+              marks={phase === 'idle' ? neckMarks : [...foundMarks, ...wrongTapMarks]}
+              options={{ ...view, labelMode: dotNow ? 'finger' : 'note', showGhosts: false }}
+              onFretClick={question?.mode === 'tap-spot' && phase === 'listening' ? (string, fret) => onTap({ string, fret }) : undefined}
+            />
+          </NeckScroll>
           {running && question?.mode === 'name-dot' && (
             <div className={`name-pad${settings.naturalsOnly ? '' : ' all'}`} role="group" aria-label="Note names">
               {Array.from({ length: 12 }, (_, pc) => pc)
