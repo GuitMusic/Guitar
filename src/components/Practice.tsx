@@ -22,59 +22,15 @@ import { getView, setView, useFretboardView } from './fretboardView'
 import { SongCover } from './Library'
 import { SongComplete } from './SongComplete'
 import { useTheme } from './theme'
+import { formatTime, setGuitarSound, useMediaQuery } from './practiceHelpers'
 
 type Beat = alphaTab.model.Beat
 
-// Program numbers inside public/sounds/guitar.sf3
-const PROGRAM: Record<GuitarSound, number> = { steel: 25, nylon: 24, 'steel-dry': 27, 'nylon-dry': 28 }
-
-/**
- * The sound bank holds only guitars, so every pitched track plays
- * one of them, whatever instrument the file asked for. Returns true if anything changed.
- */
-function setGuitarSound(score: alphaTab.model.Score, sound: GuitarSound = 'steel'): boolean {
-  let changed = false
-  for (const t of score.tracks) {
-    if (t.staves.some((st) => st.isPercussion)) continue
-    if (t.playbackInfo.program !== PROGRAM[sound]) {
-      t.playbackInfo.program = PROGRAM[sound]
-      changed = true
-    }
-    // Instrument changes inside the song would switch back to a sound the bank does not have
-    for (const st of t.staves)
-      for (const bar of st.bars)
-        for (const v of bar.voices)
-          for (const b of v.beats)
-            for (const a of b.automations)
-              if (a.type === alphaTab.model.AutomationType.Instrument && a.value !== PROGRAM[sound]) {
-                a.value = PROGRAM[sound]
-                changed = true
-              }
-  }
-  return changed
-}
 type Score = alphaTab.model.Score
 
 const BASE = import.meta.env.BASE_URL
 // three.js is big, so the 3D hand loads only when it's shown
 const HandPanel = lazy(() => import('../hand/HandPanel'))
-
-function useMediaQuery(query: string): boolean {
-  const [matches, setMatches] = useState(() => typeof window !== 'undefined' && window.matchMedia(query).matches)
-  useEffect(() => {
-    const mq = window.matchMedia(query)
-    const update = () => setMatches(mq.matches)
-    update()
-    mq.addEventListener('change', update)
-    return () => mq.removeEventListener('change', update)
-  }, [query])
-  return matches
-}
-
-function formatTime(ms: number): string {
-  const s = Math.max(0, Math.floor(ms / 1000))
-  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`
-}
 
 interface Props {
   song: OpenSong

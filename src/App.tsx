@@ -2,21 +2,23 @@ import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react'
 import { Library } from './components/Library'
 import type { OpenSong } from './library/songs'
 import { setView, useFretboardView } from './components/fretboardView'
-import { ToolsPage } from './tools/ToolsPage'
-import { NoteQuiz } from './quiz/NoteQuiz'
-import { TheoryPage } from './theory/TheoryPage'
 import { BrandMark, Icon as LineIcon, type IconName } from './components/icons'
 import { Icon, Menu } from './components/PlayerBar'
 import { setTheme, useTheme } from './components/theme'
-import { findSong, Progress } from './progress/Progress'
+import { findSong } from './library/songs'
 import { promptInstall, useInstall } from './components/install'
-import { TuningsPage } from './tunings/TuningsPage'
 import { DataSettings } from './components/DataSettings'
 
 // The score engine (alphaTab) is most of the app's code and only Practice needs it, so Home
 // opens without it and the Practice code is fetched in the background once Home is up
 const loadPractice = () => import('./components/Practice')
 const Practice = lazy(() => loadPractice().then((m) => ({ default: m.Practice })))
+// The other pages load when first opened, so Home starts with only what it shows
+const NoteQuiz = lazy(() => import('./quiz/NoteQuiz').then((m) => ({ default: m.NoteQuiz })))
+const TheoryPage = lazy(() => import('./theory/TheoryPage').then((m) => ({ default: m.TheoryPage })))
+const TuningsPage = lazy(() => import('./tunings/TuningsPage').then((m) => ({ default: m.TuningsPage })))
+const ToolsPage = lazy(() => import('./tools/ToolsPage').then((m) => ({ default: m.ToolsPage })))
+const Progress = lazy(() => import('./progress/Progress').then((m) => ({ default: m.Progress })))
 
 type Page = 'library' | 'practice' | 'tunings' | 'quiz' | 'theory' | 'progress' | 'tools'
 
@@ -102,7 +104,12 @@ export default function App() {
     })
   }, [song, setPage, setSong])
   useEffect(() => {
-    const preload = () => void loadPractice().catch(() => {})
+    // Fetch the other pages once Home is up, so they open instantly and work offline
+    const preload = () => {
+      void loadPractice().catch(() => {})
+      for (const load of [() => import('./quiz/NoteQuiz'), () => import('./theory/TheoryPage'), () => import('./tunings/TuningsPage'), () => import('./tools/ToolsPage'), () => import('./progress/Progress')])
+        void load().catch(() => {})
+    }
     const w = window as Window & { requestIdleCallback?: (cb: () => void) => number }
     if (w.requestIdleCallback) w.requestIdleCallback(preload)
     else window.setTimeout(preload, 1500)
@@ -230,28 +237,30 @@ export default function App() {
           </div>
         )}
         {isLearn(page) && learnSwitch}
-        {page === 'tunings' && (
-          <TuningsPage
-            onOpen={(s) => {
-              setSong(s)
-              setPage('practice')
-            }}
-            onGo={setPage}
-          />
-        )}
-        {page === 'quiz' && <NoteQuiz />}
-        {page === 'theory' && <TheoryPage />}
-        {page === 'progress' && (
-          <Progress
-            onOpen={(s) => {
-              setSong(s)
-              setPage('practice')
-            }}
-          />
-        )}
-        {page === 'tools' && (
-          <ToolsPage />
-        )}
+        <Suspense fallback={<div className="practice-loading">Loading…</div>}>
+          {page === 'tunings' && (
+            <TuningsPage
+              onOpen={(s) => {
+                setSong(s)
+                setPage('practice')
+              }}
+              onGo={setPage}
+            />
+          )}
+          {page === 'quiz' && <NoteQuiz />}
+          {page === 'theory' && <TheoryPage />}
+          {page === 'progress' && (
+            <Progress
+              onOpen={(s) => {
+                setSong(s)
+                setPage('practice')
+              }}
+            />
+          )}
+          {page === 'tools' && (
+            <ToolsPage />
+          )}
+        </Suspense>
       </main>
     </div>
   )
