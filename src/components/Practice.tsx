@@ -243,7 +243,7 @@ export function Practice({ song, active }: Props) {
     r.scoreInfoColor = ink(main)
     r.staffLineColor = ink(soft)
     r.barSeparatorColor = ink(dark ? '#b8afa2' : '#222222')
-    r.barNumberColor = ink(dark ? '#e8875a' : '#c80000')
+    r.barNumberColor = ink(dark ? '#8d8d99' : '#8a8378')
     api.updateSettings()
     if (api.score) api.render()
   }, [dark, api])
