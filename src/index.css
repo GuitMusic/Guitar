@@ -5029,7 +5029,6 @@ svg text.fb-solfa-small {
   display: flex;
   gap: 8px;
 }
-<<<<<<< HEAD
 .tools-sub {
   margin: 4px 0 10px;
   font-size: 1.4rem;
@@ -5175,5 +5174,3 @@ svg text.fb-solfa-small {
     -webkit-line-clamp: 2;
   }
 }
-=======
->>>>>>> c6fd92881384bf2937e78734e17f035020f99b90
