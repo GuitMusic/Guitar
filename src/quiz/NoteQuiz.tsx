@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { DifficultySlider, type Difficulty } from '../components/DifficultySlider'
 import { markActive } from '../progress/activity'
 import { NeckScroll } from '../components/NeckScroll'
 import { listenForPitch, micErrorMessage, playChime, playTone, type PitchListener } from '../audio/pitch'
@@ -98,6 +99,17 @@ const RANGES = [
   { label: 'Frets 5 to 12', min: 5, max: 12 },
   { label: 'Frets 0 to 7', min: 0, max: 7 },
 ]
+
+/** Free practice presets for the difficulty slider: frets, sharps and time per note. Strings stay as you set them. */
+const FREE_LEVELS: { range: number; naturalsOnly: boolean; seconds: number; detail: string }[] = [
+  { range: 0, naturalsOnly: true, seconds: 8, detail: 'Frets 0 to 5, natural notes only, 8 seconds per note.' },
+  { range: 1, naturalsOnly: true, seconds: 5, detail: 'Frets 0 to 12, natural notes only, 5 seconds per note.' },
+  { range: 1, naturalsOnly: false, seconds: 3, detail: 'Frets 0 to 12 with sharps and flats, 3 seconds per note.' },
+]
+const freeLevel = (p: { range: number; naturalsOnly: boolean; seconds: number }): Difficulty | null => {
+  const i = FREE_LEVELS.findIndex((l) => l.range === p.range && l.naturalsOnly === p.naturalsOnly && l.seconds === p.seconds)
+  return i < 0 ? null : (i as Difficulty)
+}
 
 interface Prefs {
   tab: Tab
@@ -747,6 +759,14 @@ export function NoteQuiz() {
                   </button>
                 ))}
               </div>
+              <DifficultySlider
+                value={freeLevel(prefs)}
+                onChange={(d) => {
+                  const { range, naturalsOnly, seconds } = FREE_LEVELS[d]
+                  setPrefs({ ...prefs, range, naturalsOnly, seconds })
+                }}
+                detail={freeLevel(prefs) === null ? 'Your own mix of the settings below. Move the slider to pick a ready-made level.' : FREE_LEVELS[freeLevel(prefs)!].detail}
+              />
               <div className="row">
                 <span className="field-label">Strings</span>
                 {[6, 5, 4, 3, 2, 1].map((s) => (

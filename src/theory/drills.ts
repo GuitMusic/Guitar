@@ -37,9 +37,14 @@ export function chromaticIn(key: Key): string[] {
   return Array.from({ length: 12 }, (_, i) => nameIn(key, (key.tonic + i) % 12))
 }
 
-export function makeDrill(key: Key, random: () => number = Math.random, kinds: DrillKind[] = KINDS): Drill {
+/**
+ * scaleOnly (Easy): note answers are picked from the key's seven notes, shuffled,
+ * instead of all twelve.
+ */
+export function makeDrill(key: Key, random: () => number = Math.random, kinds: DrillKind[] = KINDS, scaleOnly = false): Drill {
   const kind = pick(kinds, random)
   const names = scaleNames(key)
+  const noteChoices = () => (scaleOnly ? shuffle(names, random) : chromaticIn(key))
   const keyLabel = `${names[0]} ${key.mode}`
   const line = names.join(' ')
   // degree 1 is too easy to ask
@@ -49,7 +54,7 @@ export function makeDrill(key: Key, random: () => number = Math.random, kinds: D
       kind,
       key,
       prompt: `What is the ${ORDINAL[degree]} note of ${keyLabel}?`,
-      choices: chromaticIn(key),
+      choices: noteChoices(),
       answer: [names[degree - 1]],
       explain: `${keyLabel}: ${line}. Count ${degree} from ${names[0]}.`,
     }
@@ -81,7 +86,7 @@ export function makeDrill(key: Key, random: () => number = Math.random, kinds: D
     kind,
     key,
     prompt: `Tap the three notes of ${c.name}`,
-    choices: chromaticIn(key),
+    choices: noteChoices(),
     answer: c.toneNames,
     explain: `${c.name}: root ${c.toneNames[0]}, skip one scale note for ${c.toneNames[1]}, skip one more for ${c.toneNames[2]}.`,
   }

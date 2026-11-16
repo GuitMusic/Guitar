@@ -29,7 +29,7 @@ export function offTarget(sung: number, target: number): { semitones: number; oc
   return { semitones, octaves: Math.round((d - semitones) / 12) }
 }
 
-export type VocalLevel = 'beginner' | 'normal'
+export type VocalLevel = 'beginner' | 'steady' | 'normal'
 
 /**
  * How strict the trainer is. Beginner suits people who have never trained their voice:
@@ -38,6 +38,7 @@ export type VocalLevel = 'beginner' | 'normal'
  */
 export const VOCAL_LEVELS: Record<VocalLevel, { label: string; tolerance: number; holdMs: number; span: number; helpAfterMs: number | null; helpTolerance: number }> = {
   beginner: { label: 'Beginner (forgiving)', tolerance: 80, holdMs: 450, span: 7, helpAfterMs: 8000, helpTolerance: 120 },
+  steady: { label: 'Getting steady', tolerance: 55, holdMs: 650, span: 9, helpAfterMs: 12000, helpTolerance: 80 },
   normal: { label: 'Practised', tolerance: 35, holdMs: 900, span: 12, helpAfterMs: null, helpTolerance: 35 },
 }
 

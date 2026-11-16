@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { DifficultySlider, loadDifficulty, saveDifficulty, type Difficulty } from '../components/DifficultySlider'
 import { markActive } from '../progress/activity'
 import { playChime } from '../audio/pitch'
 import { makeDrill, type Drill, type DrillKind } from './drills'
@@ -12,6 +13,14 @@ const KIND_LABELS: { id: DrillKind; label: string }[] = [
   { id: 'spell', label: 'Spell a triad' },
 ]
 
+/** Seconds per question on Hard. */
+const HARD_SECONDS = 10
+const LEVEL_DETAIL = [
+  'Note answers come from the seven notes of the key, so there are fewer to choose from. No clock.',
+  'All twelve notes to choose from. No clock.',
+  `All twelve notes, and ${HARD_SECONDS} seconds per question. Running out of time counts as a miss.`,
+]
+
 const randomKey = (): Key => ({ tonic: Math.floor(Math.random() * 12), mode: Math.random() < 0.7 ? 'major' : 'minor' })
 
 /** Ten quick theory questions, answered by tapping, with the reason shown after each. */
@@ -22,11 +31,24 @@ export function TheoryDrills({ current }: { current: Key }) {
   const [picked, setPicked] = useState<string[]>([])
   const [done, setDone] = useState<null | boolean>(null)
   const [results, setResults] = useState<boolean[]>([])
+  const [difficulty, setDifficulty] = useState<Difficulty>(() => loadDifficulty('theory-drills-difficulty'))
+  const [asked, setAsked] = useState(0)
+  const pickedRef = useRef(picked)
+  pickedRef.current = picked
+
+  // Hard: the question times out
+  useEffect(() => {
+    if (difficulty !== 2 || !drill || done !== null) return
+    const id = window.setTimeout(() => finish(false, pickedRef.current), HARD_SECONDS * 1000)
+    return () => window.clearTimeout(id)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [asked, done, difficulty])
 
   const next = () => {
-    setDrill(makeDrill(anyKey ? randomKey() : current, Math.random, kinds))
+    setDrill(makeDrill(anyKey ? randomKey() : current, Math.random, kinds, difficulty === 0))
     setPicked([])
     setDone(null)
+    setAsked((n) => n + 1)
   }
   const start = () => {
     setResults([])
@@ -77,6 +99,14 @@ export function TheoryDrills({ current }: { current: Key }) {
             </button>
           ))}
         </div>
+        <DifficultySlider
+          value={difficulty}
+          onChange={(d) => {
+            setDifficulty(d)
+            saveDifficulty('theory-drills-difficulty', d)
+          }}
+          detail={LEVEL_DETAIL[difficulty]}
+        />
         <div className="row">
           <button className="primary" onClick={start}>
             Start
@@ -95,12 +125,17 @@ export function TheoryDrills({ current }: { current: Key }) {
           <i key={i} className={i < results.length ? (results[i] ? 'ok' : 'bad') : i === results.length ? 'now' : ''} />
         ))}
       </div>
+      {difficulty === 2 && done === null && (
+        <div className="quiz-timer">
+          <div key={asked} className="quiz-timer-fill" style={{ animationDuration: `${HARD_SECONDS}s` }} />
+        </div>
+      )}
       <div className={`quiz-card drill-card${done === true ? ' is-right' : done === false ? ' is-timeout' : ''}`}>
         <div className="quiz-prompt">{drill.prompt}</div>
         {drill.kind === 'spell' && done === null && <div className="quiz-status">{picked.length} of 3 picked</div>}
         {done !== null && (
           <div className="quiz-status" role="status">
-            {done ? 'Right. ' : `Not quite: ${drill.answer.join(' ')}. `}
+            {done ? 'Right. ' : `${difficulty === 2 && picked.length < (drill.kind === 'spell' ? 3 : 1) ? "Time's up" : 'Not quite'}: ${drill.answer.join(' ')}. `}
             {drill.explain}
           </div>
         )}

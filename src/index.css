@@ -5385,3 +5385,108 @@ svg text.fb-solfa-small {
     display: none;
   }
 }
+
+/* Difficulty slider: three stops, Easy to Hard */
+.difficulty {
+  display: grid;
+  gap: 6px;
+  max-width: 420px;
+  margin: 4px 0 14px;
+  padding: 12px 14px 10px;
+  background: var(--surface-2);
+  border-radius: 14px;
+}
+.difficulty-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+.difficulty-now {
+  font-size: 0.95rem;
+  background: var(--grad, var(--accent));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.difficulty.custom .difficulty-now {
+  background: none;
+  color: var(--text-2);
+}
+.difficulty input[type='range'] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 28px;
+  margin: 0;
+  background: transparent;
+  cursor: pointer;
+}
+.difficulty input[type='range']::-webkit-slider-runnable-track {
+  height: 6px;
+  border-radius: 3px;
+  background: linear-gradient(90deg, var(--accent) var(--fill), var(--border) var(--fill));
+}
+.difficulty input[type='range']::-moz-range-track {
+  height: 6px;
+  border-radius: 3px;
+  background: linear-gradient(90deg, var(--accent) var(--fill), var(--border) var(--fill));
+}
+.difficulty input[type='range']::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 22px;
+  height: 22px;
+  margin-top: -8px;
+  border-radius: 50%;
+  background: var(--grad, var(--accent));
+  border: 3px solid var(--surface);
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.35);
+}
+.difficulty input[type='range']::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 3px solid var(--surface);
+}
+.difficulty.custom input[type='range']::-webkit-slider-thumb {
+  background: var(--text-2);
+}
+.difficulty.custom input[type='range']::-webkit-slider-runnable-track {
+  background: var(--border);
+}
+.difficulty.custom input[type='range']::-moz-range-track {
+  background: var(--border);
+}
+.difficulty-stops {
+  display: flex;
+  justify-content: space-between;
+}
+.difficulty-stops button {
+  background: none;
+  border: 0;
+  padding: 2px 0;
+  min-height: 0;
+  font-size: 0.8rem;
+  color: var(--text-2);
+}
+.difficulty-stops button.active {
+  color: var(--text);
+  font-weight: 700;
+}
+.difficulty-detail {
+  margin: 2px 0 0;
+  font-size: 0.85rem;
+  color: var(--text-2);
+  line-height: 1.35;
+}
+.best-list strong {
+  text-align: right;
+}
+.best-list strong small {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--text-2);
+  white-space: nowrap;
+}

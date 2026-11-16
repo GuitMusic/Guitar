@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { asDifficulty, DifficultySlider } from '../components/DifficultySlider'
 import { markActive } from '../progress/activity'
 import { audioNow, micErrorMessage } from '../audio/pitch'
 import { clickAt as playClick, listenForOnsets, outputDelay, type OnsetListener } from './onsets'
@@ -323,16 +324,12 @@ export function RhythmTrainer() {
               Play my guitar
             </button>
           </div>
-          <label className="field">
-            Timing
-            <select value={saved.windowIdx} onChange={(e) => save({ windowIdx: Number(e.target.value) })}>
-              {WINDOWS.map((w, i) => (
-                <option key={w.id} value={i}>
-                  {w.label} (±{w.ms} ms)
-                </option>
-              ))}
-            </select>
-          </label>
+          <DifficultySlider
+            label="Timing"
+            value={asDifficulty(saved.windowIdx, 0)}
+            onChange={(d) => save({ windowIdx: d })}
+            detail={`A note counts as on time within ${win.ms} ms of the click, either side.${saved.windowIdx === 0 ? ' Start here.' : saved.windowIdx === 2 ? ' Close to what a recording needs.' : ''}`}
+          />
           {saved.input === 'guitar' && (
             <button className="link" onClick={() => save({ micDelay: null })}>
               {saved.micDelay === null ? 'Mic delay is checked when you start' : `Mic delay ${Math.round(saved.micDelay * 1000)} ms · check again`}

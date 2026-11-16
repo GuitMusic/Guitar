@@ -17,7 +17,9 @@ export function Training({ streakDays }: { streakDays: number }) {
   const starCount = Object.values(stars).reduce((a, b) => a + b, 0)
   const neck = load<Record<string, { n: number; ok: number }>>('quiz-neck', {})
   const known = Object.values(neck).filter((t) => t.n >= 2 && t.ok / t.n >= 0.75).length
-  const best = loadBest()
+  const best = loadBest(1)
+  const easy = loadBest(0)
+  const hard = loadBest(2)
   const rhythm = load<{ done?: Record<string, boolean> }>('rhythm-trainer', {})
   const lessonsDone = LESSONS.filter((l) => rhythm.done?.[l.id]).length
   const quizDays = load<string[]>('quiz-days', []).length
@@ -49,11 +51,19 @@ export function Training({ streakDays }: { streakDays: number }) {
         </div>
       </div>
       <h2>Game best scores</h2>
+      <p className="hint">On Medium, with your Easy and Hard bests beside them.</p>
       <ul className="best-list">
         {GAMES.map((g) => (
           <li key={g.id}>
             <span>{g.title}</span>
-            <strong>{best[g.id] ?? '–'}</strong>
+            <strong>
+              {best[g.id] ?? '–'}
+              {(easy[g.id] || hard[g.id]) && (
+                <small>
+                  {[easy[g.id] && `easy ${easy[g.id]}`, hard[g.id] && `hard ${hard[g.id]}`].filter(Boolean).join(' · ')}
+                </small>
+              )}
+            </strong>
           </li>
         ))}
         <li>

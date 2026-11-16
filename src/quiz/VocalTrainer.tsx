@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { DifficultySlider, type Difficulty } from '../components/DifficultySlider'
 import { listenForPitch, micErrorMessage, playChime, playTone, type PitchListener } from '../audio/pitch'
 import { noteName, pitchClassName, solfegeName } from '../music/notes'
 import { HoldTimer, offTarget, RANGE_BASE, randomTarget, scaleRun, SCALES, VOCAL_LEVELS, type ScaleKind, type VocalLevel, type VoiceRange } from './vocal'
@@ -17,6 +18,12 @@ interface Prefs {
 }
 
 const KEY = 'vocal-prefs-v1'
+const SING_LEVELS: VocalLevel[] = ['beginner', 'steady', 'normal']
+const SING_DETAIL = [
+  'For an untrained voice: notes close together, and after a while anything within a semitone counts.',
+  'A little stricter, with notes a bit further apart.',
+  'For a practised voice: notes anywhere in your range, no extra help.',
+]
 const DEFAULTS: Prefs = { exercise: 'match', range: 'low', scale: 'major', tonic: 0, naturalsOnly: true, playFirst: true, level: 'beginner' }
 
 function loadPrefs(): Prefs {
@@ -234,17 +241,12 @@ export function VocalTrainer() {
         ))}
       </div>
       <p className="hint">{ex.hint}</p>
+      <DifficultySlider
+        value={Math.max(0, SING_LEVELS.indexOf(prefs.level)) as Difficulty}
+        onChange={(d) => change({ ...prefs, level: SING_LEVELS[d] })}
+        detail={`${SING_DETAIL[Math.max(0, SING_LEVELS.indexOf(prefs.level))]} In tune within ${level.tolerance} cents, held ${level.holdMs / 1000} s.`}
+      />
       <div className="row">
-        <label className="field">
-          Level
-          <select value={prefs.level} onChange={(e) => change({ ...prefs, level: e.target.value as VocalLevel })}>
-            {(Object.keys(VOCAL_LEVELS) as VocalLevel[]).map((l) => (
-              <option key={l} value={l}>
-                {VOCAL_LEVELS[l].label}
-              </option>
-            ))}
-          </select>
-        </label>
         <label className="field">
           Voice
           <select value={prefs.range} onChange={(e) => change({ ...prefs, range: e.target.value as VoiceRange })}>
