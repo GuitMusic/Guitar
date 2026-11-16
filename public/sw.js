@@ -48,18 +48,25 @@ self.addEventListener('fetch', (event) => {
     return
   }
 
+  const save = (res) => {
+    if (res.ok) {
+      const copy = res.clone()
+      caches.open(CACHE).then((c) => c.put(req, copy))
+    }
+    return res
+  }
+  // Built files have a hash in their name, so a cached copy is always right. Files that keep
+  // their name (the guitar sound, the hand model, icons) are served from the cache and then
+  // refreshed in the background, so an improved version reaches the phone on the next visit.
+  const hashed = new URL(req.url).pathname.includes('/assets/')
   event.respondWith(
-    caches.match(req, { ignoreVary: true }).then(
-      (hit) =>
-        hit ||
-        fetch(req).then((res) => {
-          if (res.ok) {
-            const copy = res.clone()
-            caches.open(CACHE).then((c) => c.put(req, copy))
-          }
-          return res
-        }),
-    ),
+    caches.match(req, { ignoreVary: true }).then((hit) => {
+      if (hit && hashed) return hit
+      const fresh = fetch(req).then(save)
+      if (!hit) return fresh
+      event.waitUntil(fresh.catch(() => undefined))
+      return hit
+    }),
   )
 })
 

@@ -5024,3 +5024,8 @@ svg text.fb-solfa-small {
   background: var(--ok-bg);
   color: var(--ok-text);
 }
+
+.data-buttons {
+  display: flex;
+  gap: 8px;
+}

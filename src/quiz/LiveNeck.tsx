@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { listenForPitch, micErrorMessage, playTone, type PitchListener } from '../audio/pitch'
 import { Fretboard, type FretMark } from '../components/Fretboard'
-import { setView, useFretboardView } from '../components/fretboardView'
+import { useFretboardView } from '../components/fretboardView'
 import { noteName, pitchClassName, solfegeName } from '../music/notes'
 import type { FretNote } from '../music/types'
 import { NoteEvents } from './quiz'
@@ -221,9 +221,6 @@ export function LiveNeck({ tuning }: { tuning: number[] }) {
             </button>
           ))}
         </div>
-        <label className="check">
-          <input type="checkbox" checked={view.leftHanded} onChange={(e) => setView({ ...view, leftHanded: e.target.checked })} /> Left-handed
-        </label>
       </div>
 
       <Fretboard

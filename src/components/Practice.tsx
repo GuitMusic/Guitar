@@ -83,6 +83,8 @@ interface Props {
 }
 
 export function Practice({ song, active }: Props) {
+  const activeRef = useRef(active)
+  activeRef.current = active
   const scoreEl = useRef<HTMLDivElement>(null)
   const scrollEl = useRef<HTMLDivElement>(null)
   const apiRef = useRef<alphaTab.AlphaTabApi | null>(null)
@@ -211,6 +213,12 @@ export function Practice({ song, active }: Props) {
     })
     api.playerStateChanged.on((e) => {
       const isPlaying = e.state === alphaTab.synth.PlayerState.Playing
+      // Play was pressed just before leaving Practice: the pause sent on the way out came too
+      // early to stop it, so stop it now rather than let the song play behind another page
+      if (isPlaying && !activeRef.current) {
+        api.pause()
+        return
+      }
       if (isPlaying) {
         watchAudio()
         resumeAudio()
@@ -699,7 +707,7 @@ export function Practice({ song, active }: Props) {
           <TogglePill
             on={loop.on}
             icon="loop"
-            label={loop.start === loop.end ? `Loop bar ${loop.start}` : `Loop bars ${loop.start}–${loop.end}`}
+            label={!loop.on ? 'Loop' : loop.start === loop.end ? `Loop bar ${loop.start}` : `Loop bars ${loop.start}–${loop.end}`}
             title="Repeat these bars (L). Drag across the progress line to pick bars."
             onToggle={() => setLoop({ ...loop, on: !loop.on })}
             menuLabel="Choose the bars to loop"

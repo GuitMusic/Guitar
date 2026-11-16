@@ -11,6 +11,7 @@ import { setTheme, useTheme } from './components/theme'
 import { Progress } from './progress/Progress'
 import { promptInstall, useInstall } from './components/install'
 import { TuningsPage } from './tunings/TuningsPage'
+import { DataSettings } from './components/DataSettings'
 
 // The score engine (alphaTab) is most of the app's code and only Practice needs it, so Home
 // opens without it and the Practice code is fetched in the background once Home is up
@@ -145,6 +146,7 @@ export default function App() {
               ))}
             </div>
           </div>
+          <DataSettings />
           {install !== 'installed' && (
             <div className="settings-row">
               <span className="settings-label">Install on this device</span>

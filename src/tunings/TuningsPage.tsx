@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Fretboard } from '../components/Fretboard'
-import { setView, useFretboardView } from '../components/fretboardView'
+import { useFretboardView } from '../components/fretboardView'
 import { playTone } from '../audio/pitch'
 import { noteName, parsePitchClass, solfegeName } from '../music/notes'
 import type { FretNote } from '../music/types'
@@ -212,9 +212,6 @@ export function TuningsPage({ onOpen, onGo }: Props) {
               {s.label}
             </button>
           ))}
-          <label className="check">
-            <input type="checkbox" checked={view.leftHanded} onChange={(e) => setView({ leftHanded: e.target.checked })} /> Left-handed
-          </label>
         </div>
         <p className="hint">{scaleView.hint} Tap any spot to hear it.</p>
         <div className="tn-neck">
@@ -273,7 +270,8 @@ export function TuningsPage({ onOpen, onGo }: Props) {
                     <button className="tn-chord" onClick={() => strum(openLowFirst, c.frets)}>
                       <strong>{c.name}</strong>
                       <ChordDiagram chord={c} leftHanded={view.leftHanded} />
-                      <small className="tn-chord-frets">{c.frets.map((f) => (f === null ? '×' : f)).join(' ')}</small>
+                      <small className="tn-chord-frets">{/* same left-to-right order as the string numbers under the box */}
+                      {(view.leftHanded ? [...c.frets].reverse() : c.frets).map((f) => (f === null ? '×' : f)).join(' ')}</small>
                       {c.tip && <small className="tn-chord-tip">{c.tip}</small>}
                     </button>
                   </li>

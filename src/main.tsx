@@ -3,6 +3,7 @@ import '@fontsource-variable/inter'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.tsx'
+import { keepStorage } from './library/backup'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -26,3 +27,6 @@ if (import.meta.env.PROD && 'serviceWorker' in navigator) {
       })
   })
 }
+
+// Ask the browser to keep imported songs and progress instead of clearing them when space is low
+void keepStorage()

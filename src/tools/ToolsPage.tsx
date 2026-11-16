@@ -27,6 +27,7 @@ export function ToolsPage() {
   return (
     <>
       <div className="tools-tabs-wrap">
+        <h1>Tools</h1>
         <div className="segmented quiz-tabs tools-tabs" role="tablist">
           <button
             role="tab"
@@ -34,7 +35,8 @@ export function ToolsPage() {
             className={tab === "tools" ? "active" : ""}
             onClick={() => setTab("tools")}
           >
-            Tuner & metronome
+            <span className="tab-long">Tuner & metronome</span>
+            <span className="tab-short">Tuner</span>
           </button>
           <button
             role="tab"
@@ -42,7 +44,8 @@ export function ToolsPage() {
             className={tab === "rhythm" ? "active" : ""}
             onClick={() => setTab("rhythm")}
           >
-            Learn the metronome
+            <span className="tab-long">Learn the metronome</span>
+            <span className="tab-short">Lessons</span>
           </button>
         </div>
       </div>
