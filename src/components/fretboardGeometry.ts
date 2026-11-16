@@ -5,6 +5,8 @@ export const NUT_X = 92
 export const NUT_W = 9
 export const PICK_W = 96
 export const NECK_END = W - PICK_W - 18
+/** Width of the drawing when there is no picking-hand zone: the empty strip on the far side is cut off. */
+export const NO_PICK_W = NECK_END + 12
 /** Fret numbers sit in a strip above the neck. */
 export const TOP = 62
 export const STRING_GAP = 38

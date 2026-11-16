@@ -3,7 +3,7 @@ import { fretFingerLabel } from '../music/fingering'
 import { noteName, pitchClassName, solfegeName } from '../music/notes'
 import { noteColorStyle, useNoteColors } from '../music/noteColors'
 import type { FretNote } from '../music/types'
-import { makeFretX, NECK_END, NUT_W, NUT_X, PICK_W, STRING_GAP, TOP, W } from './fretboardGeometry'
+import { makeFretX, NECK_END, NO_PICK_W, NUT_W, NUT_X, PICK_W, STRING_GAP, TOP, W } from './fretboardGeometry'
 
 export type LabelMode = 'finger' | 'note'
 export type StringOrder = 'tab' | 'player'
@@ -150,7 +150,7 @@ export function Fretboard({ notes, ghosts, tuning, capo, options, onNoteClick, o
   return (
     <svg
       className="fretboard"
-      viewBox={`0 0 ${W} ${H}`}
+      viewBox={showPickZone ? `0 0 ${W} ${H}` : `${options.leftHanded ? W - NO_PICK_W : 0} 0 ${NO_PICK_W} ${H}`}
       role="img"
       aria-label={
         notes.length
