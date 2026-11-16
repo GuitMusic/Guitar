@@ -5,6 +5,7 @@ import { listenForPitch, micErrorMessage, playChime, playTone, type PitchListene
 import { Fretboard, type FretMark } from '../components/Fretboard'
 import { useFretboardView } from '../components/fretboardView'
 import { noteName, pitchClassName, solfegeName, TUNINGS } from '../music/notes'
+import { noteColorStyle } from '../music/noteColors'
 import type { FretNote } from '../music/types'
 import { localDate } from '../progress/practiceLog'
 import { Games } from './Games'
@@ -966,6 +967,7 @@ export function NoteQuiz() {
                     className={
                       reveal && pc === question.midi % 12 ? 'name-key right' : phase === 'timeout' && heard !== null && pc === heard % 12 ? 'name-key wrong' : 'name-key'
                     }
+                    style={noteColorStyle(pc)}
                     disabled={phase !== 'listening'}
                     onClick={() => onTap(pc)}
                   >

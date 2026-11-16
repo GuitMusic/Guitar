@@ -5,6 +5,8 @@ import { Fretboard, type FretMark } from '../components/Fretboard'
 import { Icon, type IconName } from '../components/icons'
 import type { FretboardOptions } from '../components/Fretboard'
 import { pitchClassName, solfegeName } from '../music/notes'
+import { noteColorStyle } from '../music/noteColors'
+import { NoteSwatch } from '../components/NoteColorStrip'
 import type { FretNote } from '../music/types'
 import {
   climbTurn,
@@ -366,6 +368,7 @@ export function Games({ tuning, sounds, view }: { tuning: number[]; sounds: bool
     ) : turn.game === 'hunt' ? (
       <>
         Find every {pitchClassName(turn.pc)}
+        <NoteSwatch midi={turn.pc} />
         <span className="solfa-inline">{solfegeName(turn.pc)}</span>
       </>
     ) : turn.game === 'octave' ? (
@@ -448,6 +451,7 @@ export function Games({ tuning, sounds, view }: { tuning: number[]; sounds: bool
             <button
               key={pc}
               className={reveal?.pc === pc ? 'name-key right' : reveal?.tapped === pc ? 'name-key wrong' : 'name-key'}
+              style={noteColorStyle(pc)}
               onClick={() => onName(pc)}
             >
               <strong>{pitchClassName(pc)}</strong>

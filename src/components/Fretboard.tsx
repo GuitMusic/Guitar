@@ -1,6 +1,7 @@
 import { useEffect, useId, useMemo, useState } from 'react'
 import { fretFingerLabel } from '../music/fingering'
 import { noteName, pitchClassName, solfegeName } from '../music/notes'
+import { noteColorStyle, useNoteColors } from '../music/noteColors'
 import type { FretNote } from '../music/types'
 import { makeFretX, NECK_END, NUT_W, NUT_X, PICK_W, STRING_GAP, TOP, W } from './fretboardGeometry'
 
@@ -86,6 +87,10 @@ const SINGLE_INLAYS = [3, 5, 7, 9, 15, 17, 19, 21]
 export function Fretboard({ notes, ghosts, tuning, capo, options, onNoteClick, onFretClick, highlightStrings = [], maxFret, showPickZone = true, marks = [], shape = [], handPosition = null, names = [] }: Props) {
   // Unique ids for the SVG gradients, in case two fretboards share a page
   const uid = useId().replace(/[^a-zA-Z0-9]/g, '')
+  // Colour dots by note name, but only where the dot already shows that name:
+  // finger numbers keep their finger colours, and a quiz dot without a name gives nothing away.
+  const noteColors = useNoteColors()
+  const colorsNotes = noteColors && options.labelMode === 'note'
   const ref = (name: string) => `url(#${name}-${uid})`
   const stringCount = tuning.length
   const maxNoteFret = Math.max(0, ...notes.map((n) => n.fret), ...ghosts.map((n) => n.fret))
@@ -330,7 +335,7 @@ export function Fretboard({ notes, ghosts, tuning, capo, options, onNoteClick, o
       )}
 
       {tapped && (
-        <g key={tapped.id} className="fb-tapped">
+        <g key={tapped.id} className={noteColors ? 'fb-tapped fb-nc' : 'fb-tapped'} style={noteColors ? noteColorStyle(tapped.midi) : undefined}>
           <circle cx={X(tapped.fret === 0 ? OPEN_X : (fretX(tapped.fret - 1) + fretX(tapped.fret)) / 2)} cy={Y(tapped.string)} r={NOTE_R} />
           <NoteText x={X(tapped.fret === 0 ? OPEN_X : (fretX(tapped.fret - 1) + fretX(tapped.fret)) / 2)} y={Y(tapped.string)} midi={tapped.midi} size="big" />
         </g>
@@ -352,7 +357,11 @@ export function Fretboard({ notes, ghosts, tuning, capo, options, onNoteClick, o
       {names.length > 0 && (
         <g className="fb-names" aria-hidden="true">
           {names.map((n) => (
-            <g key={`n-${n.key}`} className={`${n.fret === 0 ? 'fb-name fb-name-open' : 'fb-name'}${n.tone ? ` fb-tone-${n.tone}` : ''}`}>
+            <g
+              key={`n-${n.key}`}
+              className={`${n.fret === 0 ? 'fb-name fb-name-open' : 'fb-name'}${n.tone ? ` fb-tone-${n.tone}` : ''}${noteColors && !n.tone && n.label === undefined ? ' fb-nc' : ''}`}
+              style={noteColors && !n.tone && n.label === undefined ? noteColorStyle(n.midi) : undefined}
+            >
               <circle cx={X(noteX(n))} cy={Y(n.string)} r="13" />
               {n.label !== undefined ? (
                 <text x={X(noteX(n))} y={Y(n.string) + 4} textAnchor="middle">
@@ -367,7 +376,14 @@ export function Fretboard({ notes, ghosts, tuning, capo, options, onNoteClick, o
       )}
 
       {shape.map((n) => (
-        <g key={`s-${n.key}`} className={`fb-shape fb-finger-${n.lh ?? 'x'}`} onClick={click(n)} role="button" aria-label={`${noteName(n.midi)} later in this bar, edit fingering`}>
+        <g
+          key={`s-${n.key}`}
+          className={`fb-shape fb-finger-${n.lh ?? 'x'}${colorsNotes ? ' fb-nc' : ''}`}
+          style={colorsNotes ? noteColorStyle(n.midi) : undefined}
+          onClick={click(n)}
+          role="button"
+          aria-label={`${noteName(n.midi)} later in this bar, edit fingering`}
+        >
           <circle cx={X(noteX(n))} cy={Y(n.string)} r="14" />
           {options.labelMode === 'note' ? (
             <NoteText x={X(noteX(n))} y={Y(n.string)} midi={n.midi} size="small" />
@@ -402,6 +418,7 @@ export function Fretboard({ notes, ghosts, tuning, capo, options, onNoteClick, o
         const y = Y(n.string)
         const open = n.tabFret === 0
         const held = n.isTieContinuation || n.isHeld
+        const nc = colorsNotes && n.label === undefined && !n.tone && !n.isDead
         const label = n.isDead
           ? '×'
           : options.labelMode === 'note'
@@ -417,10 +434,11 @@ export function Fretboard({ notes, ghosts, tuning, capo, options, onNoteClick, o
           n.lhInferred ? 'fb-suggested' : '',
           held ? 'fb-held' : '',
           n.tone ? `fb-tone-${n.tone}` : '',
+          nc ? 'fb-nc' : '',
         ].join(' ')
         const r = open ? NOTE_R - 3 : NOTE_R
         return (
-          <g key={n.key} className={cls} onClick={click(n)} role="button" aria-label={`${noteName(n.midi)}, edit fingering`}>
+          <g key={n.key} className={cls} style={nc ? noteColorStyle(n.midi) : undefined} onClick={click(n)} role="button" aria-label={`${noteName(n.midi)}, edit fingering`}>
             {!held && !open && <circle className="fb-note-halo" cx={x} cy={y} r={r + 9} filter={ref('glow')} />}
             {!held && <circle className="fb-note-ripple" cx={x} cy={y} r={r} />}
             <circle className="fb-note-body" cx={x} cy={y} r={r} filter={ref('shadow')} />
