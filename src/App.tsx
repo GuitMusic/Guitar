@@ -8,7 +8,7 @@ import { TheoryPage } from './theory/TheoryPage'
 import { BrandMark, Icon as LineIcon, type IconName } from './components/icons'
 import { Icon, Menu } from './components/PlayerBar'
 import { setTheme, useTheme } from './components/theme'
-import { Progress } from './progress/Progress'
+import { findSong, Progress } from './progress/Progress'
 import { promptInstall, useInstall } from './components/install'
 import { TuningsPage } from './tunings/TuningsPage'
 import { DataSettings } from './components/DataSettings'
@@ -20,18 +20,31 @@ const Practice = lazy(() => loadPractice().then((m) => ({ default: m.Practice })
 
 type Page = 'library' | 'practice' | 'tunings' | 'quiz' | 'theory' | 'progress' | 'tools'
 
-// Line icons for each page, shown in the bottom tab bar on phones
-const ICONS: Record<Page, IconName> = {
-  library: 'home',
-  practice: 'guitar',
-  tunings: 'headstock',
-  quiz: 'fretboard',
-  theory: 'triad',
-  progress: 'progress',
-  tools: 'metronome',
-}
-
 const PAGES: Page[] = ['library', 'practice', 'tunings', 'quiz', 'theory', 'progress', 'tools']
+
+// Note finder, Theory and Tunings share one Learn tab, which reopens the one used last
+type LearnPage = 'quiz' | 'theory' | 'tunings'
+const LEARN: { page: LearnPage; label: string }[] = [
+  { page: 'quiz', label: 'Note finder' },
+  { page: 'theory', label: 'Theory' },
+  { page: 'tunings', label: 'Tunings' },
+]
+const isLearn = (p: Page): p is LearnPage => p === 'quiz' || p === 'theory' || p === 'tunings'
+function lastLearn(): LearnPage {
+  try {
+    const p = localStorage.getItem('learn-page')
+    return p === 'theory' || p === 'tunings' ? p : 'quiz'
+  } catch {
+    return 'quiz'
+  }
+}
+function lastSongId(): string {
+  try {
+    return localStorage.getItem('last-song') ?? 'song-spanish-romance'
+  } catch {
+    return 'song-spanish-romance'
+  }
+}
 const pageFromState = (state: unknown): Page => {
   const p = (state as { page?: Page } | null)?.page
   return p && PAGES.includes(p) ? p : 'library'
@@ -52,6 +65,13 @@ export default function App() {
     else history.replaceState({ page: next }, '')
     pageRef.current = next
     setPageState(next)
+    if (isLearn(next)) {
+      try {
+        localStorage.setItem('learn-page', next)
+      } catch {
+        // not remembered
+      }
+    }
   }, [])
   useEffect(() => {
     // After a reload no song is open, so the app starts from Home
@@ -63,7 +83,24 @@ export default function App() {
     window.addEventListener('popstate', onPop)
     return () => window.removeEventListener('popstate', onPop)
   }, [])
-  const [song, setSong] = useState<OpenSong | null>(null)
+  const [song, setSongState] = useState<OpenSong | null>(null)
+  const setSong = useCallback((s: OpenSong) => {
+    setSongState(s)
+    try {
+      localStorage.setItem('last-song', s.id)
+    } catch {
+      // not remembered
+    }
+  }, [])
+  // Practice is never greyed out: with no song open it reopens the last one played
+  const openPractice = useCallback(() => {
+    if (song) return setPage('practice')
+    void findSong(lastSongId()).then((s) => findSong('song-spanish-romance').then((d) => s ?? d)).then((s) => {
+      if (!s) return
+      setSong(s)
+      setPage('practice')
+    })
+  }, [song, setPage, setSong])
   useEffect(() => {
     const preload = () => void loadPractice().catch(() => {})
     const w = window as Window & { requestIdleCallback?: (cb: () => void) => number }
@@ -82,11 +119,20 @@ export default function App() {
     window.scrollTo(0, page === 'library' ? homeScroll.current : 0)
   }, [page])
 
-  const nav = (p: Page, label: string, disabled = false) => (
-    <button className={page === p ? 'nav-item active' : 'nav-item'} disabled={disabled} onClick={() => setPage(p)} aria-current={page === p ? 'page' : undefined}>
-      <LineIcon name={ICONS[p]} className="nav-icon" />
+  const navButton = (active: boolean, icon: IconName, label: string, onClick: () => void) => (
+    <button className={active ? 'nav-item active' : 'nav-item'} onClick={onClick} aria-current={active ? 'page' : undefined}>
+      <LineIcon name={icon} className="nav-icon" />
       <span>{label}</span>
     </button>
+  )
+  const learnSwitch = (
+    <div className="learn-switch segmented" role="tablist" aria-label="Learn">
+      {LEARN.map((l) => (
+        <button key={l.page} role="tab" aria-selected={page === l.page} className={page === l.page ? 'active' : ''} onClick={() => setPage(l.page)}>
+          {l.label}
+        </button>
+      ))}
+    </div>
   )
 
   return (
@@ -101,13 +147,11 @@ export default function App() {
           </span>
         </div>
         <nav className="main-nav" aria-label="Pages">
-          {nav('library', 'Home')}
-          {nav('practice', 'Practice', !song)}
-          {nav('tunings', 'Tunings')}
-          {nav('quiz', 'Note finder')}
-          {nav('theory', 'Theory')}
-          {nav('progress', 'Progress')}
-          {nav('tools', 'Tools')}
+          {navButton(page === 'library', 'home', 'Home', () => setPage('library'))}
+          {navButton(page === 'practice', 'guitar', 'Practice', openPractice)}
+          {navButton(isLearn(page), 'fretboard', 'Learn', () => setPage(isLearn(page) ? page : lastLearn()))}
+          {navButton(page === 'tools', 'metronome', 'Tools', () => setPage('tools'))}
+          {navButton(page === 'progress', 'progress', 'Progress', () => setPage('progress'))}
         </nav>
         <Menu
           label="Settings"
@@ -185,6 +229,7 @@ export default function App() {
             </Suspense>
           </div>
         )}
+        {isLearn(page) && learnSwitch}
         {page === 'tunings' && (
           <TuningsPage
             onOpen={(s) => {

@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { VocalTrainer } from './VocalTrainer'
 import { listenForPitch, micErrorMessage, playChime, playTone, type PitchListener } from '../audio/pitch'
 import { Fretboard, type FretMark } from '../components/Fretboard'
 import { useFretboardView } from '../components/fretboardView'
@@ -35,7 +34,7 @@ import {
 } from './quiz'
 
 type Phase = 'idle' | 'prompt' | 'listening' | 'right' | 'timeout' | 'summary'
-type Tab = 'path' | 'free' | 'games' | 'live' | 'sing'
+type Tab = 'path' | 'free' | 'games' | 'live'
 
 interface Stats {
   asked: number
@@ -189,6 +188,8 @@ const avg = (t: Tally | undefined) => (t && t.ok ? t.ms / t.ok : 0)
 export function NoteQuiz() {
   const [prefs, setPrefs] = useState<Prefs>(() => {
     const p = load('quiz-prefs', DEFAULT_PREFS)
+    // Sing moved to Tools
+    if (!['path', 'free', 'games', 'live'].includes(p.tab)) p.tab = 'path'
     // rounds doubled: 10 notes became 20
     return p.roundLength === 10 ? { ...p, roundLength: 20 } : p
   })
@@ -701,9 +702,6 @@ export function NoteQuiz() {
               <span className="tab-long">Live neck</span>
               <span className="tab-short">Live</span>
             </button>
-            <button role="tab" aria-selected={prefs.tab === 'sing'} className={prefs.tab === 'sing' ? 'active' : ''} onClick={() => setPrefs({ ...prefs, tab: 'sing' })}>
-              Sing
-            </button>
           </div>
 
           {prefs.tab === 'path' && (
@@ -760,8 +758,6 @@ export function NoteQuiz() {
               ))}
             </div>
           )}
-
-          {prefs.tab === 'sing' && <VocalTrainer />}
 
           {prefs.tab === 'games' && <Games tuning={tuning.strings} sounds={prefs.sounds} view={{ ...view, labelMode: 'note', showGhosts: false }} />}
 

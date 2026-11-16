@@ -1,69 +1,67 @@
-import { useState } from "react";
-import { RhythmTrainer } from "../rhythm/RhythmTrainer";
-import { Metronome } from "./Metronome";
-import { Tuner } from "./Tuner";
+import { useState } from 'react'
+import { RhythmTrainer } from '../rhythm/RhythmTrainer'
+import { VocalTrainer } from '../quiz/VocalTrainer'
+import { Metronome } from './Metronome'
+import { Tuner } from './Tuner'
 
-type Tab = "tools" | "rhythm";
+export type ToolsTab = 'tools' | 'rhythm' | 'sing'
+const TABS: { id: ToolsTab; label: string; short: string }[] = [
+  { id: 'tools', label: 'Tuner & metronome', short: 'Tuner' },
+  { id: 'rhythm', label: 'Learn the metronome', short: 'Timing' },
+  { id: 'sing', label: 'Sing', short: 'Sing' },
+]
 
-function loadTab(): Tab {
+function loadTab(): ToolsTab {
   try {
-    return localStorage.getItem("tools-tab") === "rhythm" ? "rhythm" : "tools";
+    const t = localStorage.getItem('tools-tab')
+    return TABS.some((x) => x.id === t) ? (t as ToolsTab) : 'tools'
   } catch {
-    return "tools";
+    return 'tools'
   }
 }
 
-/** Tuner and metronome, plus lessons on playing in time with a metronome. */
+/** Tuner and metronome, lessons on playing in time, and voice training. */
 export function ToolsPage() {
-  const [tab, setTabState] = useState<Tab>(loadTab);
-  const setTab = (t: Tab) => {
-    setTabState(t);
+  const [tab, setTabState] = useState<ToolsTab>(loadTab)
+  const setTab = (t: ToolsTab) => {
+    setTabState(t)
     try {
-      localStorage.setItem("tools-tab", t);
+      localStorage.setItem('tools-tab', t)
     } catch {
       // storage unavailable
     }
-  };
+  }
   return (
     <>
       <div className="tools-tabs-wrap">
         <h1>Tools</h1>
         <div className="segmented quiz-tabs tools-tabs" role="tablist">
-          <button
-            role="tab"
-            aria-selected={tab === "tools"}
-            className={tab === "tools" ? "active" : ""}
-            onClick={() => setTab("tools")}
-          >
-            <span className="tab-long">Tuner & metronome</span>
-            <span className="tab-short">Tuner</span>
-          </button>
-          <button
-            role="tab"
-            aria-selected={tab === "rhythm"}
-            className={tab === "rhythm" ? "active" : ""}
-            onClick={() => setTab("rhythm")}
-          >
-            <span className="tab-long">Learn the metronome</span>
-            <span className="tab-short">Lessons</span>
-          </button>
+          {TABS.map((t) => (
+            <button key={t.id} role="tab" aria-selected={tab === t.id} className={tab === t.id ? 'active' : ''} onClick={() => setTab(t.id)}>
+              <span className="tab-long">{t.label}</span>
+              <span className="tab-short">{t.short}</span>
+            </button>
+          ))}
         </div>
       </div>
-      <div
-        className={tab === "tools" ? "tools-page" : "tools-page rhythm-page"}
-      >
-        {tab === "tools" ? (
+      <div className={tab === 'tools' ? 'tools-page' : 'tools-page rhythm-page'}>
+        {tab === 'tools' ? (
           <>
             <Tuner />
             <Metronome />
           </>
+        ) : tab === 'rhythm' ? (
+          <div>
+            <h2 className="tools-sub">Play in time</h2>
+            <RhythmTrainer />
+          </div>
         ) : (
           <div>
-            <h1>Play in time</h1>
-            <RhythmTrainer />
+            <h2 className="tools-sub">Sing in tune</h2>
+            <VocalTrainer />
           </div>
         )}
       </div>
     </>
-  );
+  )
 }
