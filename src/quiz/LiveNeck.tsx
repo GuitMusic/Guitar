@@ -4,6 +4,8 @@ import { listenForPitch, micErrorMessage, playTone, type PitchListener } from '.
 import { Fretboard, type FretMark } from '../components/Fretboard'
 import { useFretboardView } from '../components/fretboardView'
 import { noteName, pitchClassName, solfegeName } from '../music/notes'
+import { noteColorStyle } from '../music/noteColors'
+import { NoteColorStrip } from '../components/NoteColorStrip'
 import type { FretNote } from '../music/types'
 import { NoteEvents } from './quiz'
 
@@ -176,7 +178,7 @@ export function LiveNeck({ tuning }: { tuning: number[] }) {
       <div className={`live-card${heard ? ' on' : ''}`}>
         <div className="live-note" aria-live="polite">
           {heard ? (
-            <span key={history[history.length - 1]?.id} className="live-name">
+            <span key={history[history.length - 1]?.id} className="live-name" style={noteColorStyle(heard.midi)}>
               {pitchClassName(heard.midi)}
               <sub>{Math.floor(heard.midi / 12) - 1}</sub>
               <span className="solfa">{solfegeName(heard.midi)}</span>
@@ -238,12 +240,13 @@ export function LiveNeck({ tuning }: { tuning: number[] }) {
           options={{ ...view, labelMode: 'note', showGhosts: false }}
         />
       </NeckScroll>
+      <NoteColorStrip />
 
       <div className="live-history">
         <span className="field-label">Last notes</span>
         {history.length ? (
           history.map((p) => (
-            <span key={p.id} className="live-chip">
+            <span key={p.id} className="live-chip" style={noteColorStyle(p.midi)}>
               {noteName(p.midi)}
             </span>
           ))

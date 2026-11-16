@@ -8,6 +8,8 @@ import { setTheme, useTheme } from './components/theme'
 import { findSong } from './library/songs'
 import { promptInstall, useInstall } from './components/install'
 import { DataSettings } from './components/DataSettings'
+import { NoteColorStrip } from './components/NoteColorStrip'
+import { setNoteColors, useNoteColors } from './music/noteColors'
 
 // The score engine (alphaTab) is most of the app's code and only Practice needs it, so Home
 // opens without it and the Practice code is fetched in the background once Home is up
@@ -116,6 +118,7 @@ export default function App() {
   }, [])
   const { leftHanded } = useFretboardView()
   const { theme } = useTheme()
+  const noteColors = useNoteColors()
   const install = useInstall()
   // Coming back Home lands where the song list was left; other pages open at the top
   const homeScroll = useRef(0)
@@ -196,6 +199,18 @@ export default function App() {
                 </button>
               ))}
             </div>
+          </div>
+          <div className="settings-row">
+            <span className="settings-label">Note colours</span>
+            <div className="segmented" role="radiogroup" aria-label="Note colours">
+              <button role="radio" aria-checked={noteColors} className={noteColors ? 'active' : ''} onClick={() => setNoteColors(true)}>
+                On
+              </button>
+              <button role="radio" aria-checked={!noteColors} className={!noteColors ? 'active' : ''} onClick={() => setNoteColors(false)}>
+                Off
+              </button>
+            </div>
+            <NoteColorStrip compact />
           </div>
           <DataSettings />
           {install !== 'installed' && (

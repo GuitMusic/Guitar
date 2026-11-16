@@ -1,3 +1,4 @@
+import { NoteSwatch } from '../components/NoteColorStrip'
 import { pitchClassName, solfegeName } from '../music/notes'
 
 /** Small pieces of the Note finder page: saved settings, star rows and the prompt text. */
@@ -12,6 +13,7 @@ export function PromptText({ text, midi }: { text: string; midi: number | null }
   return (
     <>
       {text.slice(0, end)}
+      <NoteSwatch midi={midi} />
       <span className="solfa-inline">{solfegeName(midi)}</span>
       {text.slice(end)}
     </>

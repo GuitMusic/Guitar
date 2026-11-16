@@ -5242,3 +5242,117 @@ svg text.fb-solfa-small {
   color: var(--text-2);
   font-weight: 600;
 }
+
+/* Note colours: one colour per note name, sharps and flats a deeper shade between
+   their neighbours (src/music/noteColors.ts). Only on dots that show the note name,
+   so finger colours, theory roles and the right/wrong rings keep their meaning. */
+.fretboard .fb-note.fb-nc .fb-note-body,
+.fretboard .fb-note.fb-nc .fb-note-halo {
+  fill: var(--nc);
+}
+.fretboard .fb-note.fb-nc .fb-note-body {
+  stroke: #fff;
+}
+.fretboard .fb-note.fb-nc text {
+  fill: #17120d;
+}
+.fretboard .fb-note.fb-note-open.fb-nc .fb-note-body {
+  fill: #1a120b;
+  stroke: var(--nc);
+  stroke-width: 2.5;
+}
+.fretboard .fb-note.fb-note-open.fb-nc text {
+  fill: var(--nc);
+}
+.live-neck .fretboard .fb-note.fb-note-open.fb-nc .fb-note-body {
+  fill: var(--nc);
+  stroke: #fff;
+  stroke-width: 2;
+}
+.live-neck .fretboard .fb-note.fb-note-open.fb-nc text {
+  fill: #17120d;
+}
+.fretboard .fb-shape.fb-nc circle {
+  fill: var(--nc);
+  stroke: var(--nc);
+}
+.fretboard .fb-name.fb-nc circle {
+  fill: var(--nc);
+  fill-opacity: 0.4;
+  stroke: var(--nc);
+  stroke-opacity: 0.9;
+  stroke-width: 1.5;
+}
+.fretboard .fb-name.fb-nc text {
+  fill-opacity: 0.9;
+}
+.fretboard .fb-tapped.fb-nc circle {
+  fill: var(--nc);
+  stroke: #fff;
+}
+.fretboard .fb-tapped.fb-nc text {
+  fill: #17120d;
+}
+
+/* The key: 12 swatches, sharps a little lower, between their neighbours */
+.nc-strip {
+  display: flex;
+  align-items: flex-start;
+  gap: 3px;
+  margin: 10px 0 2px;
+  max-width: 520px;
+}
+.nc-swatch {
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 4px 0;
+  border-radius: 7px;
+  background: var(--nc);
+  color: #17120d;
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-align: center;
+  line-height: 1.2;
+}
+.nc-swatch.sharp {
+  margin-top: 10px;
+  font-size: 0.62rem;
+}
+.nc-strip.compact {
+  margin: 2px 0 0;
+  gap: 2px;
+}
+.nc-strip.compact .nc-swatch {
+  padding: 2px 0;
+  font-size: 0.6rem;
+  border-radius: 5px;
+}
+.nc-strip.compact .nc-swatch.sharp {
+  margin-top: 6px;
+  font-size: 0.5rem;
+}
+.nc-dot {
+  display: inline-block;
+  width: 0.62em;
+  height: 0.62em;
+  margin: 0 0.1em 0 0.3em;
+  border-radius: 50%;
+  background: var(--nc);
+  vertical-align: 0.12em;
+}
+:root[data-note-colors='on'] .name-key {
+  box-shadow: inset 0 3px 0 var(--nc);
+}
+:root[data-note-colors='on'] .live-chip::before {
+  content: '';
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: 6px;
+  border-radius: 50%;
+  background: var(--nc);
+}
+:root[data-note-colors='on'] .live-name:not(.idle) {
+  border-bottom: 5px solid var(--nc);
+  padding-bottom: 4px;
+}
