@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { markActive } from '../progress/activity'
 import { playChime } from '../audio/pitch'
 import { makeDrill, type Drill, type DrillKind } from './drills'
 import { keyName, type Key } from './theory'
@@ -46,6 +47,7 @@ export function TheoryDrills({ current }: { current: Key }) {
     setPicked(p)
     setDone(ok)
     setResults((r) => [...r, ok])
+    markActive('theory')
     playChime(ok ? 'right' : 'miss')
   }
 

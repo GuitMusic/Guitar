@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { markActive } from '../progress/activity'
 import { playChime, playTone } from '../audio/pitch'
 import { Fretboard, type FretMark } from '../components/Fretboard'
 import { Icon, type IconName } from '../components/icons'
@@ -143,6 +144,7 @@ export function Games({ tuning, sounds, view }: { tuning: number[]; sounds: bool
       if (ms <= 0) {
         window.clearInterval(id)
         setPhase('over')
+        markActive('games')
         if (game === 'rush') saveReview(missedRef.current)
         const points = scoreRef.current.points
         const saved = loadBest()

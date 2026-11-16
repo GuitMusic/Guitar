@@ -90,26 +90,71 @@ export function audioNow(): number {
   return sharedAudioContext().currentTime
 }
 
-/** Plays a tone at a time on the audio clock (see audioNow), e.g. for a backing loop. */
+/**
+ * A plucked guitar string, synthesised with the Karplus-Strong method: a burst of noise
+ * circulating in a delay line one period long, softened a little on every pass, the way a
+ * real string loses its high overtones first. The loop is one whole sample long and the
+ * playback rate makes up the fraction, so the pitch is exact (it is also a reference tone).
+ */
+const plucks = new Map<string, { buffer: AudioBuffer; rate: number }>()
+function pluck(ctx: BaseAudioContext, midi: number, seconds: number) {
+  const key = `${ctx.sampleRate}:${midi}:${seconds}`
+  const hit = plucks.get(key)
+  if (hit) return hit
+  const sr = ctx.sampleRate
+  const period = sr / midiToFrequency(midi)
+  // Averaging each sample with the next one out shortens the loop by half a sample
+  const n = Math.max(3, Math.round(period + 0.5))
+  const length = Math.ceil(seconds * sr)
+  const buffer = ctx.createBuffer(1, length, sr)
+  const out = buffer.getChannelData(0)
+  // Seeded noise, smoothed once so the attack sounds like a finger rather than a pick
+  let seed = 1234567 + midi * 7919
+  const rand = () => ((seed = (seed * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff) * 2 - 1
+  const ring = new Float32Array(n)
+  let prev = 0
+  for (let i = 0; i < n; i++) {
+    const r = rand()
+    ring[i] = (r + prev) / 2
+    prev = r
+  }
+  // Higher strings ring shorter, as on a guitar
+  const loss = midi > 64 ? 0.994 : 0.997
+  let peak = 0
+  for (let i = 0; i < length; i++) {
+    const k = i % n
+    const v = ring[k]
+    out[i] = v
+    peak = Math.max(peak, Math.abs(v))
+    ring[k] = loss * 0.5 * (v + ring[(k + 1) % n])
+  }
+  // Even out loudness between notes, and fade the tail so nothing clicks
+  const fade = Math.min(length, Math.round(sr * 0.08))
+  for (let i = 0; i < length; i++) {
+    out[i] /= peak || 1
+    if (i > length - fade) out[i] *= (length - i) / fade
+  }
+  const entry = { buffer, rate: (n - 0.5) / period }
+  plucks.set(key, entry)
+  return entry
+}
+
+/** Plays a plucked guitar note at a time on the audio clock (see audioNow), e.g. for a backing loop. */
 export function playToneAt(midi: number, t: number, seconds = 1.6, volume = 0.5): void {
   const ctx = sharedAudioContext()
-  const out = ctx.createGain()
-  out.gain.setValueAtTime(0.0001, t)
-  out.gain.exponentialRampToValueAtTime(volume, t + 0.01)
-  out.gain.exponentialRampToValueAtTime(0.0001, t + seconds)
-  out.connect(ctx.destination)
-  // fundamental plus two quiet overtones so it sounds less like a beep
-  ;[1, 2, 3].forEach((h, i) => {
-    const osc = ctx.createOscillator()
-    const g = ctx.createGain()
-    osc.type = i === 0 ? 'triangle' : 'sine'
-    osc.frequency.value = midiToFrequency(midi) * h
-    g.gain.value = [1, 0.3, 0.12][i]
-    osc.connect(g).connect(out)
-    osc.start(t)
-    osc.stop(t + seconds + 0.05)
-    if (i === 0) osc.onended = () => out.disconnect()
-  })
+  const { buffer, rate } = pluck(ctx, midi, Math.round(seconds * 10) / 10)
+  const src = ctx.createBufferSource()
+  src.buffer = buffer
+  src.playbackRate.value = rate
+  // A gentle low-pass takes the edge off, like a guitar body
+  const tone = ctx.createBiquadFilter()
+  tone.type = 'lowpass'
+  tone.frequency.value = Math.min(9000, midiToFrequency(midi) * 9)
+  const g = ctx.createGain()
+  g.gain.value = volume * 0.9
+  src.connect(tone).connect(g).connect(ctx.destination)
+  src.start(t)
+  src.onended = () => g.disconnect()
 }
 
 /** A short, quiet two-note chime for a right answer ('right'), or one low tone for a miss. */

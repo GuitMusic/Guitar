@@ -5221,3 +5221,24 @@ svg text.fb-solfa-small {
   color: var(--accent);
   font-weight: 650;
 }
+.best-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 20px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 8px;
+}
+.best-list li {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+.quiz-stats small {
+  font-size: 0.6em;
+  color: var(--text-2);
+  font-weight: 600;
+}
