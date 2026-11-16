@@ -9,6 +9,8 @@ import type { FretNote } from '../music/types'
 import { localDate } from '../progress/practiceLog'
 import { Games } from './Games'
 import { LiveNeck } from './LiveNeck'
+import { Flame, PromptText, Stars } from './quizParts'
+import { load, save } from './quizStore'
 import {
   Attacks,
   checkAnswer,
@@ -96,25 +98,6 @@ const RANGES = [
   { label: 'Frets 0 to 7', min: 0, max: 7 },
 ]
 
-function load<T>(key: string, fallback: T): T {
-  try {
-    const raw = localStorage.getItem(key)
-    if (!raw) return fallback
-    const v = JSON.parse(raw)
-    return (Array.isArray(fallback) ? (Array.isArray(v) ? v : fallback) : { ...fallback, ...v }) as T
-  } catch {
-    return fallback
-  }
-}
-
-function save(key: string, value: unknown) {
-  try {
-    localStorage.setItem(key, JSON.stringify(value))
-  } catch {
-    /* storage may be unavailable */
-  }
-}
-
 interface Prefs {
   tab: Tab
   mode: QuizMode
@@ -141,48 +124,12 @@ const DEFAULT_PREFS: Prefs = {
   sounds: true,
 }
 
-/** The question, with the do-ré-mi name in small type right after the note name. */
-function PromptText({ text, midi }: { text: string; midi: number | null }) {
-  if (midi === null) return <>{text}</>
-  const name = pitchClassName(midi)
-  const m = new RegExp(`(^|\\s)${name.replace('#', '\\#')}(?=\\s|$)`).exec(text)
-  if (!m) return <>{text}</>
-  const end = m.index + m[0].length
-  return (
-    <>
-      {text.slice(0, end)}
-      <span className="solfa-inline">{solfegeName(midi)}</span>
-      {text.slice(end)}
-    </>
-  )
-}
-
 const CONFETTI = ['#ff7a45', '#ff4f7b', '#fbbf24', '#2dd4bf', '#a78bfa', '#7cc4ff']
 const NOTE_GAP_MS = 650
 /** A wrong note only counts if it was plucked within this many mic frames (about half a second). */
 const PLUCK_FRAMES = 40
 /** A wrong note is only shown once it has held this many mic frames (about a third of a second). */
 const WRONG_FRAMES = 20
-
-function Stars({ n, of = 3 }: { n: number; of?: number }) {
-  return (
-    <span className="stars" aria-label={`${n} of ${of} stars`}>
-      {Array.from({ length: of }, (_, i) => (
-        <svg key={i} viewBox="0 0 24 24" width="16" height="16" className={i < n ? 'star on' : 'star'} aria-hidden="true">
-          <path d="M12 3.5l2.6 5.3 5.8.8-4.2 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8-4.2-4.1 5.8-.8z" />
-        </svg>
-      ))}
-    </span>
-  )
-}
-
-function Flame() {
-  return (
-    <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
-      <path d="M12 2c1 4 5 5.5 5 11a5 5 0 0 1-10 0c0-2.5 1.2-4 2.5-5 0 2 1 3 2 3 0-3-1.5-5 .5-9z" fill="currentColor" />
-    </svg>
-  )
-}
 
 const avg = (t: Tally | undefined) => (t && t.ok ? t.ms / t.ok : 0)
 

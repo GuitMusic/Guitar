@@ -2,7 +2,7 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import { activeDays } from './activity'
 import { Training } from './Training'
 import { db } from '../library/db'
-import { BUILT_IN_SONGS, toOpenSong, type OpenSong } from '../library/songs'
+import { findSong, type OpenSong } from '../library/songs'
 import { minutesByDay, needsRevisit, streak, summarize } from './practiceLog'
 
 interface Props {
@@ -20,12 +20,6 @@ function ago(days: number): string {
   return `${days} days ago`
 }
 
-export async function findSong(songId: string): Promise<OpenSong | null> {
-  const builtIn = BUILT_IN_SONGS.find((s) => s.id === songId)
-  if (builtIn) return builtIn
-  const rec = await db.songs.get(songId)
-  return rec ? toOpenSong(rec) : null
-}
 
 /** Practice log: time per day, streak, and per-song progress with revisit reminders. */
 export function Progress({ onOpen }: Props) {

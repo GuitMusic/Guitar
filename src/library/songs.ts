@@ -1,5 +1,5 @@
 import { SONGS, STUDIES } from '../studies/studies'
-import type { SongFormat, SongRecord } from './db'
+import { db, type SongFormat, type SongRecord } from './db'
 
 export interface OpenSong {
   id: string
@@ -28,4 +28,12 @@ export const BUILT_IN_SONGS: OpenSong[] = [...SONGS, ...STUDIES].map((s) => ({
 
 export function toOpenSong(record: SongRecord): OpenSong {
   return { id: record.id, title: record.title, format: record.format, data: record.data, builtIn: false }
+}
+
+/** A built-in piece or an imported song, by id. */
+export async function findSong(songId: string): Promise<OpenSong | null> {
+  const builtIn = BUILT_IN_SONGS.find((s) => s.id === songId)
+  if (builtIn) return builtIn
+  const rec = await db.songs.get(songId)
+  return rec ? toOpenSong(rec) : null
 }
